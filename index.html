@@ -347,6 +347,18 @@
   }
   .logo-card:hover .logo-symbol { transform: scale(1.06); }
 
+  .card-del-btn {
+    position: absolute; top: 7px; left: 7px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: rgba(20,18,16,0.6); color: #f7f4ef;
+    border: none; font-size: 15px; line-height: 1;
+    cursor: pointer; display: none;
+    align-items: center; justify-content: center;
+    transition: background 0.15s; z-index: 2;
+  }
+  .logo-card:hover .card-del-btn { display: flex; }
+  .card-del-btn:hover { background: var(--accent); }
+
   .sim-pill {
     position: absolute;
     top: 10px;
@@ -1410,6 +1422,11 @@ function renderGrid() {
   const grid = document.getElementById('logo-grid');
   grid.innerHTML = '';
 
+  const industrie      = document.getElementById('sel-industrie').value;
+  const positionnement = document.getElementById('sel-positionnement').value;
+  const hasFilters     = industrie || state.selectedValeurs.length || positionnement || state.selectedLetter;
+  const showDelete     = !hasFilters; // bouton suppr uniquement en vue "tous les projets"
+
   state.results.forEach((logo, i) => {
     const card = document.createElement('div');
     card.className = 'logo-card';
@@ -1422,11 +1439,16 @@ function renderGrid() {
       ? '<img src="' + logo.imageUrl + '" style="width:100%;height:100%;object-fit:contain;padding:16px" onerror="this.style.display=\'none\'">'
       : '<div class="logo-symbol" style="color:' + (logo.color||'#5a5650') + '">' + (logo.symbol||'◈') + '</div>';
 
+    const deleteBtn = showDelete
+      ? '<button class="card-del-btn" title="Supprimer" onclick="event.stopPropagation();deleteFromExplorer(\'' + logo.id + '\',this)">×</button>'
+      : '';
+
     card.innerHTML =
       '<div class="logo-thumb" style="background:' + (logo.bg||'#f0ede8') + '">' +
         thumbContent +
-        '<div class="sim-pill">' + logo.score + '%</div>' +
+        (hasFilters ? '<div class="sim-pill">' + logo.score + '%</div>' : '') +
         '<div class="match-bar" style="width:' + logo.score + '%;background:' + barColor + '"></div>' +
+        deleteBtn +
       '</div>' +
       '<div class="logo-body">' +
         '<div class="logo-name">' + logo.name + '</div>' +
@@ -1440,6 +1462,23 @@ function renderGrid() {
 
   grid.classList.add('visible');
   if (state.results.length >= 8) document.getElementById('load-more').classList.add('visible');
+}
+
+async function deleteFromExplorer(id, btn) {
+  if (!confirm('Supprimer ce projet de la base ?')) return;
+  btn.textContent = '…';
+  try {
+    await deleteFromSupabase(id);
+    const idx = DB.findIndex(p => p.id == id);
+    if (idx > -1) DB.splice(idx, 1);
+    imp.projects = imp.projects.filter(p => p.id != id);
+    updateHeaderCount();
+    showAllProjects();
+    renderSourceList();
+  } catch(e) {
+    alert('Erreur : ' + e.message);
+    btn.textContent = '×';
+  }
 }
 
 
