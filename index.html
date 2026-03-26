@@ -750,7 +750,15 @@
     align-items: center; justify-content: center;
   }
   .img-picker-thumb.selected .pick-check { display: flex; }
-  .img-picker-none {
+  .img-upload-fallback {
+    display: inline-flex; align-items: center;
+    font-size: 12px; color: var(--ink-2);
+    padding: 7px 12px; border: 1px dashed var(--rule);
+    border-radius: 6px; cursor: pointer; transition: all 0.15s;
+    gap: 6px;
+  }
+  .img-upload-fallback:hover { border-color: var(--accent); color: var(--accent); }
+
     font-size: 11.5px; color: var(--ink-3); cursor: pointer;
     padding: 8px 12px; border: 1px dashed var(--rule); border-radius: 6px;
     text-align: center; transition: border-color 0.15s;
@@ -1175,8 +1183,15 @@
 
       <!-- Sélecteur d'image -->
       <div class="imp-res-section" id="img-picker-wrap" style="display:none">
-        <div class="imp-res-section-label">Choisir l'image du logo</div>
+        <div class="imp-res-section-label" id="img-picker-label">Choisir l'image du logo</div>
         <div class="img-picker" id="img-picker"></div>
+        <!-- Upload manuel en fallback -->
+        <div id="img-manual-upload" style="display:none;margin-top:8px">
+          <label class="img-upload-fallback">
+            <input type="file" accept="image/*" style="display:none" onchange="onManualImageFallback(this)">
+            <span>+ Uploader l'image manuellement</span>
+          </label>
+        </div>
       </div>
 
       <div class="imp-res-section">
@@ -1798,26 +1813,31 @@ async function importFromUrl() {
 
     // ── Picker d'images ──
     const candidates = (ai.image_candidates || []).filter(u => u && u !== 'null');
+    const pickerWrap = document.getElementById('img-picker-wrap');
+    const picker = document.getElementById('img-picker');
+    pickerWrap.style.display = 'flex';
+
     if (candidates.length > 0) {
+      document.getElementById('img-picker-label').textContent = 'Choisir l\'image du logo';
+      document.getElementById('img-manual-upload').style.display = 'none';
       // Sélectionner la première par défaut
       imp.imageUrl = candidates[0];
       imp._imageFromUrl = candidates[0];
       document.getElementById('imp-res-img-wrap').innerHTML =
         '<img id="selected-img-preview" src="' + candidates[0] + '" style="width:100%;height:100%;object-fit:contain;padding:8px" onerror="this.parentNode.innerHTML=\'<div style=font-size:28px;color:var(--ink-3)>◈</div>\'">';
 
-      // Afficher le picker
-      const pickerWrap = document.getElementById('img-picker-wrap');
-      const picker = document.getElementById('img-picker');
-      pickerWrap.style.display = 'flex';
       picker.innerHTML = candidates.map((url, i) =>
         '<div class="img-picker-thumb' + (i === 0 ? ' selected' : '') + '" onclick="selectImage(\'' + url.replace(/'/g, "\\'") + '\', this)">' +
           '<img src="' + url + '" onerror="this.parentNode.style.display=\'none\'">' +
           '<div class="pick-check">✓</div>' +
         '</div>'
       ).join('') +
-      '<div class="img-picker-none' + (candidates.length === 0 ? ' selected' : '') + '" onclick="selectImage(null, this)">Aucune</div>';
+      '<div class="img-picker-none" onclick="selectImage(null, this)">Aucune</div>';
     } else {
-      document.getElementById('img-picker-wrap').style.display = 'none';
+      // Aucune image trouvée — probablement un site JS-rendu
+      document.getElementById('img-picker-label').textContent = 'Aucune image détectée (site JS)';
+      document.getElementById('img-manual-upload').style.display = 'block';
+      picker.innerHTML = '<div style="font-size:11.5px;color:var(--ink-3);line-height:1.6;">Ce site charge ses images dynamiquement — le proxy ne peut pas les récupérer. Upload l\'image du logo manuellement ci-dessous.</div>';
     }
 
     // ── Lettre initiale ──
@@ -1923,6 +1943,23 @@ function setFetchStatus(type, msg) {
   el.style.display = 'flex';
   el.className = 'imp-fetch-status ' + type;
   el.innerHTML = '<div class="imp-fetch-dot"></div><span>' + msg + '</span>';
+}
+
+function onManualImageFallback(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  imp.imageUrl = url;
+  imp._imageFromUrl = null;
+  // Stocker en base64 pour Supabase
+  const reader = new FileReader();
+  reader.onload = e => { imp._manualImageB64 = e.target.result; };
+  reader.readAsDataURL(file);
+  // Aperçu
+  document.getElementById('imp-res-img-wrap').innerHTML =
+    '<img src="' + url + '" style="width:100%;height:100%;object-fit:contain;padding:8px">';
+  // Marquer comme sélectionné
+  document.getElementById('img-manual-upload').querySelector('span').textContent = '✓ Image uploadée — changer';
 }
 
 function selectImage(url, el) {
