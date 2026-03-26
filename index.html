@@ -1325,6 +1325,53 @@ async function supaFetch(path, opts = {}) {
   return r.status === 204 ? null : r.json();
 }
 
+// Upload un fichier File ou un blob (fetch depuis URL) dans Supabase Storage
+// Retourne l'URL publique permanente
+async function uploadImageToStorage(fileOrUrl) {
+  const filename = 'logo_' + Date.now() + '_' + Math.random().toString(36).slice(2) + '.jpg';
+
+  let blob;
+  if (fileOrUrl instanceof File) {
+    blob = fileOrUrl;
+  } else if (typeof fileOrUrl === 'string' && fileOrUrl.startsWith('http')) {
+    // Télécharger l'image depuis l'URL via proxy pour l'uploader
+    try {
+      const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(fileOrUrl);
+      const r = await fetch(proxyUrl);
+      if (!r.ok) throw new Error('fetch failed');
+      blob = await r.blob();
+    } catch(e) {
+      // Si on ne peut pas télécharger, on garde l'URL telle quelle (externe)
+      return fileOrUrl;
+    }
+  } else {
+    return fileOrUrl; // blob URL locale — ne peut pas être uploadée, retourner telle quelle
+  }
+
+  const mimeType = blob.type || 'image/jpeg';
+  const ext = mimeType.includes('png') ? '.png' : mimeType.includes('svg') ? '.svg' : mimeType.includes('gif') ? '.gif' : '.jpg';
+  const fname = 'logo_' + Date.now() + '_' + Math.random().toString(36).slice(2) + ext;
+
+  const r = await fetch(SUPA_URL + '/storage/v1/object/logos/' + fname, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type': mimeType,
+      'x-upsert': 'true',
+    },
+    body: blob,
+  });
+
+  if (!r.ok) {
+    const e = await r.json().catch(()=>{});
+    throw new Error('Storage upload failed: ' + (e?.message || r.status));
+  }
+
+  return SUPA_URL + '/storage/v1/object/public/logos/' + fname;
+}
+
+
 async function loadLogosFromSupabase() {
   try {
     const rows = await supaFetch('/rest/v1/logos?select=*&order=created_at.desc');
@@ -1778,10 +1825,9 @@ function onEditImgChange(input) {
   if (!file) return;
   const url = URL.createObjectURL(file);
   editLogo._newImageFile = file;
-  editLogo._newImageUrl  = url;
-  document.getElementById('edit-img-preview') ?
-    document.getElementById('edit-img-preview').src = url :
-    document.getElementById('edit-img-zone').innerHTML = '<img id="edit-img-preview" src="' + url + '"><div class="panel-img-overlay">Changer</div>';
+  editLogo._newImageUrl  = null;
+  const zone = document.getElementById('edit-img-zone');
+  zone.innerHTML = '<img id="edit-img-preview" src="' + url + '"><div class="panel-img-overlay">Changer l\'image</div>';
   document.getElementById('edit-img-url').value = '';
 }
 
@@ -1797,29 +1843,37 @@ async function saveEditPanel() {
   const btn = document.querySelector('.panel-edit-save');
   btn.textContent = 'Enregistrement…'; btn.disabled = true;
 
-  // Récupérer les champs texte
   editLogo.name   = document.getElementById('edit-name').value.trim()   || editLogo.name;
   editLogo.agency = document.getElementById('edit-agency').value.trim() || editLogo.agency;
   editLogo.year   = parseInt(document.getElementById('edit-year').value) || editLogo.year;
 
-  // Image : URL saisie ou fichier uploadé
-  const newUrl  = editLogo._newImageUrl;
-  if (newUrl) editLogo.imageUrl = newUrl;
+  // Upload image si nouveau fichier ou nouvelle URL externe
+  try {
+    if (editLogo._newImageFile) {
+      btn.textContent = 'Upload image…';
+      editLogo.imageUrl = await uploadImageToStorage(editLogo._newImageFile);
+    } else if (editLogo._newImageUrl && !editLogo._newImageUrl.startsWith('blob:')) {
+      btn.textContent = 'Upload image…';
+      editLogo.imageUrl = await uploadImageToStorage(editLogo._newImageUrl);
+    }
+  } catch(e) {
+    console.warn('Image upload failed:', e.message);
+    if (editLogo._newImageUrl) editLogo.imageUrl = editLogo._newImageUrl;
+  }
 
   try {
-    // Mettre à jour Supabase
+    btn.textContent = 'Enregistrement…';
     await supaFetch('/rest/v1/logos?id=eq.' + editLogo.id, {
       method: 'PATCH',
       headers: { 'Prefer': 'return=minimal' },
       body: JSON.stringify({
-        name:        editLogo.name,
-        image_url:   editLogo.imageUrl || null,
-        brief:       editLogo.brief,
-        graphic:     editLogo.graphic,
+        name:      editLogo.name,
+        image_url: editLogo.imageUrl || null,
+        brief:     editLogo.brief,
+        graphic:   editLogo.graphic,
       }),
     });
 
-    // Mettre à jour le DB local
     const idx = DB.findIndex(l => l.id == editLogo.id);
     if (idx > -1) DB[idx] = { ...DB[idx], ...editLogo };
 
@@ -2158,14 +2212,9 @@ function onManualImageFallback(input) {
   const url = URL.createObjectURL(file);
   imp.imageUrl = url;
   imp._imageFromUrl = null;
-  // Stocker en base64 pour Supabase
-  const reader = new FileReader();
-  reader.onload = e => { imp._manualImageB64 = e.target.result; };
-  reader.readAsDataURL(file);
-  // Aperçu
+  imp._manualImageFile = file; // stocker le File pour upload Storage
   document.getElementById('imp-res-img-wrap').innerHTML =
     '<img src="' + url + '" style="width:100%;height:100%;object-fit:contain;padding:8px">';
-  // Marquer comme sélectionné
   document.getElementById('img-manual-upload').querySelector('span').textContent = '✓ Image uploadée — changer';
 }
 
@@ -2202,19 +2251,34 @@ async function saveProject() {
   btn.textContent = 'Sauvegarde…';
   btn.disabled = true;
 
-  const name   = document.getElementById('imp-res-name').textContent || 'Sans titre';
-  const meta   = document.getElementById('imp-res-meta').textContent.split(' · ');
+  const name = document.getElementById('imp-res-name').textContent || 'Sans titre';
+
+  let imageUrl = imp.imageUrl || null;
+
+  // Uploader l'image dans Supabase Storage si c'est un fichier ou une URL externe
+  try {
+    if (imp._manualImageFile) {
+      btn.textContent = 'Upload image…';
+      imageUrl = await uploadImageToStorage(imp._manualImageFile);
+    } else if (imageUrl && !imageUrl.startsWith('blob:')) {
+      btn.textContent = 'Upload image…';
+      imageUrl = await uploadImageToStorage(imageUrl);
+    }
+  } catch(e) {
+    console.warn('Image upload failed, keeping URL:', e.message);
+  }
 
   const p = {
-    name:           name,
-    imageUrl:       imp.imageUrl || null,
-    brief:          imp._pendingBrief   || [],
-    graphic:        imp._pendingGraphic || [],
-    desc:           imp._pendingDesc    || '',
-    sourceUrl:      document.getElementById('proj-url')?.value || null,
+    name:      name,
+    imageUrl:  imageUrl,
+    brief:     imp._pendingBrief   || [],
+    graphic:   imp._pendingGraphic || [],
+    desc:      imp._pendingDesc    || '',
+    sourceUrl: document.getElementById('proj-url')?.value || null,
   };
 
   try {
+    btn.textContent = 'Sauvegarde…';
     const rows = await saveToSupabase(p);
     const saved = Array.isArray(rows) ? rows[0] : rows;
     const localP = {
@@ -2222,7 +2286,7 @@ async function saveProject() {
       name: p.name, client: p.name,
       agency: p.brief[0] || '—', year: new Date().getFullYear(),
       symbol: '◈', bg: '#f0ede8', color: '#5a5650',
-      imageUrl: p.imageUrl, brief: p.brief, graphic: p.graphic,
+      imageUrl: imageUrl, brief: p.brief, graphic: p.graphic,
       desc: p.desc, stats: [],
     };
     DB.unshift(localP);
@@ -2274,7 +2338,7 @@ async function deleteProject(id) {
 
 
 function resetImporter() {
-  imp.imageUrl = null; imp._imageFromUrl = null;
+  imp.imageUrl = null; imp._imageFromUrl = null; imp._manualImageFile = null;
   imp._pendingBrief = []; imp._pendingGraphic = []; imp._pendingDesc = ''; imp._pendingLettre = null;
   const urlEl = document.getElementById('proj-url');
   if (urlEl) urlEl.value = '';
