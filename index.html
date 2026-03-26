@@ -1389,6 +1389,14 @@ function closePanel() {
 }
 
 
+// ── Navigation vues ──
+function switchView(view, btn) {
+  document.querySelectorAll('.hnav').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('view-explorer').style.display = view === 'explorer' ? 'block' : 'none';
+  document.getElementById('view-importer').style.display = view === 'importer' ? 'block' : 'none';
+}
+
 // ── Import depuis URL ──
 const imp = {
   imageUrl: null, _imageFromUrl: null,
@@ -1423,11 +1431,16 @@ async function importFromUrl() {
     statusEl.innerHTML = '<div class="imp-res-status-dot"></div>Telechargement de la page...';
     setFetchStatus('loading', 'Telechargement de la page...');
 
-    const proxyResp = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url));
-    if (!proxyResp.ok) throw new Error('Impossible de recuperer la page.');
-    const proxyData = await proxyResp.json();
-    const html = proxyData.contents || '';
-    if (!html || html.length < 100) throw new Error('Page vide ou inaccessible.');
+    let html = '';
+    const proxies = [
+      () => fetch('https://corsproxy.io/?' + encodeURIComponent(url)).then(r => r.ok ? r.text() : Promise.reject()),
+      () => fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url)).then(r => r.ok ? r.json().then(d => d.contents) : Promise.reject()),
+      () => fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url)).then(r => r.ok ? r.text() : Promise.reject()),
+    ];
+    for (const proxy of proxies) {
+      try { html = await proxy(); if (html && html.length > 200) break; } catch(e) { continue; }
+    }
+    if (!html || html.length < 100) throw new Error('Impossible de recuperer la page — le site bloque peut-etre les acces externes.');
 
     const imgUrls = [...html.matchAll(/src=["']([^"']+\.(jpg|jpeg|png|gif|webp|svg)[^"']*)/gi)]
       .map(m => m[1])
