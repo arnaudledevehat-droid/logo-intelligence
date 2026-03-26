@@ -1102,6 +1102,63 @@
 // ── BASE DE DONNÉES FICTIVE (représentative) ──
 const DB = [];
 
+// ── Supabase ──
+const SUPA_URL = 'https://pvpilhguiwchrzpfsecq.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB2cGlsaGd1aXdjaHJ6cGZzZWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MjkwNjAsImV4cCI6MjA5MDEwNTA2MH0.k2rLT7KTFwk8nDVF6zo20ayD4QEQY_CblaAtMDVhtKA';
+const SUPA_HEADERS = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' };
+
+async function supaFetch(path, opts = {}) {
+  const r = await fetch(SUPA_URL + path, { ...opts, headers: { ...SUPA_HEADERS, ...(opts.headers||{}) } });
+  if (!r.ok) { const e = await r.json().catch(()=>{}); throw new Error(e?.message || 'Supabase error ' + r.status); }
+  return r.status === 204 ? null : r.json();
+}
+
+async function loadLogosFromSupabase() {
+  try {
+    const rows = await supaFetch('/rest/v1/logos?select=*&order=created_at.desc');
+    DB.length = 0;
+    (rows || []).forEach(row => {
+      DB.push({
+        id:       row.id,
+        name:     row.name,
+        client:   row.name,
+        agency:   (row.brief || [])[0] || '—',
+        year:     new Date(row.created_at).getFullYear(),
+        symbol:   '◈', bg: '#f0ede8', color: '#5a5650',
+        imageUrl: row.image_url,
+        brief:    Array.isArray(row.brief)   ? row.brief   : [],
+        graphic:  Array.isArray(row.graphic) ? row.graphic : [],
+        desc:     row.description || '',
+        stats:    [],
+      });
+    });
+    updateHeaderCount();
+    showAllProjects();
+    renderSourceList();
+  } catch(e) {
+    console.warn('Supabase load error:', e.message);
+    showAllProjects();
+  }
+}
+
+async function saveToSupabase(p) {
+  return supaFetch('/rest/v1/logos', {
+    method: 'POST',
+    headers: { 'Prefer': 'return=representation' },
+    body: JSON.stringify({
+      name:        p.name,
+      image_url:   p.imageUrl || null,
+      brief:       p.brief,
+      graphic:     p.graphic,
+      description: p.desc,
+      source_url:  p.sourceUrl || null,
+    }),
+  });
+}
+
+async function deleteFromSupabase(id) {
+  return supaFetch('/rest/v1/logos?id=eq.' + id, { method: 'DELETE' });
+}
 
 // ── État de l'application ──
 const state = {
@@ -1121,17 +1178,19 @@ function showAllProjects() {
     document.getElementById('state-empty').style.display = 'flex';
     document.getElementById('state-empty-title').textContent = 'Aucun projet importé';
     document.getElementById('state-empty-sub').textContent = 'Importe des projets via l\'onglet "Importer" pour les voir apparaître ici.';
+    document.getElementById('logo-grid').classList.remove('visible');
+    document.getElementById('results-bar').classList.remove('visible');
     return;
   }
   document.getElementById('state-empty').style.display = 'none';
-  const results = DB.map(l => ({ ...l, score: 100 }));
-  state.results = results;
+  state.results = DB.map(l => ({ ...l, score: 100 }));
   renderResultsBar();
   renderGrid();
 }
 
-// Afficher tous les projets au chargement si DB non vide
-showAllProjects();
+// Charger depuis Supabase au démarrage
+loadLogosFromSupabase();
+
 
 
 document.querySelectorAll('.tag').forEach(tag => {
@@ -1582,33 +1641,43 @@ function addTag(type) {
   container.insertBefore(tag, addBtn);
 }
 
-function saveProject() {
-  const imgUrl = imp.imageUrl;
-  const name   = document.getElementById('imp-res-name').textContent || 'Sans titre';
+async function saveProject() {
+  const btn = document.querySelector('.btn-save');
+  btn.textContent = 'Sauvegarde…';
+  btn.disabled = true;
 
-  // Construire un objet compatible avec le format DB de l'explorateur
+  const name   = document.getElementById('imp-res-name').textContent || 'Sans titre';
+  const meta   = document.getElementById('imp-res-meta').textContent.split(' · ');
+
   const p = {
-    id:      Date.now(),
     name:    name,
-    client:  name,
-    agency:  document.getElementById('imp-res-meta').textContent.split(' · ')[0] || '—',
-    year:    parseInt(document.getElementById('imp-res-meta').textContent.split(' · ')[2]) || new Date().getFullYear(),
-    // Affichage : image si dispo, sinon symbole générique
-    symbol:  '◈',
-    bg:      '#f0ede8',
-    color:   '#5a5650',
-    imageUrl: imgUrl,
+    imageUrl: imp.imageUrl || null,
     brief:   imp._pendingBrief   || [],
     graphic: imp._pendingGraphic || [],
     desc:    imp._pendingDesc    || '',
-    stats:   [],
+    sourceUrl: document.getElementById('proj-url')?.value || null,
   };
 
-  imp.projects.unshift(p);
-  DB.unshift(p);  // ← ajouter aussi à la base de l'explorateur
-  updateHeaderCount();
-  renderSourceList();
-  resetImporter();
+  try {
+    const rows = await saveToSupabase(p);
+    const saved = Array.isArray(rows) ? rows[0] : rows;
+    const localP = {
+      id: saved?.id || Date.now(),
+      name: p.name, client: p.name,
+      agency: p.brief[0] || '—', year: new Date().getFullYear(),
+      symbol: '◈', bg: '#f0ede8', color: '#5a5650',
+      imageUrl: p.imageUrl, brief: p.brief, graphic: p.graphic, desc: p.desc, stats: [],
+    };
+    DB.unshift(localP);
+    imp.projects.unshift(localP);
+    updateHeaderCount();
+    renderSourceList();
+    resetImporter();
+  } catch(e) {
+    alert('Erreur sauvegarde : ' + e.message);
+    btn.textContent = 'Ajouter à la base →';
+    btn.disabled = false;
+  }
 }
 
 function updateHeaderCount() {
@@ -1619,21 +1688,33 @@ function updateHeaderCount() {
 function renderSourceList() {
   const list = document.getElementById('imp-sources');
   document.getElementById('imp-count-label').textContent = '(' + imp.projects.length + ')';
-  if (!imp.projects.length) { list.innerHTML = '<div class="imp-empty-list">Aucun projet encore importe</div>'; return; }
+  if (!imp.projects.length) {
+    list.innerHTML = '<div class="imp-empty-list">Aucun projet encore importé</div>';
+    return;
+  }
   list.innerHTML = imp.projects.map(p =>
     '<div class="imp-source-row" id="src-' + p.id + '">' +
     '<div class="imp-source-thumb">' + (p.imageUrl ? '<img src="' + p.imageUrl + '" alt="' + p.name + '">' : '<span style="font-size:18px;color:var(--ink-3)">◈</span>') + '</div>' +
-    '<div class="imp-source-info"><div class="imp-source-name">' + p.name + '</div><div class="imp-source-meta">' + p.brief.slice(0,2).join(' · ') + '</div></div>' +
-    '<button class="imp-source-del" onclick="deleteProject(' + p.id + ')" title="Supprimer">×</button>' +
+    '<div class="imp-source-info"><div class="imp-source-name">' + p.name + '</div><div class="imp-source-meta">' + (p.brief||[]).slice(0,2).join(' · ') + '</div></div>' +
+    '<button class="imp-source-del" onclick="deleteProject(\'' + p.id + '\')" title="Supprimer">×</button>' +
     '</div>'
   ).join('');
 }
 
-function deleteProject(id) {
-  if (!confirm('Supprimer ce projet ?')) return;
-  imp.projects = imp.projects.filter(p => p.id !== id);
-  renderSourceList();
+async function deleteProject(id) {
+  if (!confirm('Supprimer ce projet de la base ?')) return;
+  try {
+    await deleteFromSupabase(id);
+    imp.projects = imp.projects.filter(p => p.id != id);
+    const dbIdx = DB.findIndex(p => p.id == id);
+    if (dbIdx > -1) DB.splice(dbIdx, 1);
+    updateHeaderCount();
+    renderSourceList();
+  } catch(e) {
+    alert('Erreur suppression : ' + e.message);
+  }
 }
+
 
 function resetImporter() {
   imp.imageUrl = null; imp._imageFromUrl = null;
