@@ -1176,6 +1176,7 @@ async function loadLogosFromSupabase() {
         brief:    Array.isArray(row.brief)   ? row.brief   : [],
         graphic:  Array.isArray(row.graphic) ? row.graphic : [],
         desc:     row.description || '',
+        lettreInitiale: row.lettre_initiale || null,
         stats:    [],
       });
     });
@@ -1193,12 +1194,13 @@ async function saveToSupabase(p) {
     method: 'POST',
     headers: { 'Prefer': 'return=representation' },
     body: JSON.stringify({
-      name:        p.name,
-      image_url:   p.imageUrl || null,
-      brief:       p.brief,
-      graphic:     p.graphic,
-      description: p.desc,
-      source_url:  p.sourceUrl || null,
+      name:            p.name,
+      image_url:       p.imageUrl || null,
+      brief:           p.brief,
+      graphic:         p.graphic,
+      description:     p.desc,
+      source_url:      p.sourceUrl || null,
+      lettre_initiale: p.lettreInitiale || null,
     }),
   });
 }
@@ -1328,7 +1330,9 @@ function computeScore(logo) {
   }
   if (letter) {
     total += 2;
-    if (logo.name && logo.name.toUpperCase().startsWith(letter)) score += 2;
+    // Matcher sur la lettre initiale détectée visuellement, OU sur la première lettre du nom
+    const logoLettre = logo.lettreInitiale || (logo.name ? logo.name[0].toUpperCase() : null);
+    if (logoLettre === letter) score += 2;
   }
 
   if (total === 0) return 100; // pas de filtre = tout correspond
@@ -1351,9 +1355,12 @@ function runSearch() {
 
     let results = DB.map(logo => ({ ...logo, score: computeScore(logo) }));
 
-    // Filtrage strict lettre (doit commencer par)
+    // Filtrage strict lettre — utilise lettreInitiale détectée visuellement
     if (state.selectedLetter) {
-      results = results.filter(l => l.name && l.name.toUpperCase().startsWith(state.selectedLetter));
+      results = results.filter(l => {
+        const logoLettre = l.lettreInitiale || (l.name ? l.name[0].toUpperCase() : null);
+        return logoLettre === state.selectedLetter;
+      });
     }
 
     if (hasFilters) {
@@ -1643,6 +1650,9 @@ async function importFromUrl() {
       '\nGRAPHIQUE - Texte-Symbole : ' + VOCAB_GRAPHIQUE.texte_symbole.join(', ') +
       '\nGRAPHIQUE - Style : ' + VOCAB_GRAPHIQUE.style.join(', ') +
       '\nGRAPHIQUE - Symbolisme : ' + VOCAB_GRAPHIQUE.symbolisme.join(', ') +
+      '\n\nQUESTION IMPORTANTE : La premiere lettre du nom du client ou de la marque a-t-elle ete utilisee graphiquement dans le logo (comme element visuel principal ou secondaire) ?' +
+      '\nExemples : un "C" stylise pour une marque commencant par C, un monogramme, une lettre qui forme une silhouette...' +
+      '\nSi oui, indique cette lettre dans "lettre_initiale". Si non, mets null.' +
       '\n\nReponds UNIQUEMENT en JSON valide, sans texte avant ou apres :' +
       '\n{' +
       '\n  "nom_projet": "nom de la marque ou du projet",' +
@@ -1650,6 +1660,7 @@ async function importFromUrl() {
       '\n  "agence": "nom de l\'agence ou studio",' +
       '\n  "annee": 2024,' +
       '\n  "image_logo_url": "URL directe de l\'image principale du logo parmi celles listees. Null si aucune ne convient.",' +
+      '\n  "lettre_initiale": "C",' +
       '\n  "brief": {' +
       '\n    "industrie": "valeur exacte du vocabulaire industrie",' +
       '\n    "valeurs": ["valeur exacte 1", "valeur exacte 2", "valeur exacte 3"],' +
@@ -1690,6 +1701,7 @@ async function importFromUrl() {
     try { ai = JSON.parse(clean); }
     catch(e) { const m = clean.match(/\{[\s\S]*\}/); if (m) ai = JSON.parse(m[0]); else throw new Error('Reponse IA non parseable'); }
 
+    // Stocker l'image trouvée
     if (ai.image_logo_url && ai.image_logo_url !== 'null' && ai.image_logo_url !== null) {
       imp._imageFromUrl = ai.image_logo_url;
       imp.imageUrl = ai.image_logo_url;
@@ -1697,12 +1709,60 @@ async function importFromUrl() {
         '<img src="' + ai.image_logo_url + '" style="width:100%;height:100%;object-fit:contain;padding:8px" onerror="this.parentNode.innerHTML=\'<div style=font-size:28px;color:var(--ink-3)>◈</div>\'">';
     }
 
+    // ── Lettre initiale : priorité au JSON, fallback vision ──
+    let lettreInitiale = null;
+
+    // 1. Depuis le JSON (Claude a le contexte textuel complet)
+    if (ai.lettre_initiale && /^[A-Z]$/i.test(ai.lettre_initiale)) {
+      lettreInitiale = ai.lettre_initiale.toUpperCase();
+    }
+
+    // 2. Fallback : analyse vision de l'image si pas trouvé dans le texte
+    if (!lettreInitiale && ai.image_logo_url && ai.image_logo_url !== 'null') {
+      try {
+        statusEl.innerHTML = '<div class="imp-res-status-dot"></div>Analyse visuelle du logo...';
+        const visionResp = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true',
+          },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 10,
+            messages: [{
+              role: 'user',
+              content: [
+                { type: 'image', source: { type: 'url', url: ai.image_logo_url } },
+                { type: 'text', text: 'La forme graphique principale de ce logo est-elle visuellement construite a partir d\'une lettre de l\'alphabet ? Si oui, reponds uniquement cette lettre en majuscule (ex: C). Si non, reponds: non.' }
+              ]
+            }],
+          }),
+        });
+        if (visionResp.ok) {
+          const visionData = await visionResp.json();
+          const visionText = (visionData.content?.find(b => b.type === 'text')?.text || '').trim().toUpperCase();
+          if (/^[A-Z]$/.test(visionText)) lettreInitiale = visionText;
+        }
+      } catch(e) { /* optionnel */ }
+    }
+
+    // Stocker la lettre
+    imp._pendingLettre = lettreInitiale;
+
     const briefAttrs = [
       ai.brief?.industrie,
       ...(ai.brief?.valeurs || []),
       ai.brief?.positionnement,
+      lettreInitiale ? 'Lettre initiale : ' + lettreInitiale : null,
       ai.brief?.cible, // rétrocompat
     ].filter(Boolean);
+
+    // Stocker la lettre initiale séparément pour le matching de recherche
+    imp._lettreInitiale = lettreInitiale;
+
     // Extraire tous les attributs graphiques par catégorie (nouvelle structure)
     const g = ai.graphique || {};
     const graphicAttrs = [
@@ -1726,7 +1786,10 @@ async function importFromUrl() {
 
     document.getElementById('imp-res-name').textContent = ai.nom_projet || 'Projet';
     document.getElementById('imp-res-meta').textContent = [ai.agence, ai.client, ai.annee].filter(Boolean).join(' · ');
-    document.getElementById('imp-res-brief').innerHTML   = briefAttrs.map(a => '<span class="imp-res-tag b">' + a + '</span>').join('') + '<button class="imp-tag-add" onclick="addTag(\'brief\')">+ Ajouter</button>';
+    document.getElementById('imp-res-brief').innerHTML =
+      briefAttrs.map(a => '<span class="imp-res-tag b">' + a + '</span>').join('') +
+      (imp._pendingLettre ? '<span class="imp-res-tag b" style="background:#f0ede8;color:#5a5650;border:1px solid #d8d3ca">Lettre : ' + imp._pendingLettre + '</span>' : '') +
+      '<button class="imp-tag-add" onclick="addTag(\'brief\')">+ Ajouter</button>';
     document.getElementById('imp-res-graphic').innerHTML = graphicAttrs.map(a => '<span class="imp-res-tag g">' + a + '</span>').join('') + '<button class="imp-tag-add" onclick="addTag(\'graphic\')">+ Ajouter</button>';
 
     if (ai.description) {
@@ -1775,12 +1838,13 @@ async function saveProject() {
   const meta   = document.getElementById('imp-res-meta').textContent.split(' · ');
 
   const p = {
-    name:    name,
-    imageUrl: imp.imageUrl || null,
-    brief:   imp._pendingBrief   || [],
-    graphic: imp._pendingGraphic || [],
-    desc:    imp._pendingDesc    || '',
-    sourceUrl: document.getElementById('proj-url')?.value || null,
+    name:           name,
+    imageUrl:       imp.imageUrl || null,
+    brief:          imp._pendingBrief   || [],
+    graphic:        imp._pendingGraphic || [],
+    desc:           imp._pendingDesc    || '',
+    sourceUrl:      document.getElementById('proj-url')?.value || null,
+    lettreInitiale: imp._pendingLettre || null,
   };
 
   try {
@@ -1791,7 +1855,8 @@ async function saveProject() {
       name: p.name, client: p.name,
       agency: p.brief[0] || '—', year: new Date().getFullYear(),
       symbol: '◈', bg: '#f0ede8', color: '#5a5650',
-      imageUrl: p.imageUrl, brief: p.brief, graphic: p.graphic, desc: p.desc, stats: [],
+      imageUrl: p.imageUrl, brief: p.brief, graphic: p.graphic,
+      desc: p.desc, lettreInitiale: p.lettreInitiale, stats: [],
     };
     DB.unshift(localP);
     imp.projects.unshift(localP);
@@ -1843,7 +1908,8 @@ async function deleteProject(id) {
 
 function resetImporter() {
   imp.imageUrl = null; imp._imageFromUrl = null;
-  imp._pendingBrief = []; imp._pendingGraphic = []; imp._pendingDesc = '';
+  imp._pendingBrief = []; imp._pendingGraphic = []; imp._pendingDesc = ''; imp._pendingLettre = null;
+  imp._lettreInitiale = null;
   const urlEl = document.getElementById('proj-url');
   if (urlEl) urlEl.value = '';
   const fs = document.getElementById('imp-fetch-status');
