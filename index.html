@@ -386,7 +386,106 @@
   .card-hover-tag.b { background: rgba(29,107,92,0.4); color: #9fe1cb; }
   .card-hover-tag.g { background: rgba(26,63,140,0.4); color: #b5d4f4; }
 
-  .card-del-btn {
+  .card-edit-btn {
+    position: absolute; bottom: 7px; right: 7px;
+    font-size: 10.5px; font-weight: 600; font-family: 'Instrument Sans', sans-serif;
+    padding: 4px 10px; border-radius: 3px;
+    background: rgba(247,244,239,0.15); color: #f7f4ef;
+    border: 1px solid rgba(247,244,239,0.25);
+    cursor: pointer; display: none;
+    transition: background 0.15s; z-index: 10;
+    letter-spacing: 0.02em;
+  }
+  .logo-card:hover .card-edit-btn { display: block; }
+  .card-edit-btn:hover { background: rgba(247,244,239,0.28); }
+
+  /* Panel édition */
+  .panel { overflow-y: auto; }
+  .panel-edit-header {
+    padding: 1.25rem 1.25rem 0.75rem;
+    border-bottom: 1px solid var(--rule);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .panel-edit-title { font-size: 14px; font-weight: 600; color: var(--ink); }
+  .panel-edit-subtitle { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+
+  .panel-edit-body { padding: 1.25rem; display: flex; flex-direction: column; gap: 1.25rem; }
+
+  .panel-edit-section { display: flex; flex-direction: column; gap: 8px; }
+  .panel-edit-label {
+    font-size: 9.5px; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+
+  /* Image éditable */
+  .panel-img-zone {
+    height: 160px; background: var(--paper-2);
+    border: 1px solid var(--rule); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden; cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .panel-img-zone:hover { border-color: var(--ink-3); }
+  .panel-img-zone img { width: 100%; height: 100%; object-fit: contain; padding: 16px; }
+  .panel-img-overlay {
+    position: absolute; inset: 0;
+    background: rgba(20,18,16,0.55);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.15s;
+    font-size: 12px; font-weight: 600; color: white;
+    letter-spacing: 0.04em;
+  }
+  .panel-img-zone:hover .panel-img-overlay { opacity: 1; }
+
+  /* Tags éditables */
+  .panel-edit-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .panel-edit-tag {
+    font-size: 11.5px; padding: 3px 8px 3px 10px;
+    border-radius: 3px; display: flex; align-items: center; gap: 5px;
+    cursor: default;
+  }
+  .panel-edit-tag.b { background: var(--blue-pale); color: var(--blue); }
+  .panel-edit-tag.g { background: var(--teal-pale); color: var(--teal); }
+  .panel-edit-tag-x {
+    font-size: 13px; cursor: pointer; opacity: 0.5; line-height: 1;
+    transition: opacity 0.1s;
+  }
+  .panel-edit-tag-x:hover { opacity: 1; }
+  .panel-edit-add {
+    font-size: 11.5px; padding: 3px 10px; border-radius: 3px;
+    border: 1px dashed var(--rule); color: var(--ink-3);
+    background: none; cursor: pointer; font-family: 'Instrument Sans', sans-serif;
+    transition: all 0.15s;
+  }
+  .panel-edit-add:hover { border-color: var(--ink-3); color: var(--ink); }
+
+  .panel-edit-input {
+    width: 100%; padding: 7px 10px;
+    border: 1px solid var(--rule); border-radius: 6px;
+    font-family: 'Instrument Sans', sans-serif; font-size: 13px;
+    background: var(--paper); color: var(--ink); outline: none;
+    transition: border-color 0.15s;
+  }
+  .panel-edit-input:focus { border-color: var(--ink-3); }
+
+  .panel-edit-actions {
+    display: flex; gap: 8px; padding: 0 1.25rem 1.25rem;
+  }
+  .panel-edit-save {
+    flex: 1; font-family: 'Instrument Sans', sans-serif;
+    font-size: 13px; font-weight: 600;
+    padding: 10px; background: var(--ink); color: var(--paper);
+    border: none; border-radius: 6px; cursor: pointer; transition: opacity 0.15s;
+  }
+  .panel-edit-save:hover { opacity: 0.82; }
+  .panel-edit-cancel {
+    font-family: 'Instrument Sans', sans-serif; font-size: 13px;
+    padding: 10px 14px; background: none; color: var(--ink-2);
+    border: 1px solid var(--rule); border-radius: 6px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .panel-edit-cancel:hover { border-color: var(--ink-3); }
+
     position: absolute; top: 7px; left: 7px;
     width: 24px; height: 24px; border-radius: 50%;
     background: rgba(20,18,16,0.7); color: #f7f4ef;
@@ -1133,11 +1232,7 @@
 
 <!-- ── OVERLAY + PANEL ── -->
 <div class="overlay" id="overlay" onclick="closePanel()"></div>
-<div class="panel" id="panel">
-  <button class="panel-close" onclick="closePanel()">✕</button>
-  <div class="panel-thumb" id="panel-thumb"></div>
-  <div class="panel-body" id="panel-body"></div>
-</div>
+<div class="panel" id="panel"></div>
 
 </div><!-- /view-explorer -->
 
@@ -1517,6 +1612,7 @@ function renderGrid() {
         (hasFilters ? '<div class="sim-pill">' + logo.score + '%</div>' : '') +
         '<div class="match-bar" style="width:' + logo.score + '%;background:' + barColor + '"></div>' +
         deleteBtn +
+        '<button class="card-edit-btn" onclick="event.stopPropagation();openEditPanel(\'' + logo.id + '\')">Éditer</button>' +
       '</div>';
 
     card.addEventListener('click', () => openPanel(logo));
@@ -1545,92 +1641,203 @@ async function deleteFromExplorer(id, btn) {
 }
 
 
-// ── Panel détail ──
-function openPanel(logo) {
-  state.activeCard = logo;
+// ── Panel édition ──
+let editLogo = null; // logo en cours d'édition
 
-  // Calculer les attributs matchés
-  const sel = state.selected;
-  const allSel = [
-    ...sel.industrie, ...sel.valeurs, ...sel.cible, ...sel.graphique
-  ];
-  const matchedBrief   = logo.brief.filter(a => allSel.includes(a));
-  const matchedGraphic = logo.graphic.filter(a => allSel.includes(a));
-  const otherBrief     = logo.brief.filter(a => !allSel.includes(a));
-  const otherGraphic   = logo.graphic.filter(a => !allSel.includes(a));
+function openPanel(logo) { openEditPanel(logo.id); }
 
-  // Thumb
-  const thumb = document.getElementById('panel-thumb');
-  thumb.style.background = logo.bg;
-  thumb.innerHTML = logo.imageUrl
-    ? `<img src="${logo.imageUrl}" style="width:100%;height:100%;object-fit:contain;padding:24px">`
-    : `<div class="panel-symbol" style="color:${logo.color}">${logo.symbol}</div>`;
+function openEditPanel(id) {
+  const logo = DB.find(l => l.id == id);
+  if (!logo) return;
+  editLogo = JSON.parse(JSON.stringify(logo)); // copie profonde
+
+  const panel = document.getElementById('panel');
+  panel.innerHTML = '';
+
+  // Header
+  const hdr = document.createElement('div');
+  hdr.className = 'panel-edit-header';
+  hdr.innerHTML =
+    '<button class="panel-close" onclick="closePanel()" style="position:static;margin:0">✕</button>' +
+    '<div>' +
+      '<div class="panel-edit-title">Éditer le projet</div>' +
+      '<div class="panel-edit-subtitle">' + logo.name + '</div>' +
+    '</div>' +
+    '<div style="width:26px"></div>';
+  panel.appendChild(hdr);
 
   // Body
-  const body = document.getElementById('panel-body');
+  const body = document.createElement('div');
+  body.className = 'panel-edit-body';
 
-  const makeTag = (a, type, isMatch) => {
-    const cls = isMatch ? 'match' : type;
-    return `<span class="panel-tag ${cls}">${isMatch ? '✓ ' : ''}${a}</span>`;
-  };
+  // Image
+  body.innerHTML +=
+    '<div class="panel-edit-section">' +
+      '<div class="panel-edit-label">Image du logo</div>' +
+      '<div class="panel-img-zone" id="edit-img-zone" onclick="triggerEditImg()">' +
+        (logo.imageUrl
+          ? '<img id="edit-img-preview" src="' + logo.imageUrl + '">'
+          : '<div style="font-size:28px;color:var(--ink-3)">⬡</div>') +
+        '<div class="panel-img-overlay">Changer l\'image</div>' +
+      '</div>' +
+      '<input type="file" id="edit-img-input" accept="image/*" style="display:none" onchange="onEditImgChange(this)">' +
+      '<input type="text" class="panel-edit-input" id="edit-img-url" placeholder="…ou coller une URL d\'image" value="' + (logo.imageUrl||'') + '" oninput="onEditImgUrl(this.value)" style="font-size:11.5px;margin-top:6px">' +
+    '</div>';
 
-  const statRows = (logo.stats || []).map(([label, pct]) => `
-    <div class="mini-stat-row">
-      <div class="mini-stat-label">${label}</div>
-      <div class="mini-stat-track"><div class="mini-stat-fill" style="width:0%" data-pct="${pct}"></div></div>
-      <div class="mini-stat-pct">${pct}%</div>
-    </div>`).join('');
+  // Nom
+  body.innerHTML +=
+    '<div class="panel-edit-section">' +
+      '<div class="panel-edit-label">Nom du projet</div>' +
+      '<input class="panel-edit-input" id="edit-name" value="' + esc(logo.name||'') + '">' +
+    '</div>';
 
-  body.innerHTML = `
-    <div class="panel-name">${logo.name}</div>
-    <div class="panel-agency">${logo.agency} &nbsp;·&nbsp; ${logo.year} &nbsp;·&nbsp; ${logo.client}</div>
+  // Agence + Année
+  body.innerHTML +=
+    '<div style="display:flex;gap:8px">' +
+      '<div class="panel-edit-section" style="flex:1">' +
+        '<div class="panel-edit-label">Agence / Studio</div>' +
+        '<input class="panel-edit-input" id="edit-agency" value="' + esc(logo.agency||'') + '">' +
+      '</div>' +
+      '<div class="panel-edit-section" style="width:80px">' +
+        '<div class="panel-edit-label">Année</div>' +
+        '<input class="panel-edit-input" id="edit-year" type="number" value="' + (logo.year||'') + '" style="text-align:center">' +
+      '</div>' +
+    '</div>';
 
-    <div class="panel-sim">
-      <div class="panel-sim-score">${logo.score}%</div>
-      <div class="panel-sim-label">de similarité<br>avec ton brief</div>
-    </div>
+  // Attributs brief
+  body.innerHTML +=
+    '<div class="panel-edit-section">' +
+      '<div class="panel-edit-label">Attributs de brief (INPUT)</div>' +
+      '<div class="panel-edit-tags" id="edit-brief-tags">' +
+        (editLogo.brief||[]).map(a => editTag(a,'b','brief')).join('') +
+        '<button class="panel-edit-add" onclick="addEditTag(\'brief\')">+ Ajouter</button>' +
+      '</div>' +
+    '</div>';
 
-    <div class="panel-section">
-      <div class="panel-section-label">Éléments du brief (INPUT)</div>
-      <div class="panel-tags">
-        ${matchedBrief.map(a => makeTag(a,'in',true)).join('')}
-        ${otherBrief.map(a => makeTag(a,'in',false)).join('')}
-      </div>
-    </div>
+  // Attributs graphiques
+  body.innerHTML +=
+    '<div class="panel-edit-section">' +
+      '<div class="panel-edit-label">Attributs graphiques (OUTPUT)</div>' +
+      '<div class="panel-edit-tags" id="edit-graphic-tags">' +
+        (editLogo.graphic||[]).map(a => editTag(a,'g','graphic')).join('') +
+        '<button class="panel-edit-add" onclick="addEditTag(\'graphic\')">+ Ajouter</button>' +
+      '</div>' +
+    '</div>';
 
-    <div class="panel-section">
-      <div class="panel-section-label">Attributs graphiques (OUTPUT)</div>
-      <div class="panel-tags">
-        ${matchedGraphic.map(a => makeTag(a,'out',true)).join('')}
-        ${otherGraphic.map(a => makeTag(a,'out',false)).join('')}
-      </div>
-    </div>
+  panel.appendChild(body);
 
-    <div class="panel-section">
-      <div class="panel-section-label">Pourquoi ce logo correspond</div>
-      <div class="match-reasons">${logo.desc}</div>
-    </div>
-
-    <div class="panel-section">
-      <div class="panel-section-label">Fréquence des attributs graphiques utilisés<br>pour ce type de brief (base entière)</div>
-      <div class="mini-stats">${statRows}</div>
-    </div>`;
+  // Actions
+  const acts = document.createElement('div');
+  acts.className = 'panel-edit-actions';
+  acts.innerHTML =
+    '<button class="panel-edit-save" onclick="saveEditPanel()">Enregistrer</button>' +
+    '<button class="panel-edit-cancel" onclick="closePanel()">Annuler</button>';
+  panel.appendChild(acts);
 
   document.getElementById('overlay').classList.add('open');
-  document.getElementById('panel').classList.add('open');
+  panel.classList.add('open');
+}
 
-  // Animer les barres après rendu
-  setTimeout(() => {
-    body.querySelectorAll('.mini-stat-fill').forEach(bar => {
-      bar.style.width = bar.dataset.pct + '%';
+function esc(s) { return s.replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+function editTag(val, cls, type) {
+  return '<span class="panel-edit-tag ' + cls + '">' + val +
+    '<span class="panel-edit-tag-x" onclick="removeEditTag(\'' + type + '\',\'' + val.replace(/'/g,"\\'") + '\')">×</span>' +
+    '</span>';
+}
+
+function removeEditTag(type, val) {
+  if (type === 'brief') editLogo.brief = editLogo.brief.filter(v => v !== val);
+  else editLogo.graphic = editLogo.graphic.filter(v => v !== val);
+  refreshEditTags(type);
+}
+
+function addEditTag(type) {
+  const val = prompt(type === 'brief' ? 'Ajouter un attribut de brief :' : 'Ajouter un attribut graphique :');
+  if (!val || !val.trim()) return;
+  if (type === 'brief') editLogo.brief.push(val.trim());
+  else editLogo.graphic.push(val.trim());
+  refreshEditTags(type);
+}
+
+function refreshEditTags(type) {
+  const id = type === 'brief' ? 'edit-brief-tags' : 'edit-graphic-tags';
+  const cls = type === 'brief' ? 'b' : 'g';
+  const arr = type === 'brief' ? editLogo.brief : editLogo.graphic;
+  document.getElementById(id).innerHTML =
+    arr.map(a => editTag(a, cls, type)).join('') +
+    '<button class="panel-edit-add" onclick="addEditTag(\'' + type + '\')">+ Ajouter</button>';
+}
+
+function triggerEditImg() {
+  document.getElementById('edit-img-input').click();
+}
+
+function onEditImgChange(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  editLogo._newImageFile = file;
+  editLogo._newImageUrl  = url;
+  document.getElementById('edit-img-preview') ?
+    document.getElementById('edit-img-preview').src = url :
+    document.getElementById('edit-img-zone').innerHTML = '<img id="edit-img-preview" src="' + url + '"><div class="panel-img-overlay">Changer</div>';
+  document.getElementById('edit-img-url').value = '';
+}
+
+function onEditImgUrl(val) {
+  if (!val.trim()) return;
+  editLogo._newImageUrl  = val.trim();
+  editLogo._newImageFile = null;
+  const zone = document.getElementById('edit-img-zone');
+  zone.innerHTML = '<img id="edit-img-preview" src="' + val.trim() + '" onerror="this.parentNode.innerHTML=\'<div style=font-size:28px;color:var(--ink-3)>⬡</div>\'"><div class="panel-img-overlay">Changer</div>';
+}
+
+async function saveEditPanel() {
+  const btn = document.querySelector('.panel-edit-save');
+  btn.textContent = 'Enregistrement…'; btn.disabled = true;
+
+  // Récupérer les champs texte
+  editLogo.name   = document.getElementById('edit-name').value.trim()   || editLogo.name;
+  editLogo.agency = document.getElementById('edit-agency').value.trim() || editLogo.agency;
+  editLogo.year   = parseInt(document.getElementById('edit-year').value) || editLogo.year;
+
+  // Image : URL saisie ou fichier uploadé
+  const newUrl  = editLogo._newImageUrl;
+  if (newUrl) editLogo.imageUrl = newUrl;
+
+  try {
+    // Mettre à jour Supabase
+    await supaFetch('/rest/v1/logos?id=eq.' + editLogo.id, {
+      method: 'PATCH',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({
+        name:        editLogo.name,
+        image_url:   editLogo.imageUrl || null,
+        brief:       editLogo.brief,
+        graphic:     editLogo.graphic,
+      }),
     });
-  }, 120);
+
+    // Mettre à jour le DB local
+    const idx = DB.findIndex(l => l.id == editLogo.id);
+    if (idx > -1) DB[idx] = { ...DB[idx], ...editLogo };
+
+    closePanel();
+    showAllProjects();
+    renderSourceList();
+  } catch(e) {
+    alert('Erreur : ' + e.message);
+    btn.textContent = 'Enregistrer'; btn.disabled = false;
+  }
 }
 
 function closePanel() {
   document.getElementById('overlay').classList.remove('open');
   document.getElementById('panel').classList.remove('open');
+  editLogo = null;
 }
+
 
 
 // ── Navigation vues ──
