@@ -1305,6 +1305,20 @@ function resetSearch() {
 }
 
 // ── Score de correspondance ──
+function getFirstLetter(logo) {
+  const name = logo.name || '';
+  // Ignorer les mots génériques en début de nom
+  const skip = ['le','la','les','l','the','a','an','groupe','group','studio','agence','société','societe','maison','cabinet'];
+  const words = name.split(/[\s\-–_]+/).filter(w => w.length > 0);
+  for (const word of words) {
+    const clean = word.replace(/[^a-zA-ZÀ-ÿ]/g, '');
+    if (clean.length > 0 && !skip.includes(clean.toLowerCase())) {
+      return clean[0].toUpperCase();
+    }
+  }
+  return name[0] ? name[0].toUpperCase() : null;
+}
+
 function computeScore(logo) {
   const industrie      = document.getElementById('sel-industrie').value;
   const positionnement = document.getElementById('sel-positionnement').value;
@@ -1328,9 +1342,7 @@ function computeScore(logo) {
   }
   if (letter) {
     total += 2;
-    // Matcher sur la lettre initiale détectée visuellement, OU sur la première lettre du nom
-    const logoLettre = logo.lettreInitiale || (logo.name ? logo.name[0].toUpperCase() : null);
-    if (logoLettre === letter) score += 2;
+    if (getFirstLetter(logo) === letter) score += 2;
   }
 
   if (total === 0) return 100; // pas de filtre = tout correspond
@@ -1353,12 +1365,9 @@ function runSearch() {
 
     let results = DB.map(logo => ({ ...logo, score: computeScore(logo) }));
 
-    // Filtrage strict lettre — utilise lettreInitiale détectée visuellement
+    // Filtrage strict lettre
     if (state.selectedLetter) {
-      results = results.filter(l => {
-        const logoLettre = l.lettreInitiale || (l.name ? l.name[0].toUpperCase() : null);
-        return logoLettre === state.selectedLetter;
-      });
+      results = results.filter(l => getFirstLetter(l) === state.selectedLetter);
     }
 
     if (hasFilters) {
