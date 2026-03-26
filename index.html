@@ -130,23 +130,46 @@
 
   .filter-section { display: flex; flex-direction: column; gap: 0.5rem; }
 
-  .filter-label {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    color: var(--ink-2);
-    text-transform: uppercase;
-  }
+  .filter-label { font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em; color: var(--ink-2); text-transform: uppercase; margin-bottom: 6px; }
 
-  .filter-sublabel {
-    font-size: 9.5px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    color: var(--ink-3);
-    text-transform: uppercase;
-    margin-top: 8px;
-    margin-bottom: 2px;
+  .select-wrap { position: relative; }
+  .select-wrap::after { content: '▾'; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--ink-3); font-size: 11px; pointer-events: none; }
+  .filter-select {
+    width: 100%; padding: 8px 28px 8px 10px;
+    border: 1px solid var(--rule); border-radius: 6px;
+    font-family: 'Instrument Sans', sans-serif; font-size: 13px;
+    background: var(--paper); color: var(--ink);
+    appearance: none; outline: none; cursor: pointer;
+    transition: border-color 0.15s;
   }
+  .filter-select:focus { border-color: var(--ink-3); }
+
+  .selected-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px; min-height: 0; }
+  .sel-tag {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11.5px; padding: 3px 8px 3px 10px;
+    background: var(--accent-pale); color: var(--accent);
+    border: 1px solid rgba(200,80,26,.2); border-radius: 20px;
+  }
+  .sel-tag-x { cursor: pointer; font-size: 13px; line-height: 1; opacity: 0.6; }
+  .sel-tag-x:hover { opacity: 1; }
+
+  .letter-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .letter-btn {
+    font-family: 'Instrument Sans', sans-serif; font-size: 12px; font-weight: 500;
+    padding: 5px 0; border: 1px solid var(--rule); border-radius: 4px;
+    background: var(--paper); color: var(--ink-2); cursor: pointer; transition: all 0.12s;
+  }
+  .letter-btn:hover { border-color: var(--ink-3); color: var(--ink); }
+  .letter-btn.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  .btn-reset {
+    font-family: 'Instrument Sans', sans-serif; font-size: 13px;
+    padding: 10px 12px; background: none; color: var(--ink-2);
+    border: 1px solid var(--rule); border-radius: 3px; cursor: pointer; transition: all 0.15s;
+  }
+  .btn-reset:hover { border-color: var(--ink-3); color: var(--ink); }
+
 
   .tags { display: flex; flex-wrap: wrap; gap: 6px; }
 
@@ -841,164 +864,188 @@
   <aside class="sidebar">
     <div class="sidebar-head">
       <div class="sidebar-label">Outil de recherche</div>
-      <div class="sidebar-title">Construis ton brief</div>
+      <div class="sidebar-title">Brief</div>
     </div>
 
     <div class="sidebar-body">
 
+      <!-- Industrie -->
       <div class="filter-section">
-        <div class="filter-label">Industrie</div>
-        <div class="tags" id="tags-industrie">
-          <span class="tag" data-group="industrie" data-val="Finance & Banque">Finance</span>
-          <span class="tag" data-group="industrie" data-val="Luxe & Prestige">Luxe</span>
-          <span class="tag" data-group="industrie" data-val="Technologie">Tech</span>
-          <span class="tag" data-group="industrie" data-val="Santé">Santé</span>
-          <span class="tag" data-group="industrie" data-val="Sport">Sport</span>
-          <span class="tag" data-group="industrie" data-val="Culture & Médias">Culture</span>
-          <span class="tag" data-group="industrie" data-val="Alimentation">Food</span>
-          <span class="tag" data-group="industrie" data-val="Mobilité">Mobilité</span>
-          <span class="tag" data-group="industrie" data-val="Énergie">Énergie</span>
+        <div class="filter-label">Industrie / secteur</div>
+        <div class="select-wrap">
+          <select id="sel-industrie" class="filter-select" onchange="onSelectChange()">
+            <option value="">Toutes les industries</option>
+            <optgroup label="Économie & Finance">
+              <option>Finance & Banque</option>
+              <option>Assurance</option>
+              <option>Immobilier</option>
+              <option>Conseil & Management</option>
+            </optgroup>
+            <optgroup label="Commerce & Distribution">
+              <option>Retail & Grande distribution</option>
+              <option>Luxe & Prestige</option>
+              <option>Mode & Textile</option>
+              <option>Alimentation & Boisson</option>
+              <option>Restauration</option>
+            </optgroup>
+            <optgroup label="Tech & Innovation">
+              <option>Technologie & SaaS</option>
+              <option>Télécommunications</option>
+              <option>Intelligence artificielle</option>
+              <option>Jeux vidéo & Esport</option>
+            </optgroup>
+            <optgroup label="Santé & Sciences">
+              <option>Santé & Médical</option>
+              <option>Pharmacie & Biotech</option>
+              <option>Bien-être & Beauté</option>
+            </optgroup>
+            <optgroup label="Industrie & Énergie">
+              <option>Énergie & Utilities</option>
+              <option>Industrie & Manufacture</option>
+              <option>Construction & BTP</option>
+              <option>Mobilité & Transport</option>
+              <option>Aéronautique & Défense</option>
+            </optgroup>
+            <optgroup label="Culture & Médias">
+              <option>Culture & Médias</option>
+              <option>Sport</option>
+              <option>Tourisme & Hôtellerie</option>
+              <option>Éducation & Formation</option>
+            </optgroup>
+            <optgroup label="Institution & Social">
+              <option>Institutionnel & Public</option>
+              <option>ONG & Association</option>
+              <option>Agriculture & Terroir</option>
+            </optgroup>
+          </select>
         </div>
       </div>
 
-      <div class="divider"></div>
-
+      <!-- Valeurs -->
       <div class="filter-section">
         <div class="filter-label">Valeurs à transmettre</div>
-        <div class="tags" id="tags-valeurs">
-          <span class="tag" data-group="valeurs" data-val="Confiance">Confiance</span>
-          <span class="tag" data-group="valeurs" data-val="Innovation">Innovation</span>
-          <span class="tag" data-group="valeurs" data-val="Solidité">Solidité</span>
-          <span class="tag" data-group="valeurs" data-val="Élégance">Élégance</span>
-          <span class="tag" data-group="valeurs" data-val="Dynamisme">Dynamisme</span>
-          <span class="tag" data-group="valeurs" data-val="Prestige">Prestige</span>
-          <span class="tag" data-group="valeurs" data-val="Tradition">Tradition</span>
-          <span class="tag" data-group="valeurs" data-val="Humanité">Humanité</span>
-          <span class="tag" data-group="valeurs" data-val="Durabilité">Durabilité</span>
+        <div class="selected-tags" id="valeurs-tags"></div>
+        <div class="select-wrap">
+          <select id="sel-valeurs" class="filter-select" onchange="onMultiSelect('valeurs', this)">
+            <option value="">+ Ajouter une valeur</option>
+            <optgroup label="Confiance & Solidité">
+              <option>Confiance</option>
+              <option>Solidité</option>
+              <option>Fiabilité</option>
+              <option>Sécurité</option>
+              <option>Stabilité</option>
+              <option>Transparence</option>
+            </optgroup>
+            <optgroup label="Excellence & Prestige">
+              <option>Prestige</option>
+              <option>Excellence</option>
+              <option>Élégance</option>
+              <option>Raffinement</option>
+              <option>Exclusivité</option>
+            </optgroup>
+            <optgroup label="Énergie & Mouvement">
+              <option>Dynamisme</option>
+              <option>Innovation</option>
+              <option>Audace</option>
+              <option>Performance</option>
+              <option>Conquête</option>
+            </optgroup>
+            <optgroup label="Humanité & Proximité">
+              <option>Humanité</option>
+              <option>Bienveillance</option>
+              <option>Accessibilité</option>
+              <option>Proximité</option>
+              <option>Authenticité</option>
+            </optgroup>
+            <optgroup label="Héritage & Tradition">
+              <option>Tradition</option>
+              <option>Héritage</option>
+              <option>Savoir-faire</option>
+              <option>Artisanat</option>
+            </optgroup>
+            <optgroup label="Engagement & Valeurs">
+              <option>Durabilité</option>
+              <option>Responsabilité</option>
+              <option>Engagement</option>
+              <option>Nature</option>
+            </optgroup>
+            <optgroup label="Simplicité & Clarté">
+              <option>Minimalisme</option>
+              <option>Clarté</option>
+              <option>Efficacité</option>
+              <option>Sobriété</option>
+            </optgroup>
+          </select>
         </div>
       </div>
 
-      <div class="divider"></div>
-
+      <!-- Positionnement -->
       <div class="filter-section">
-        <div class="filter-label">Cible</div>
-        <div class="tags" id="tags-cible">
-          <span class="tag" data-group="cible" data-val="B2B">B2B</span>
-          <span class="tag" data-group="cible" data-val="B2C Grand public">B2C Grand public</span>
-          <span class="tag" data-group="cible" data-val="B2C Premium">B2C Premium</span>
-          <span class="tag" data-group="cible" data-val="Institutionnel">Institutionnel</span>
-          <span class="tag" data-group="cible" data-val="Jeunes actifs">Jeunes actifs</span>
+        <div class="filter-label">Positionnement</div>
+        <div class="select-wrap">
+          <select id="sel-positionnement" class="filter-select" onchange="onSelectChange()">
+            <option value="">Tous les positionnements</option>
+            <option>Haut de gamme</option>
+            <option>Ultra-luxe</option>
+            <option>Premium accessible</option>
+            <option>Grand public</option>
+            <option>Institutionnel</option>
+            <option>Artisanal & Local</option>
+            <option>Engagé & Militant</option>
+            <option>Jeune & Disruptif</option>
+          </select>
         </div>
       </div>
 
-      <div class="divider"></div>
-
-
+      <!-- Première lettre -->
       <div class="filter-section">
-        <div class="filter-label">Attributs graphiques</div>
-
-        <div class="filter-sublabel">Forme</div>
-        <div class="tags" id="tags-graphique">
-          <span class="tag" data-group="graphique" data-val="Cercle">Cercle</span>
-          <span class="tag" data-group="graphique" data-val="Carre / rectangle">Carré</span>
-          <span class="tag" data-group="graphique" data-val="Triangle">Triangle</span>
-          <span class="tag" data-group="graphique" data-val="Polygones">Polygones</span>
-          <span class="tag" data-group="graphique" data-val="Ellipse / ovale">Ellipse</span>
-          <span class="tag" data-group="graphique" data-val="Formes courbes">Formes courbes</span>
-          <span class="tag" data-group="graphique" data-val="Formes fluides / abstraites">Fluide</span>
-          <span class="tag" data-group="graphique" data-val="Silhouettes naturelles">Silhouette</span>
-        </div>
-
-        <div class="filter-sublabel">Structure</div>
-        <div class="tags">
-          <span class="tag" data-group="graphique" data-val="Centre">Centré</span>
-          <span class="tag" data-group="graphique" data-val="Asymetrique">Asymétrique</span>
-          <span class="tag" data-group="graphique" data-val="Rayonnant">Rayonnant</span>
-          <span class="tag" data-group="graphique" data-val="Circulaire / rotatif">Circulaire</span>
-          <span class="tag" data-group="graphique" data-val="Modulaire">Modulaire</span>
-          <span class="tag" data-group="graphique" data-val="Spirale">Spirale</span>
-          <span class="tag" data-group="graphique" data-val="2D plate">2D plate</span>
-          <span class="tag" data-group="graphique" data-val="3D simulee">3D simulée</span>
-        </div>
-
-        <div class="filter-sublabel">Symétrie</div>
-        <div class="tags">
-          <span class="tag" data-group="graphique" data-val="Verticale">Verticale</span>
-          <span class="tag" data-group="graphique" data-val="Horizontale">Horizontale</span>
-          <span class="tag" data-group="graphique" data-val="Radiale">Radiale</span>
-          <span class="tag" data-group="graphique" data-val="Centrale / bilaterale">Bilatérale</span>
-          <span class="tag" data-group="graphique" data-val="Asymetrie equilibree">Asymétrie équilibrée</span>
-        </div>
-
-        <div class="filter-sublabel">Couleur</div>
-        <div class="tags">
-          <span class="tag" data-group="graphique" data-val="Monochrome">Monochrome</span>
-          <span class="tag" data-group="graphique" data-val="Bichromie">Bichromie</span>
-          <span class="tag" data-group="graphique" data-val="Polychrome">Polychrome</span>
-          <span class="tag" data-group="graphique" data-val="Degrade">Dégradé</span>
-          <span class="tag" data-group="graphique" data-val="Chaude">Chaude</span>
-          <span class="tag" data-group="graphique" data-val="Froide">Froide</span>
-          <span class="tag" data-group="graphique" data-val="Sombre">Sombre</span>
-          <span class="tag" data-group="graphique" data-val="Metallique">Métallique</span>
-          <span class="tag" data-group="graphique" data-val="Pastel">Pastel</span>
-        </div>
-
-        <div class="filter-sublabel">Typographie</div>
-        <div class="tags">
-          <span class="tag" data-group="graphique" data-val="Serif">Serif</span>
-          <span class="tag" data-group="graphique" data-val="Sans-serif">Sans-serif</span>
-          <span class="tag" data-group="graphique" data-val="Script">Script</span>
-          <span class="tag" data-group="graphique" data-val="Display">Display</span>
-          <span class="tag" data-group="graphique" data-val="Poids thin">Thin</span>
-          <span class="tag" data-group="graphique" data-val="Poids bold">Bold</span>
-          <span class="tag" data-group="graphique" data-val="Personnalisee">Personnalisée</span>
-        </div>
-
-        <div class="filter-sublabel">Texte / Symbole</div>
-        <div class="tags">
-          <span class="tag" data-group="graphique" data-val="Symbole seul">Symbole seul</span>
-          <span class="tag" data-group="graphique" data-val="Texte seul">Texte seul</span>
-          <span class="tag" data-group="graphique" data-val="Monogramme">Monogramme</span>
-          <span class="tag" data-group="graphique" data-val="Espace negatif">Espace négatif</span>
-          <span class="tag" data-group="graphique" data-val="Texte integre">Texte intégré</span>
-        </div>
-
-        <div class="filter-sublabel">Style</div>
-        <div class="tags">
-          <span class="tag" data-group="graphique" data-val="Minimaliste">Minimaliste</span>
-          <span class="tag" data-group="graphique" data-val="Illustratif">Illustratif</span>
-          <span class="tag" data-group="graphique" data-val="Abstrait">Abstrait</span>
-          <span class="tag" data-group="graphique" data-val="Flat design">Flat design</span>
-          <span class="tag" data-group="graphique" data-val="Vintage">Vintage</span>
-          <span class="tag" data-group="graphique" data-val="Futuriste">Futuriste</span>
-          <span class="tag" data-group="graphique" data-val="Luxueux">Luxueux</span>
-          <span class="tag" data-group="graphique" data-val="Brutaliste">Brutaliste</span>
-        </div>
-
-        <div class="filter-sublabel">Symbolisme</div>
-        <div class="tags">
-          <span class="tag" data-group="graphique" data-val="Humains">Humains</span>
-          <span class="tag" data-group="graphique" data-val="Animaux">Animaux</span>
-          <span class="tag" data-group="graphique" data-val="Nature">Nature</span>
-          <span class="tag" data-group="graphique" data-val="Objets">Objets</span>
-          <span class="tag" data-group="graphique" data-val="Geographiques">Géographiques</span>
-          <span class="tag" data-group="graphique" data-val="Technologiques">Technologiques</span>
-          <span class="tag" data-group="graphique" data-val="Abstraits">Abstraits</span>
+        <div class="filter-label">Première lettre du nom</div>
+        <div class="letter-grid" id="letter-grid">
+          <button class="letter-btn" onclick="toggleLetter(this)">A</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">B</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">C</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">D</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">E</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">F</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">G</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">H</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">I</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">J</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">K</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">L</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">M</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">N</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">O</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">P</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">Q</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">R</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">S</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">T</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">U</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">V</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">W</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">X</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">Y</button>
+          <button class="letter-btn" onclick="toggleLetter(this)">Z</button>
         </div>
       </div>
 
-
+      <!-- Résumé actif + reset -->
       <div class="brief-summary" id="brief-summary"></div>
 
-      <button class="btn-search" id="btn-search" onclick="runSearch()">
-        Trouver les logos similaires
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M3 7h8M8 4l3 3-3 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
+      <div style="display:flex;gap:8px">
+        <button class="btn-search" id="btn-search" onclick="runSearch()" style="flex:1">
+          Rechercher
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2.5 6.5h8M7.5 3.5l3 3-3 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="btn-reset" onclick="resetSearch()" title="Réinitialiser">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5A4.5 4.5 0 1 1 6.5 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2 3.5v3h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
 
     </div>
   </aside>
+
 
   <!-- ── MAIN ── -->
   <main id="main">
@@ -1162,7 +1209,8 @@ async function deleteFromSupabase(id) {
 
 // ── État de l'application ──
 const state = {
-  selected: { industrie: [], valeurs: [], cible: [], graphique: [] },
+  selectedValeurs: [],
+  selectedLetter: null,
   results: [],
   activeCard: null,
 };
@@ -1191,124 +1239,156 @@ function showAllProjects() {
 // Charger depuis Supabase au démarrage
 loadLogosFromSupabase();
 
+// ── Contrôles de recherche ──
+function onSelectChange() { updateSummary(); }
 
-
-document.querySelectorAll('.tag').forEach(tag => {
-  tag.addEventListener('click', () => {
-    const group = tag.dataset.group;
-    const val   = tag.dataset.val;
-    const idx   = state.selected[group].indexOf(val);
-    if (idx > -1) {
-      state.selected[group].splice(idx, 1);
-      tag.classList.remove('on', 'on-accent', 'on-teal');
-    } else {
-      state.selected[group].push(val);
-      if (group === 'graphique') tag.classList.add('on-teal');
-      else if (group === 'valeurs') tag.classList.add('on-accent');
-      else tag.classList.add('on');
-    }
-    updateSummary();
-  });
-});
-
-function updateSummary() {
-  const all = [
-    ...state.selected.industrie,
-    ...state.selected.valeurs,
-    ...state.selected.cible,
-    ...state.selected.graphique,
-  ];
-  const el = document.getElementById('brief-summary');
-  if (all.length === 0) {
-    el.classList.remove('visible');
-    return;
+function onMultiSelect(group, select) {
+  const val = select.value;
+  if (!val) return;
+  if (group === 'valeurs' && !state.selectedValeurs.includes(val)) {
+    state.selectedValeurs.push(val);
+    renderValeurTags();
   }
-  el.classList.add('visible');
-  el.textContent = all.join(' · ');
+  select.value = '';
+  updateSummary();
 }
 
-// ── Calcul de similarité ──
+function removeValeur(val) {
+  state.selectedValeurs = state.selectedValeurs.filter(v => v !== val);
+  renderValeurTags();
+  updateSummary();
+}
+
+function renderValeurTags() {
+  const el = document.getElementById('valeurs-tags');
+  el.innerHTML = state.selectedValeurs.map(v =>
+    '<span class="sel-tag">' + v + '<span class="sel-tag-x" onclick="removeValeur(\'' + v.replace(/'/g, "\\'") + '\')">×</span></span>'
+  ).join('');
+}
+
+function toggleLetter(btn) {
+  const letter = btn.textContent;
+  if (state.selectedLetter === letter) {
+    state.selectedLetter = null;
+    btn.classList.remove('on');
+  } else {
+    document.querySelectorAll('.letter-btn').forEach(b => b.classList.remove('on'));
+    state.selectedLetter = letter;
+    btn.classList.add('on');
+  }
+  updateSummary();
+}
+
+function updateSummary() {
+  const industrie     = document.getElementById('sel-industrie').value;
+  const positionnement = document.getElementById('sel-positionnement').value;
+  const parts = [
+    industrie, ...state.selectedValeurs, positionnement,
+    state.selectedLetter ? 'Commence par ' + state.selectedLetter : ''
+  ].filter(Boolean);
+  const el = document.getElementById('brief-summary');
+  if (parts.length === 0) { el.classList.remove('visible'); return; }
+  el.classList.add('visible');
+  el.textContent = parts.join(' · ');
+}
+
+function resetSearch() {
+  document.getElementById('sel-industrie').value = '';
+  document.getElementById('sel-valeurs').value = '';
+  document.getElementById('sel-positionnement').value = '';
+  state.selectedValeurs = [];
+  state.selectedLetter = null;
+  renderValeurTags();
+  document.querySelectorAll('.letter-btn').forEach(b => b.classList.remove('on'));
+  document.getElementById('brief-summary').classList.remove('visible');
+  showAllProjects();
+}
+
+// ── Score de correspondance ──
 function computeScore(logo) {
-  const sel = state.selected;
+  const industrie      = document.getElementById('sel-industrie').value;
+  const positionnement = document.getElementById('sel-positionnement').value;
+  const valeurs        = state.selectedValeurs;
+  const letter         = state.selectedLetter;
+  const brief          = logo.brief || [];
+
   let score = 0, total = 0;
 
-  const check = (selArr, logoArr, weight) => {
-    if (selArr.length === 0) return;
-    total += selArr.length * weight;
-    selArr.forEach(v => {
-      if (logoArr.includes(v)) score += weight;
-    });
-  };
+  if (industrie) {
+    total += 3;
+    if (brief.some(b => b.toLowerCase().includes(industrie.toLowerCase()) || industrie.toLowerCase().includes(b.toLowerCase()))) score += 3;
+  }
+  if (valeurs.length) {
+    total += valeurs.length * 2.5;
+    valeurs.forEach(v => { if (brief.some(b => b.toLowerCase().includes(v.toLowerCase()))) score += 2.5; });
+  }
+  if (positionnement) {
+    total += 2;
+    if (brief.some(b => b.toLowerCase().includes(positionnement.toLowerCase()))) score += 2;
+  }
+  if (letter) {
+    total += 2;
+    if (logo.name && logo.name.toUpperCase().startsWith(letter)) score += 2;
+  }
 
-  check(sel.industrie,  logo.brief,   3);
-  check(sel.valeurs,    logo.brief,   2.5);
-  check(sel.cible,      logo.brief,   2);
-  check(sel.graphique,  logo.graphic, 2);
-
-  if (total === 0) return 0;
+  if (total === 0) return 100; // pas de filtre = tout correspond
   return Math.round((score / total) * 100);
 }
 
 // ── Lancer la recherche ──
 function runSearch() {
-  const all = [
-    ...state.selected.industrie,
-    ...state.selected.valeurs,
-    ...state.selected.cible,
-    ...state.selected.graphique,
-  ];
-  if (all.length === 0) {
-    document.getElementById('btn-search').style.animation = 'shake 0.3s ease';
-    setTimeout(() => document.getElementById('btn-search').style.animation = '', 400);
-    return;
-  }
+  const industrie      = document.getElementById('sel-industrie').value;
+  const positionnement = document.getElementById('sel-positionnement').value;
+  const hasFilters     = industrie || state.selectedValeurs.length || positionnement || state.selectedLetter;
 
-  // Masquer état vide, afficher skeleton
   document.getElementById('state-empty').style.display = 'none';
   document.getElementById('logo-grid').classList.remove('visible');
-  document.getElementById('load-more').classList.remove('visible');
   document.getElementById('skeleton-grid').classList.add('visible');
   document.getElementById('results-bar').classList.remove('visible');
 
-  // Simuler délai réseau
   setTimeout(() => {
-    // Calculer scores
-    state.results = DB
-      .map(logo => ({ ...logo, score: computeScore(logo) }))
-      .filter(l => l.score > 0)
-      .sort((a, b) => b.score - a.score);
-
-    // Masquer skeleton
     document.getElementById('skeleton-grid').classList.remove('visible');
 
-    if (state.results.length === 0) {
+    let results = DB.map(logo => ({ ...logo, score: computeScore(logo) }));
+
+    // Filtrage strict lettre (doit commencer par)
+    if (state.selectedLetter) {
+      results = results.filter(l => l.name && l.name.toUpperCase().startsWith(state.selectedLetter));
+    }
+
+    if (hasFilters) {
+      results = results.filter(l => l.score > 0).sort((a, b) => b.score - a.score);
+    }
+
+    if (results.length === 0) {
       document.getElementById('state-empty').style.display = 'flex';
-      document.getElementById('state-empty').querySelector('.state-empty-title').textContent = 'Aucun résultat';
-      document.getElementById('state-empty').querySelector('.state-empty-sub').textContent = 'Essaie de réduire le nombre de critères.';
+      document.getElementById('state-empty-title').textContent = 'Aucun résultat';
+      document.getElementById('state-empty-sub').textContent = 'Essaie d\'élargir les critères.';
       return;
     }
 
+    state.results = results;
     renderResultsBar();
     renderGrid();
-  }, 900);
+  }, 400);
 }
 
 function renderResultsBar() {
   const bar = document.getElementById('results-bar');
-  const sel = state.selected;
-  const allTags = [
-    ...sel.industrie.map(v => `<span class="rtag brief">${v}</span>`),
-    ...sel.valeurs.map(v => `<span class="rtag valeur">${v}</span>`),
-    ...sel.cible.map(v => `<span class="rtag brief">${v}</span>`),
-    ...sel.graphique.map(v => `<span class="rtag graphique">${v}</span>`),
+  const industrie      = document.getElementById('sel-industrie').value;
+  const positionnement = document.getElementById('sel-positionnement').value;
+  const tags = [
+    industrie      ? '<span class="rtag brief">' + industrie + '</span>' : '',
+    ...state.selectedValeurs.map(v => '<span class="rtag valeur">' + v + '</span>'),
+    positionnement ? '<span class="rtag brief">' + positionnement + '</span>' : '',
+    state.selectedLetter ? '<span class="rtag graphique">Commence par ' + state.selectedLetter + '</span>' : '',
   ].join('');
 
-  bar.innerHTML = `
-    <div class="results-info">
-      <div class="results-count">${state.results.length}</div>
-      <div class="results-sub">logos correspondants</div>
-    </div>
-    <div class="results-brief-tags">${allTags}</div>`;
+  const isFiltered = industrie || state.selectedValeurs.length || positionnement || state.selectedLetter;
+  bar.innerHTML =
+    '<div class="results-info"><div class="results-count">' + state.results.length + '</div>' +
+    '<div class="results-sub">' + (isFiltered ? 'logos correspondants' : 'logos dans la base') + '</div></div>' +
+    '<div class="results-brief-tags">' + tags + '</div>';
   bar.classList.add('visible');
 }
 
@@ -1319,38 +1399,35 @@ function renderGrid() {
   state.results.forEach((logo, i) => {
     const card = document.createElement('div');
     card.className = 'logo-card';
-    card.style.animationDelay = `${i * 55}ms`;
+    card.style.animationDelay = (i * 45) + 'ms';
 
-    const briefPills = logo.brief.slice(0, 2).map(a => `<span class="attr-pill b">${a}</span>`).join('');
-    const graphPills = logo.graphic.slice(0, 2).map(a => `<span class="attr-pill g">${a}</span>`).join('');
-
-    const barColor = logo.score >= 80 ? '#c8501a' : logo.score >= 60 ? '#1a6b5c' : '#a09b94';
-
+    const briefPills = (logo.brief || []).slice(0, 2).map(a => '<span class="attr-pill b">' + a + '</span>').join('');
+    const graphPills = (logo.graphic || []).slice(0, 2).map(a => '<span class="attr-pill g">' + a + '</span>').join('');
+    const barColor   = logo.score >= 80 ? '#c8501a' : logo.score >= 60 ? '#1a6b5c' : '#a09b94';
     const thumbContent = logo.imageUrl
-      ? `<img src="${logo.imageUrl}" style="width:100%;height:100%;object-fit:contain;padding:16px" onerror="this.style.display='none'">`
-      : `<div class="logo-symbol" style="color:${logo.color}">${logo.symbol}</div>`;
+      ? '<img src="' + logo.imageUrl + '" style="width:100%;height:100%;object-fit:contain;padding:16px" onerror="this.style.display=\'none\'">'
+      : '<div class="logo-symbol" style="color:' + (logo.color||'#5a5650') + '">' + (logo.symbol||'◈') + '</div>';
 
-    card.innerHTML = `
-      <div class="logo-thumb" style="background:${logo.bg}">
-        ${thumbContent}
-        <div class="sim-pill">${logo.score}%</div>
-        <div class="match-bar" style="width:${logo.score}%;background:${barColor}"></div>
-      </div>
-      <div class="logo-body">
-        <div class="logo-name">${logo.name}</div>
-        <div class="logo-agency">${logo.agency} · ${logo.year}</div>
-        <div class="logo-attrs">${briefPills}${graphPills}</div>
-      </div>`;
+    card.innerHTML =
+      '<div class="logo-thumb" style="background:' + (logo.bg||'#f0ede8') + '">' +
+        thumbContent +
+        '<div class="sim-pill">' + logo.score + '%</div>' +
+        '<div class="match-bar" style="width:' + logo.score + '%;background:' + barColor + '"></div>' +
+      '</div>' +
+      '<div class="logo-body">' +
+        '<div class="logo-name">' + logo.name + '</div>' +
+        '<div class="logo-agency">' + (logo.agency||'') + (logo.year ? ' · ' + logo.year : '') + '</div>' +
+        '<div class="logo-attrs">' + briefPills + graphPills + '</div>' +
+      '</div>';
 
     card.addEventListener('click', () => openPanel(logo));
     grid.appendChild(card);
   });
 
   grid.classList.add('visible');
-  if (state.results.length >= 8) {
-    document.getElementById('load-more').classList.add('visible');
-  }
+  if (state.results.length >= 8) document.getElementById('load-more').classList.add('visible');
 }
+
 
 // ── Panel détail ──
 function openPanel(logo) {
@@ -1509,38 +1586,81 @@ async function importFromUrl() {
     statusEl.innerHTML = '<div class="imp-res-status-dot"></div>Claude analyse le contenu...';
     setFetchStatus('loading', 'Claude analyse le projet...');
 
+    // Vocabulaire contrôlé — DOIT correspondre exactement aux valeurs des menus de recherche
+    const VOCAB_BRIEF = {
+      industrie: [
+        'Finance & Banque','Assurance','Immobilier','Conseil & Management',
+        'Retail & Grande distribution','Luxe & Prestige','Mode & Textile','Alimentation & Boisson','Restauration',
+        'Technologie & SaaS','Télécommunications','Intelligence artificielle','Jeux vidéo & Esport',
+        'Santé & Médical','Pharmacie & Biotech','Bien-être & Beauté',
+        'Énergie & Utilities','Industrie & Manufacture','Construction & BTP','Mobilité & Transport','Aéronautique & Défense',
+        'Culture & Médias','Sport','Tourisme & Hôtellerie','Éducation & Formation',
+        'Institutionnel & Public','ONG & Association','Agriculture & Terroir'
+      ],
+      valeurs: [
+        'Confiance','Solidité','Fiabilité','Sécurité','Stabilité','Transparence',
+        'Prestige','Excellence','Élégance','Raffinement','Exclusivité',
+        'Dynamisme','Innovation','Audace','Performance','Conquête',
+        'Humanité','Bienveillance','Accessibilité','Proximité','Authenticité',
+        'Tradition','Héritage','Savoir-faire','Artisanat',
+        'Durabilité','Responsabilité','Engagement','Nature',
+        'Minimalisme','Clarté','Efficacité','Sobriété'
+      ],
+      positionnement: [
+        'Haut de gamme','Ultra-luxe','Premium accessible','Grand public',
+        'Institutionnel','Artisanal & Local','Engagé & Militant','Jeune & Disruptif'
+      ],
+    };
+
     const VOCAB_GRAPHIQUE = {
       forme: ['Cercle','Carre / rectangle','Triangle','Polygones','Ligne / barre','Croix / X','Etoile','Ellipse / ovale','Formes courbes','Silhouettes naturelles','Gouttes','Formes fluides / abstraites'],
-      structure: ['Compact','Horizontal','Vertical / empile','Centre','Asymetrique','En bloc','Decentre','Modulaire','Ascendant','Descendant','Diagonal','Rayonnant','Circulaire / rotatif','Spirale','Zigzag','Lineaire','Ondule / courbe','Point focal central','Points focaux multiples','2D plate','3D simulee','Effet de volume'],
+      structure: ['Compact','Horizontal','Vertical / empile','Centre','Asymetrique','En bloc','Decentre','Modulaire','Ascendant','Descendant','Diagonal','Rayonnant','Circulaire / rotatif','Spirale','Zigzag','Lineaire','Ondule / courbe','Point focal central','2D plate','3D simulee','Effet de volume'],
       motifs: ['Motifs duplicatifs','Motifs radiaux','Motifs concentriques','Motifs en grille','Motifs en miroir','Superposition / overlay'],
       symetrie: ['Verticale','Horizontale','Diagonale','Radiale','Centrale / bilaterale','Asymetrie equilibree'],
       couleur: ['Monochrome','Bichromie','Polychrome','Degrade','Chaude','Froide','Neutre','Pastel','Vibrante','Sombre','Metallique'],
       typographie: ['Serif','Sans-serif','Script','Display','Majuscules','Espacement large','Poids thin','Poids bold','Personnalisee'],
       texte_symbole: ['Symbole seul','Texte seul','Texte + icone a gauche','Texte + icone au-dessus','Texte integre','Espace negatif','Monogramme'],
-      style: ['Minimaliste','Illustratif','Mascotte','Pictogramme','Abstrait','Flat design','Ombres longues','Skeuomorphique','Brutaliste','Vintage','Futuriste','Luxueux'],
+      style: ['Minimaliste','Illustratif','Mascotte','Pictogramme','Abstrait','Flat design','Brutaliste','Vintage','Futuriste','Luxueux'],
       symbolisme: ['Humains','Animaux','Objets','Nature','Geographiques','Technologiques','Mythologiques','Abstraits'],
     };
 
-    const prompt = 'Tu es expert en branding et identite visuelle.' +
+    const prompt =
+      'Tu es expert en branding et identite visuelle.' +
       '\n\nVoici le contenu d\'une page de presentation d\'un projet de logo :' +
       '\nURL : ' + url +
       '\n\nTEXTE DE LA PAGE :\n' + pageText +
       '\n\nURLS D\'IMAGES PRESENTES SUR LA PAGE :\n' + imgUrls.join('\n') +
-      '\n\nPour les attributs graphiques, utilise UNIQUEMENT les valeurs du vocabulaire suivant (choisis tous ceux qui s\'appliquent) :' +
-      '\nForme: ' + VOCAB_GRAPHIQUE.forme.join(', ') +
-      '\nStructure: ' + VOCAB_GRAPHIQUE.structure.join(', ') +
-      '\nMotifs: ' + VOCAB_GRAPHIQUE.motifs.join(', ') +
-      '\nSymetrie: ' + VOCAB_GRAPHIQUE.symetrie.join(', ') +
-      '\nCouleur: ' + VOCAB_GRAPHIQUE.couleur.join(', ') +
-      '\nTypographie: ' + VOCAB_GRAPHIQUE.typographie.join(', ') +
-      '\nTexte-Symbole: ' + VOCAB_GRAPHIQUE.texte_symbole.join(', ') +
-      '\nStyle: ' + VOCAB_GRAPHIQUE.style.join(', ') +
-      '\nSymbolisme: ' + VOCAB_GRAPHIQUE.symbolisme.join(', ') +
+      '\n\n=== VOCABULAIRE CONTROLE - utilise UNIQUEMENT ces valeurs exactes ===' +
+      '\n\nBRIEF - Industrie (choisis 1) : ' + VOCAB_BRIEF.industrie.join(' | ') +
+      '\nBRIEF - Valeurs (choisis 2 a 5) : ' + VOCAB_BRIEF.valeurs.join(' | ') +
+      '\nBRIEF - Positionnement (choisis 1) : ' + VOCAB_BRIEF.positionnement.join(' | ') +
+      '\n\nGRAPHIQUE - Forme : ' + VOCAB_GRAPHIQUE.forme.join(', ') +
+      '\nGRAPHIQUE - Structure : ' + VOCAB_GRAPHIQUE.structure.join(', ') +
+      '\nGRAPHIQUE - Motifs : ' + VOCAB_GRAPHIQUE.motifs.join(', ') +
+      '\nGRAPHIQUE - Symetrie : ' + VOCAB_GRAPHIQUE.symetrie.join(', ') +
+      '\nGRAPHIQUE - Couleur : ' + VOCAB_GRAPHIQUE.couleur.join(', ') +
+      '\nGRAPHIQUE - Typographie : ' + VOCAB_GRAPHIQUE.typographie.join(', ') +
+      '\nGRAPHIQUE - Texte-Symbole : ' + VOCAB_GRAPHIQUE.texte_symbole.join(', ') +
+      '\nGRAPHIQUE - Style : ' + VOCAB_GRAPHIQUE.style.join(', ') +
+      '\nGRAPHIQUE - Symbolisme : ' + VOCAB_GRAPHIQUE.symbolisme.join(', ') +
       '\n\nReponds UNIQUEMENT en JSON valide, sans texte avant ou apres :' +
-      '\n{"nom_projet":"...","client":"...","agence":"...","annee":2024,"image_logo_url":"URL de l\'image la plus representative du logo final. Mets null si aucune ne convient.",' +
-      '"brief":{"industrie":"...","valeurs":["...","...","..."],"cible":"...","positionnement":"haut de gamme|grand public|institutionnel|artisanal|engage"},' +
-      '"graphique":{"forme":["val1","val2"],"structure":["val1"],"motifs":["val1"],"symetrie":["val1"],"couleur":["val1","val2"],"typographie":["val1"],"texte_symbole":["val1"],"style":["val1","val2"],"symbolisme":["val1"]},' +
-      '"description":"Une phrase resumant ce que le logo communique."}';
+      '\n{' +
+      '\n  "nom_projet": "nom de la marque ou du projet",' +
+      '\n  "client": "nom du client",' +
+      '\n  "agence": "nom de l\'agence ou studio",' +
+      '\n  "annee": 2024,' +
+      '\n  "image_logo_url": "URL directe de l\'image principale du logo parmi celles listees. Null si aucune ne convient.",' +
+      '\n  "brief": {' +
+      '\n    "industrie": "valeur exacte du vocabulaire industrie",' +
+      '\n    "valeurs": ["valeur exacte 1", "valeur exacte 2", "valeur exacte 3"],' +
+      '\n    "positionnement": "valeur exacte du vocabulaire positionnement"' +
+      '\n  },' +
+      '\n  "graphique": {' +
+      '\n    "forme": ["val"],"structure": ["val"],"motifs": ["val"],"symetrie": ["val"],' +
+      '\n    "couleur": ["val","val"],"typographie": ["val"],"texte_symbole": ["val"],"style": ["val","val"],"symbolisme": ["val"]' +
+      '\n  },' +
+      '\n  "description": "Une phrase resumant ce que le logo communique visuellement."' +
+      '\n}';
 
 
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1577,7 +1697,12 @@ async function importFromUrl() {
         '<img src="' + ai.image_logo_url + '" style="width:100%;height:100%;object-fit:contain;padding:8px" onerror="this.parentNode.innerHTML=\'<div style=font-size:28px;color:var(--ink-3)>◈</div>\'">';
     }
 
-    const briefAttrs = [ai.brief?.industrie, ...(ai.brief?.valeurs||[]), ai.brief?.cible, ai.brief?.positionnement].filter(Boolean);
+    const briefAttrs = [
+      ai.brief?.industrie,
+      ...(ai.brief?.valeurs || []),
+      ai.brief?.positionnement,
+      ai.brief?.cible, // rétrocompat
+    ].filter(Boolean);
     // Extraire tous les attributs graphiques par catégorie (nouvelle structure)
     const g = ai.graphique || {};
     const graphicAttrs = [
