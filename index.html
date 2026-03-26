@@ -722,7 +722,42 @@
 
   #imp-result { padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem; }
 
-  .imp-res-preview {
+  .img-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .img-picker-thumb {
+    border: 2px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    background: var(--paper-2);
+    aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.15s;
+    position: relative;
+  }
+  .img-picker-thumb:hover { border-color: var(--ink-3); }
+  .img-picker-thumb.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .img-picker-thumb img { width: 100%; height: 100%; object-fit: contain; padding: 8px; }
+  .img-picker-thumb .pick-check {
+    display: none; position: absolute; top: 4px; right: 4px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--accent); color: white;
+    font-size: 10px; font-weight: 700;
+    align-items: center; justify-content: center;
+  }
+  .img-picker-thumb.selected .pick-check { display: flex; }
+  .img-picker-none {
+    font-size: 11.5px; color: var(--ink-3); cursor: pointer;
+    padding: 8px 12px; border: 1px dashed var(--rule); border-radius: 6px;
+    text-align: center; transition: border-color 0.15s;
+  }
+  .img-picker-none:hover { border-color: var(--ink-3); color: var(--ink-2); }
+  .img-picker-none.selected { border-color: var(--ink-3); color: var(--ink); }
+
     display: flex; gap: 1.25rem; align-items: flex-start;
     padding: 1.25rem; background: var(--paper-2);
     border-radius: 8px; border: 1px solid var(--rule);
@@ -1137,6 +1172,13 @@
           <div class="imp-res-status" id="imp-res-status"></div>
         </div>
       </div>
+
+      <!-- Sélecteur d'image -->
+      <div class="imp-res-section" id="img-picker-wrap" style="display:none">
+        <div class="imp-res-section-label">Choisir l'image du logo</div>
+        <div class="img-picker" id="img-picker"></div>
+      </div>
+
       <div class="imp-res-section">
         <div class="imp-res-section-label">Attributs de brief (INPUT)</div>
         <div class="imp-res-tags" id="imp-res-brief"></div>
@@ -1711,7 +1753,7 @@ async function importFromUrl() {
       '\n  "client": "nom du client",' +
       '\n  "agence": "nom de l\'agence ou studio",' +
       '\n  "annee": 2024,' +
-      '\n  "image_logo_url": "URL directe de l\'image principale du logo parmi celles listees. Null si aucune ne convient.",' +
+      '\n  "image_candidates": ["URL1","URL2","URL3","URL4"],' +
       '\n  "lettre_initiale": "C",' +
       '\n  "brief": {' +
       '\n    "industrie": "valeur exacte du vocabulaire industrie",' +
@@ -1723,7 +1765,8 @@ async function importFromUrl() {
       '\n    "couleur": ["val","val"],"typographie": ["val"],"texte_symbole": ["val"],"style": ["val","val"],"symbolisme": ["val"]' +
       '\n  },' +
       '\n  "description": "Une phrase resumant ce que le logo communique visuellement."' +
-      '\n}';
+      '\n}' +
+      '\n\nPour "image_candidates" : selectionne les 3 a 4 URLs d\'images parmi celles listees qui sont les plus susceptibles d\'etre le logo ou l\'identite visuelle principale du projet. Prefere les PNG/SVG, les images isolees sur fond neutre, evite les photos et screenshots.';
 
 
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1753,24 +1796,38 @@ async function importFromUrl() {
     try { ai = JSON.parse(clean); }
     catch(e) { const m = clean.match(/\{[\s\S]*\}/); if (m) ai = JSON.parse(m[0]); else throw new Error('Reponse IA non parseable'); }
 
-    // Stocker l'image trouvée
-    if (ai.image_logo_url && ai.image_logo_url !== 'null' && ai.image_logo_url !== null) {
-      imp._imageFromUrl = ai.image_logo_url;
-      imp.imageUrl = ai.image_logo_url;
+    // ── Picker d'images ──
+    const candidates = (ai.image_candidates || []).filter(u => u && u !== 'null');
+    if (candidates.length > 0) {
+      // Sélectionner la première par défaut
+      imp.imageUrl = candidates[0];
+      imp._imageFromUrl = candidates[0];
       document.getElementById('imp-res-img-wrap').innerHTML =
-        '<img src="' + ai.image_logo_url + '" style="width:100%;height:100%;object-fit:contain;padding:8px" onerror="this.parentNode.innerHTML=\'<div style=font-size:28px;color:var(--ink-3)>◈</div>\'">';
+        '<img id="selected-img-preview" src="' + candidates[0] + '" style="width:100%;height:100%;object-fit:contain;padding:8px" onerror="this.parentNode.innerHTML=\'<div style=font-size:28px;color:var(--ink-3)>◈</div>\'">';
+
+      // Afficher le picker
+      const pickerWrap = document.getElementById('img-picker-wrap');
+      const picker = document.getElementById('img-picker');
+      pickerWrap.style.display = 'flex';
+      picker.innerHTML = candidates.map((url, i) =>
+        '<div class="img-picker-thumb' + (i === 0 ? ' selected' : '') + '" onclick="selectImage(\'' + url.replace(/'/g, "\\'") + '\', this)">' +
+          '<img src="' + url + '" onerror="this.parentNode.style.display=\'none\'">' +
+          '<div class="pick-check">✓</div>' +
+        '</div>'
+      ).join('') +
+      '<div class="img-picker-none' + (candidates.length === 0 ? ' selected' : '') + '" onclick="selectImage(null, this)">Aucune</div>';
+    } else {
+      document.getElementById('img-picker-wrap').style.display = 'none';
     }
 
-    // ── Lettre initiale : priorité au JSON, fallback vision ──
+    // ── Lettre initiale ──
     let lettreInitiale = null;
-
-    // 1. Depuis le JSON (Claude a le contexte textuel complet)
     if (ai.lettre_initiale && /^[A-Z]$/i.test(ai.lettre_initiale)) {
       lettreInitiale = ai.lettre_initiale.toUpperCase();
     }
 
-    // 2. Fallback : analyse vision de l'image si pas trouvé dans le texte
-    if (!lettreInitiale && ai.image_logo_url && ai.image_logo_url !== 'null') {
+    // Fallback vision si pas trouvé
+    if (!lettreInitiale && candidates[0]) {
       try {
         statusEl.innerHTML = '<div class="imp-res-status-dot"></div>Analyse visuelle du logo...';
         const visionResp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1787,7 +1844,7 @@ async function importFromUrl() {
             messages: [{
               role: 'user',
               content: [
-                { type: 'image', source: { type: 'url', url: ai.image_logo_url } },
+                { type: 'image', source: { type: 'url', url: candidates[0] } },
                 { type: 'text', text: 'La forme graphique principale de ce logo est-elle visuellement construite a partir d\'une lettre de l\'alphabet ? Si oui, reponds uniquement cette lettre en majuscule (ex: C). Si non, reponds: non.' }
               ]
             }],
@@ -1866,6 +1923,23 @@ function setFetchStatus(type, msg) {
   el.style.display = 'flex';
   el.className = 'imp-fetch-status ' + type;
   el.innerHTML = '<div class="imp-fetch-dot"></div><span>' + msg + '</span>';
+}
+
+function selectImage(url, el) {
+  // Déselectionner tous
+  document.querySelectorAll('.img-picker-thumb, .img-picker-none').forEach(t => t.classList.remove('selected'));
+  el.classList.add('selected');
+
+  imp.imageUrl = url;
+  imp._imageFromUrl = url;
+
+  // Mettre à jour l'aperçu principal
+  const wrap = document.getElementById('imp-res-img-wrap');
+  if (url) {
+    wrap.innerHTML = '<img src="' + url + '" style="width:100%;height:100%;object-fit:contain;padding:8px" onerror="this.parentNode.innerHTML=\'<div style=font-size:28px;color:var(--ink-3)>◈</div>\'">';
+  } else {
+    wrap.innerHTML = '<div style="font-size:28px;color:var(--ink-3)">⬡</div>';
+  }
 }
 
 function addTag(type) {
