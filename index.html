@@ -1713,33 +1713,28 @@ function openEditPanel(id) {
     '<div style="width:26px"></div>';
   panel.appendChild(hdr);
 
-  // Body
+  // Body — tout en une seule assignation pour éviter les re-parse DOM
   const body = document.createElement('div');
   body.className = 'panel-edit-body';
 
-  // Image
-  body.innerHTML +=
+  const imgHtml = logo.imageUrl
+    ? '<img id="edit-img-preview" src="' + logo.imageUrl + '" onerror="this.style.opacity=0.2">'
+    : '<div style="font-size:28px;color:var(--ink-3)">⬡</div>';
+
+  body.innerHTML =
     '<div class="panel-edit-section">' +
       '<div class="panel-edit-label">Image du logo</div>' +
       '<div class="panel-img-zone" id="edit-img-zone" onclick="triggerEditImg()">' +
-        (logo.imageUrl
-          ? '<img id="edit-img-preview" src="' + logo.imageUrl + '">'
-          : '<div style="font-size:28px;color:var(--ink-3)">⬡</div>') +
+        imgHtml +
         '<div class="panel-img-overlay">Changer l\'image</div>' +
       '</div>' +
       '<input type="file" id="edit-img-input" accept="image/*" style="display:none" onchange="onEditImgChange(this)">' +
-      '<input type="text" class="panel-edit-input" id="edit-img-url" placeholder="…ou coller une URL d\'image" value="' + (logo.imageUrl||'') + '" oninput="onEditImgUrl(this.value)" style="font-size:11.5px;margin-top:6px">' +
-    '</div>';
-
-  // Nom
-  body.innerHTML +=
+      '<input type="text" class="panel-edit-input" id="edit-img-url" placeholder="…ou coller une URL d\'image" value="' + esc(logo.imageUrl||'') + '" oninput="onEditImgUrl(this.value)" style="font-size:11.5px;margin-top:6px">' +
+    '</div>' +
     '<div class="panel-edit-section">' +
       '<div class="panel-edit-label">Nom du projet</div>' +
       '<input class="panel-edit-input" id="edit-name" value="' + esc(logo.name||'') + '">' +
-    '</div>';
-
-  // Agence + Année
-  body.innerHTML +=
+    '</div>' +
     '<div style="display:flex;gap:8px">' +
       '<div class="panel-edit-section" style="flex:1">' +
         '<div class="panel-edit-label">Agence / Studio</div>' +
@@ -1749,20 +1744,14 @@ function openEditPanel(id) {
         '<div class="panel-edit-label">Année</div>' +
         '<input class="panel-edit-input" id="edit-year" type="number" value="' + (logo.year||'') + '" style="text-align:center">' +
       '</div>' +
-    '</div>';
-
-  // Attributs brief
-  body.innerHTML +=
+    '</div>' +
     '<div class="panel-edit-section">' +
       '<div class="panel-edit-label">Attributs de brief (INPUT)</div>' +
       '<div class="panel-edit-tags" id="edit-brief-tags">' +
         (editLogo.brief||[]).map(a => editTag(a,'b','brief')).join('') +
         '<button class="panel-edit-add" onclick="addEditTag(\'brief\')">+ Ajouter</button>' +
       '</div>' +
-    '</div>';
-
-  // Attributs graphiques
-  body.innerHTML +=
+    '</div>' +
     '<div class="panel-edit-section">' +
       '<div class="panel-edit-label">Attributs graphiques (OUTPUT)</div>' +
       '<div class="panel-edit-tags" id="edit-graphic-tags">' +
