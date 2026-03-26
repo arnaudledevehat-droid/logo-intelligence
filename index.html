@@ -821,7 +821,7 @@
     <button class="hnav active" onclick="switchView('explorer', this)">Explorer</button>
     <button class="hnav" onclick="switchView('importer', this)">Importer un portfolio</button>
   </nav>
-  <div class="header-count" id="header-count">847 logos · 11 agences</div>
+  <div class="header-count" id="header-count">0 logos importés</div>
 </header>
 
 <div id="view-explorer" class="view-root">
@@ -914,8 +914,8 @@
 
     <div class="state-empty" id="state-empty">
       <div class="state-empty-icon">◈</div>
-      <div class="state-empty-title">Sélectionne des critères de brief</div>
-      <div class="state-empty-sub">Les logos dont les briefs initiaux correspondaient à tes critères s'afficheront ici, triés par similarité.</div>
+      <div class="state-empty-title" id="state-empty-title">Aucun projet importé</div>
+      <div class="state-empty-sub" id="state-empty-sub">Importe des projets via l'onglet "Importer" pour les voir apparaître ici.</div>
     </div>
 
     <!-- Skeleton loading -->
@@ -1009,136 +1009,8 @@
 
 <script>
 // ── BASE DE DONNÉES FICTIVE (représentative) ──
-const DB = [
-  {
-    id:1, name:'Chase Bank', client:'JPMorgan Chase', agency:'Chermayeff & Geismar', year:1961,
-    symbol:'◆', bg:'#dde8f8', color:'#1a3f8c',
-    brief: ['Finance & Banque','Confiance','Solidité','Institutionnel','B2B'],
-    graphic: ['Forme close','Géométrique','Symétrie','Couleur unique','Minimalisme','Sans-serif'],
-    desc:"Redesign institutionnel pour la premiere banque americaine. La forme octogonale traduit solidite et rigueur financiere.",
-    stats: [['Forme géométrique close', 92], ['Symétrie stricte', 87], ['Bleu dominant', 84], ['Minimalisme', 78]],
-  },
-  {
-    id:2, name:'HSBC', client:'HSBC Holdings', agency:'Interbrand', year:1983,
-    symbol:'⬡', bg:'#fdf0eb', color:'#c8501a',
-    brief: ['Finance & Banque','International','Confiance','Tradition','B2C Grand public'],
-    graphic: ['Structure en rayonnement','Géométrique','Symétrie','Forme close','Couleur unique'],
-    desc:"Identite globale construite sur le drapeau de la Hongkong and Shanghai Banking Corporation. La structure hexagonale en rayonnement communique la presence mondiale.",
-    stats: [['Structure en rayonnement', 95], ['Rouge & blanc', 88], ['Symétrie', 82], ['Géométrique strict', 79]],
-  },
-  {
-    id:3, name:'Goldman Sachs', client:'Goldman Sachs', agency:'Siegel+Gale', year:1999,
-    symbol:'GS', bg:'#f0ede8', color:'#141210',
-    brief: ['Finance & Banque','Prestige','Confiance','B2B','Exclusivité'],
-    graphic: ['Monogramme','Serif','Minimalisme','Couleur unique','Sans fioritures'],
-    desc:"Refonte minimaliste pour l'une des banques d'investissement les plus puissantes. Le wordmark serif transmet l'autorite sans ostentation.",
-    stats: [['Wordmark serif', 91], ['Noir & blanc', 86], ['Monogramme', 74], ['Minimalisme radical', 70]],
-  },
-  {
-    id:4, name:'Rolex', client:'Rolex SA', agency:'In-house', year:1965,
-    symbol:'♛', bg:'#fdf5e0', color:'#a07010',
-    brief: ['Luxe & Prestige','Tradition','Prestige','B2C Premium','Excellence'],
-    graphic: ['Couronne','Géométrique','Or','Serif','Héritage','Couleur unique'],
-    desc:"La couronne de Rolex est l'un des symboles les plus reconnus au monde. Chaque pointe represente un des cinq doigts qui remonte la montre.",
-    stats: [['Iconographie symbolique', 94], ['Or & noir', 88], ['Serif', 81], ['Héritage', 77]],
-  },
-  {
-    id:5, name:'Visa', client:'Visa Inc.', agency:'Chermayeff & Geismar', year:1976,
-    symbol:'VISA', bg:'#dde8f8', color:'#1a3f8c',
-    brief: ['Finance & Banque','Confiance','Accessibilité','B2C Grand public','International'],
-    graphic: ['Wordmark','Sans-serif','Bandes horizontales','Couleur unique','Lisibilité'],
-    desc:"L'une des marques les plus reconnaissables. Les bandes horizontales bleues et dorees renforcent la lecture a distance sur tous supports.",
-    stats: [['Wordmark sans-serif', 97], ['Bandes horizontales', 83], ['Bleu dominant', 91], ['Lisibilité maximale', 88]],
-  },
-  {
-    id:6, name:'American Express', client:'Amex', agency:'In-house', year:1958,
-    symbol:'Amex', bg:'#dde8f8', color:'#1a3f8c',
-    brief: ['Finance & Banque','Prestige','B2C Premium','Confiance','Exclusivité'],
-    graphic: ['Bleu ciel','Sans-serif','Forme rectangulaire','Centurion','Couleur unique'],
-    desc:"Le bleu caracteristique d'American Express est devenu synonyme de confiance et prestige dans la finance haut de gamme.",
-    stats: [['Bleu dominant', 93], ['Sans-serif', 80], ['Espace négatif', 68], ['Forme close', 72]],
-  },
-  {
-    id:7, name:'Zurich Insurance', client:'Zurich', agency:'Pentagram', year:2012,
-    symbol:'Z', bg:'#fdecea', color:'#b83020',
-    brief: ['Finance & Banque','Confiance','Protection','Solidité','B2B'],
-    graphic: ['Monogramme','Spirale','Rouge','Mouvement','Forme dynamique'],
-    desc:"Pentagram a transforme la lettre Z en symbole de mouvement et protection. La spirale integree suggere la continuite et la solidite.",
-    stats: [['Monogramme', 85], ['Rouge dominant', 78], ['Mouvement / dynamisme', 71], ['Forme ouverte', 66]],
-  },
-  {
-    id:8, name:'Barclays', client:'Barclays PLC', agency:'Lambie-Nairn', year:1986,
-    symbol:'◈', bg:'#dde8f8', color:'#1a3f8c',
-    brief: ['Finance & Banque','Confiance','Solidité','Tradition','B2C Premium'],
-    graphic: ['Aigle stylisé','Bleu profond','Forme close','Symétrie','Iconographie figurative'],
-    desc:"L'aigle heraldique stylise evoque le patrimoine de Barclays, actualise dans une forme epuree et moderne adaptee aux supports digitaux.",
-    stats: [['Iconographie figurative', 74], ['Bleu dominant', 89], ['Symétrie', 84], ['Héritage', 71]],
-  },
-  {
-    id:9, name:'Airbnb', client:'Airbnb', agency:'DesignStudio', year:2014,
-    symbol:'Ⓐ', bg:'#fdecea', color:'#b83020',
-    brief: ['Tech','Humanité','Accessibilité','B2C Grand public','Dynamisme'],
-    graphic: ['Forme organique','Espace négatif','Couleur unique','Minimalisme','Courbe'],
-    desc:"Le Belo combine en une forme le A d'Airbnb, un coeur, la localisation et la tete. Un des exercices d'espace negatif les plus reussis.",
-    stats: [['Espace négatif', 94], ['Forme organique', 88], ['Rouge-rose', 82], ['Signification multiple', 79]],
-  },
-  {
-    id:10, name:'BNP Paribas', client:'BNP Paribas', agency:'Dragon Rouge', year:2000,
-    symbol:'✦', bg:'#eaf4f1', color:'#1a6b5c',
-    brief: ['Finance & Banque','Confiance','International','Solidité','Europe'],
-    graphic: ['Étoile 4 branches','Vert & rouge','Équilibre','Géométrique','Couleur unique'],
-    desc:"L'etoile verte et rouge de BNP Paribas symbolise l'equilibre entre croissance et stabilite. Une palette distinctive dans un secteur domine par le bleu.",
-    stats: [['Structure étoilée', 82], ['Vert dominant', 76], ['Équilibre formel', 81], ['Géométrique', 77]],
-  },
-  {
-    id:11, name:'Credit Suisse', client:'Credit Suisse', agency:'Wirz', year:1980,
-    symbol:'✛', bg:'#fdecea', color:'#b83020',
-    brief: ['Finance & Banque','Prestige','Tradition','Confiance','International'],
-    graphic: ['Croix','Rouge & blanc','Symétrie','Forme close','Héritage'],
-    desc:"La croix suisse declinee avec rigueur. L'identite incarne l'heritage helvetique : precision, discretion, neutralite, transpose au secteur bancaire de luxe.",
-    stats: [['Croix / héritage national', 96], ['Rouge & blanc', 91], ['Symétrie', 88], ['Forme close', 83]],
-  },
-  {
-    id:12, name:'UBS', client:'UBS Group AG', agency:'In-house', year:1998,
-    symbol:'⚝', bg:'#f0ede8', color:'#141210',
-    brief: ['Finance & Banque','Prestige','B2C Premium','Confiance','Solidité'],
-    graphic: ['Trois clés','Géométrique','Noir','Symétrie','Lettrage custom'],
-    desc:"Les trois cles d'UBS symbolisent confiance, securite et discretion, les trois piliers de la banque privee suisse. Une iconographie directe.",
-    stats: [['Iconographie symbolique', 87], ['Noir dominant', 82], ['Symétrie', 85], ['Minimalisme', 79]],
-  },
-  {
-    id:13, name:'ING', client:'ING Group', agency:'LPK', year:1991,
-    symbol:'♌', bg:'#fdf5e0', color:'#a07010',
-    brief: ['Finance & Banque','Dynamisme','Innovation','Confiance','B2C Grand public'],
-    graphic: ['Lion','Orange','Iconographie figurative','Forme arrondie','Énergie'],
-    desc:"Le lion orange d'ING tranche radicalement dans l'univers du bleu bancaire. L'orange transmet l'energie, le lion la force et la confiance.",
-    stats: [['Orange dominant', 95], ['Iconographie animale', 82], ['Forme arrondie', 74], ['Énergie / dynamisme', 88]],
-  },
-  {
-    id:14, name:'Chanel', client:'Chanel', agency:'Coco Chanel', year:1925,
-    symbol:'CC', bg:'#f0ede8', color:'#141210',
-    brief: ['Luxe & Prestige','Élégance','Tradition','B2C Premium','Prestige'],
-    graphic: ['Monogramme','Noir & blanc','Entrelacement','Symétrie','Minimalisme'],
-    desc:"Le double C entrelace est l'un des monogrammes les plus copies de l'histoire du design. Son equilibre entre tension et symetrie reste intemporel.",
-    stats: [['Monogramme entrelacé', 98], ['Noir & blanc', 95], ['Symétrie', 92], ['Minimalisme', 88]],
-  },
-  {
-    id:15, name:'Mercedes-Benz', client:'Daimler', agency:'Gottlieb Daimler', year:1909,
-    symbol:'✲', bg:'#f0ede8', color:'#5a5650',
-    brief: ['Mobilité','Prestige','Élégance','Solidité','B2C Premium'],
-    graphic: ['Étoile à 3 branches','Géométrique','Argent','Symétrie','Forme close'],
-    desc:"L'etoile tripolaire symbolise la domination sur la terre, la mer et les airs. Cent ans de presence en ont fait l'une des formes les plus reconnues au monde.",
-    stats: [['Étoile géométrique', 97], ['Argent / métal', 85], ['Symétrie totale', 93], ['Forme close', 89]],
-  },
-  {
-    id:16, name:'Nike', client:'Nike Inc.', agency:'Carolyn Davidson', year:1971,
-    symbol:'✓', bg:'#f7f4ef', color:'#141210',
-    brief: ['Sport','Dynamisme','Innovation','B2C Grand public','Accessibilité'],
-    graphic: ['Swoosh','Mouvement','Minimalisme','Espace négatif','Couleur unique'],
-    desc:"Le Swoosh, dessine pour 35 dollars, est devenu le logo le plus reconnu au monde. Une lecon magistrale de reduction au geste essentiel.",
-    stats: [['Mouvement / dynamisme', 99], ['Minimalisme radical', 96], ['Espace négatif', 91], ['Couleur unique', 94]],
-  },
-];
+const DB = [];
+
 
 // ── État de l'application ──
 const state = {
@@ -1147,7 +1019,30 @@ const state = {
   activeCard: null,
 };
 
-// ── Initialisation des tags ──
+// ── Mise à jour initiale ──
+function updateHeaderCount() {
+  const el = document.getElementById('header-count');
+  if (el) el.textContent = DB.length + ' logo' + (DB.length > 1 ? 's' : '') + ' importé' + (DB.length > 1 ? 's' : '');
+}
+
+function showAllProjects() {
+  if (DB.length === 0) {
+    document.getElementById('state-empty').style.display = 'flex';
+    document.getElementById('state-empty-title').textContent = 'Aucun projet importé';
+    document.getElementById('state-empty-sub').textContent = 'Importe des projets via l\'onglet "Importer" pour les voir apparaître ici.';
+    return;
+  }
+  document.getElementById('state-empty').style.display = 'none';
+  const results = DB.map(l => ({ ...l, score: 100 }));
+  state.results = results;
+  renderResultsBar();
+  renderGrid();
+}
+
+// Afficher tous les projets au chargement si DB non vide
+showAllProjects();
+
+
 document.querySelectorAll('.tag').forEach(tag => {
   tag.addEventListener('click', () => {
     const group = tag.dataset.group;
@@ -1281,9 +1176,13 @@ function renderGrid() {
 
     const barColor = logo.score >= 80 ? '#c8501a' : logo.score >= 60 ? '#1a6b5c' : '#a09b94';
 
+    const thumbContent = logo.imageUrl
+      ? `<img src="${logo.imageUrl}" style="width:100%;height:100%;object-fit:contain;padding:16px" onerror="this.style.display='none'">`
+      : `<div class="logo-symbol" style="color:${logo.color}">${logo.symbol}</div>`;
+
     card.innerHTML = `
       <div class="logo-thumb" style="background:${logo.bg}">
-        <div class="logo-symbol" style="color:${logo.color}">${logo.symbol}</div>
+        ${thumbContent}
         <div class="sim-pill">${logo.score}%</div>
         <div class="match-bar" style="width:${logo.score}%;background:${barColor}"></div>
       </div>
@@ -1320,7 +1219,9 @@ function openPanel(logo) {
   // Thumb
   const thumb = document.getElementById('panel-thumb');
   thumb.style.background = logo.bg;
-  thumb.innerHTML = `<div class="panel-symbol" style="color:${logo.color}">${logo.symbol}</div>`;
+  thumb.innerHTML = logo.imageUrl
+    ? `<img src="${logo.imageUrl}" style="width:100%;height:100%;object-fit:contain;padding:24px">`
+    : `<div class="panel-symbol" style="color:${logo.color}">${logo.symbol}</div>`;
 
   // Body
   const body = document.getElementById('panel-body');
@@ -1395,6 +1296,7 @@ function switchView(view, btn) {
   btn.classList.add('active');
   document.getElementById('view-explorer').style.display = view === 'explorer' ? 'block' : 'none';
   document.getElementById('view-importer').style.display = view === 'importer' ? 'block' : 'none';
+  if (view === 'explorer') showAllProjects();
 }
 
 // ── Import depuis URL ──
@@ -1543,17 +1445,37 @@ function addTag(type) {
 }
 
 function saveProject() {
+  const imgUrl = imp.imageUrl;
+  const name   = document.getElementById('imp-res-name').textContent || 'Sans titre';
+
+  // Construire un objet compatible avec le format DB de l'explorateur
   const p = {
-    id: Date.now(),
-    name:    document.getElementById('imp-res-name').textContent || 'Sans titre',
-    imageUrl: imp.imageUrl,
+    id:      Date.now(),
+    name:    name,
+    client:  name,
+    agency:  document.getElementById('imp-res-meta').textContent.split(' · ')[0] || '—',
+    year:    parseInt(document.getElementById('imp-res-meta').textContent.split(' · ')[2]) || new Date().getFullYear(),
+    // Affichage : image si dispo, sinon symbole générique
+    symbol:  '◈',
+    bg:      '#f0ede8',
+    color:   '#5a5650',
+    imageUrl: imgUrl,
     brief:   imp._pendingBrief   || [],
     graphic: imp._pendingGraphic || [],
     desc:    imp._pendingDesc    || '',
+    stats:   [],
   };
+
   imp.projects.unshift(p);
+  DB.unshift(p);  // ← ajouter aussi à la base de l'explorateur
+  updateHeaderCount();
   renderSourceList();
   resetImporter();
+}
+
+function updateHeaderCount() {
+  const el = document.getElementById('header-count');
+  if (el) el.textContent = DB.length + ' logo' + (DB.length > 1 ? 's' : '') + ' importé' + (DB.length > 1 ? 's' : '');
 }
 
 function renderSourceList() {
