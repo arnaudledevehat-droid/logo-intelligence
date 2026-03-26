@@ -138,6 +138,16 @@
     text-transform: uppercase;
   }
 
+  .filter-sublabel {
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    margin-top: 8px;
+    margin-bottom: 2px;
+  }
+
   .tags { display: flex; flex-wrap: wrap; gap: 6px; }
 
   .tag {
@@ -883,19 +893,100 @@
 
       <div class="divider"></div>
 
+
       <div class="filter-section">
-        <div class="filter-label">Attributs graphiques souhaités</div>
+        <div class="filter-label">Attributs graphiques</div>
+
+        <div class="filter-sublabel">Forme</div>
         <div class="tags" id="tags-graphique">
-          <span class="tag" data-group="graphique" data-val="Forme ronde">Forme ronde</span>
-          <span class="tag" data-group="graphique" data-val="Géométrique">Géométrique</span>
-          <span class="tag" data-group="graphique" data-val="Minimalisme">Minimalisme</span>
+          <span class="tag" data-group="graphique" data-val="Cercle">Cercle</span>
+          <span class="tag" data-group="graphique" data-val="Carre / rectangle">Carré</span>
+          <span class="tag" data-group="graphique" data-val="Triangle">Triangle</span>
+          <span class="tag" data-group="graphique" data-val="Polygones">Polygones</span>
+          <span class="tag" data-group="graphique" data-val="Ellipse / ovale">Ellipse</span>
+          <span class="tag" data-group="graphique" data-val="Formes courbes">Formes courbes</span>
+          <span class="tag" data-group="graphique" data-val="Formes fluides / abstraites">Fluide</span>
+          <span class="tag" data-group="graphique" data-val="Silhouettes naturelles">Silhouette</span>
+        </div>
+
+        <div class="filter-sublabel">Structure</div>
+        <div class="tags">
+          <span class="tag" data-group="graphique" data-val="Centre">Centré</span>
+          <span class="tag" data-group="graphique" data-val="Asymetrique">Asymétrique</span>
+          <span class="tag" data-group="graphique" data-val="Rayonnant">Rayonnant</span>
+          <span class="tag" data-group="graphique" data-val="Circulaire / rotatif">Circulaire</span>
+          <span class="tag" data-group="graphique" data-val="Modulaire">Modulaire</span>
+          <span class="tag" data-group="graphique" data-val="Spirale">Spirale</span>
+          <span class="tag" data-group="graphique" data-val="2D plate">2D plate</span>
+          <span class="tag" data-group="graphique" data-val="3D simulee">3D simulée</span>
+        </div>
+
+        <div class="filter-sublabel">Symétrie</div>
+        <div class="tags">
+          <span class="tag" data-group="graphique" data-val="Verticale">Verticale</span>
+          <span class="tag" data-group="graphique" data-val="Horizontale">Horizontale</span>
+          <span class="tag" data-group="graphique" data-val="Radiale">Radiale</span>
+          <span class="tag" data-group="graphique" data-val="Centrale / bilaterale">Bilatérale</span>
+          <span class="tag" data-group="graphique" data-val="Asymetrie equilibree">Asymétrie équilibrée</span>
+        </div>
+
+        <div class="filter-sublabel">Couleur</div>
+        <div class="tags">
+          <span class="tag" data-group="graphique" data-val="Monochrome">Monochrome</span>
+          <span class="tag" data-group="graphique" data-val="Bichromie">Bichromie</span>
+          <span class="tag" data-group="graphique" data-val="Polychrome">Polychrome</span>
+          <span class="tag" data-group="graphique" data-val="Degrade">Dégradé</span>
+          <span class="tag" data-group="graphique" data-val="Chaude">Chaude</span>
+          <span class="tag" data-group="graphique" data-val="Froide">Froide</span>
+          <span class="tag" data-group="graphique" data-val="Sombre">Sombre</span>
+          <span class="tag" data-group="graphique" data-val="Metallique">Métallique</span>
+          <span class="tag" data-group="graphique" data-val="Pastel">Pastel</span>
+        </div>
+
+        <div class="filter-sublabel">Typographie</div>
+        <div class="tags">
           <span class="tag" data-group="graphique" data-val="Serif">Serif</span>
+          <span class="tag" data-group="graphique" data-val="Sans-serif">Sans-serif</span>
+          <span class="tag" data-group="graphique" data-val="Script">Script</span>
+          <span class="tag" data-group="graphique" data-val="Display">Display</span>
+          <span class="tag" data-group="graphique" data-val="Poids thin">Thin</span>
+          <span class="tag" data-group="graphique" data-val="Poids bold">Bold</span>
+          <span class="tag" data-group="graphique" data-val="Personnalisee">Personnalisée</span>
+        </div>
+
+        <div class="filter-sublabel">Texte / Symbole</div>
+        <div class="tags">
+          <span class="tag" data-group="graphique" data-val="Symbole seul">Symbole seul</span>
+          <span class="tag" data-group="graphique" data-val="Texte seul">Texte seul</span>
           <span class="tag" data-group="graphique" data-val="Monogramme">Monogramme</span>
-          <span class="tag" data-group="graphique" data-val="Symétrie">Symétrie</span>
-          <span class="tag" data-group="graphique" data-val="Espace négatif">Espace négatif</span>
-          <span class="tag" data-group="graphique" data-val="Couleur unique">Couleur unique</span>
+          <span class="tag" data-group="graphique" data-val="Espace negatif">Espace négatif</span>
+          <span class="tag" data-group="graphique" data-val="Texte integre">Texte intégré</span>
+        </div>
+
+        <div class="filter-sublabel">Style</div>
+        <div class="tags">
+          <span class="tag" data-group="graphique" data-val="Minimaliste">Minimaliste</span>
+          <span class="tag" data-group="graphique" data-val="Illustratif">Illustratif</span>
+          <span class="tag" data-group="graphique" data-val="Abstrait">Abstrait</span>
+          <span class="tag" data-group="graphique" data-val="Flat design">Flat design</span>
+          <span class="tag" data-group="graphique" data-val="Vintage">Vintage</span>
+          <span class="tag" data-group="graphique" data-val="Futuriste">Futuriste</span>
+          <span class="tag" data-group="graphique" data-val="Luxueux">Luxueux</span>
+          <span class="tag" data-group="graphique" data-val="Brutaliste">Brutaliste</span>
+        </div>
+
+        <div class="filter-sublabel">Symbolisme</div>
+        <div class="tags">
+          <span class="tag" data-group="graphique" data-val="Humains">Humains</span>
+          <span class="tag" data-group="graphique" data-val="Animaux">Animaux</span>
+          <span class="tag" data-group="graphique" data-val="Nature">Nature</span>
+          <span class="tag" data-group="graphique" data-val="Objets">Objets</span>
+          <span class="tag" data-group="graphique" data-val="Geographiques">Géographiques</span>
+          <span class="tag" data-group="graphique" data-val="Technologiques">Technologiques</span>
+          <span class="tag" data-group="graphique" data-val="Abstraits">Abstraits</span>
         </div>
       </div>
+
 
       <div class="brief-summary" id="brief-summary"></div>
 
@@ -1359,7 +1450,39 @@ async function importFromUrl() {
     statusEl.innerHTML = '<div class="imp-res-status-dot"></div>Claude analyse le contenu...';
     setFetchStatus('loading', 'Claude analyse le projet...');
 
-    const prompt = 'Tu es expert en branding et identite visuelle.\n\nVoici le contenu d\'une page de presentation d\'un projet de logo :\nURL : ' + url + '\n\nTEXTE DE LA PAGE :\n' + pageText + '\n\nURLS D\'IMAGES PRESENTES SUR LA PAGE :\n' + imgUrls.join('\n') + '\n\nReponds UNIQUEMENT en JSON valide, sans texte avant ou apres :\n{"nom_projet":"...","client":"...","agence":"...","annee":2024,"image_logo_url":"URL de l\'image la plus representative du logo final parmi celles listees. Choisis la plus grande, evite thumbnails et icones. Mets null si aucune ne convient.","brief":{"industrie":"...","valeurs":["...","...","..."],"cible":"...","positionnement":"haut de gamme|grand public|institutionnel|artisanal|engage"},"graphique":{"type":"wordmark|lettermark|logomark|combination|emblem","forme":"...","couleur_dominante":"...","style":"minimaliste|geometrique|organique|typographique|illustratif|abstrait","structure":"symetrie|rayonnement|repetition|libre","typographie":"serif|sans-serif|script|custom|aucune"},"description":"..."}';
+    const VOCAB_GRAPHIQUE = {
+      forme: ['Cercle','Carre / rectangle','Triangle','Polygones','Ligne / barre','Croix / X','Etoile','Ellipse / ovale','Formes courbes','Silhouettes naturelles','Gouttes','Formes fluides / abstraites'],
+      structure: ['Compact','Horizontal','Vertical / empile','Centre','Asymetrique','En bloc','Decentre','Modulaire','Ascendant','Descendant','Diagonal','Rayonnant','Circulaire / rotatif','Spirale','Zigzag','Lineaire','Ondule / courbe','Point focal central','Points focaux multiples','2D plate','3D simulee','Effet de volume'],
+      motifs: ['Motifs duplicatifs','Motifs radiaux','Motifs concentriques','Motifs en grille','Motifs en miroir','Superposition / overlay'],
+      symetrie: ['Verticale','Horizontale','Diagonale','Radiale','Centrale / bilaterale','Asymetrie equilibree'],
+      couleur: ['Monochrome','Bichromie','Polychrome','Degrade','Chaude','Froide','Neutre','Pastel','Vibrante','Sombre','Metallique'],
+      typographie: ['Serif','Sans-serif','Script','Display','Majuscules','Espacement large','Poids thin','Poids bold','Personnalisee'],
+      texte_symbole: ['Symbole seul','Texte seul','Texte + icone a gauche','Texte + icone au-dessus','Texte integre','Espace negatif','Monogramme'],
+      style: ['Minimaliste','Illustratif','Mascotte','Pictogramme','Abstrait','Flat design','Ombres longues','Skeuomorphique','Brutaliste','Vintage','Futuriste','Luxueux'],
+      symbolisme: ['Humains','Animaux','Objets','Nature','Geographiques','Technologiques','Mythologiques','Abstraits'],
+    };
+
+    const prompt = 'Tu es expert en branding et identite visuelle.' +
+      '\n\nVoici le contenu d\'une page de presentation d\'un projet de logo :' +
+      '\nURL : ' + url +
+      '\n\nTEXTE DE LA PAGE :\n' + pageText +
+      '\n\nURLS D\'IMAGES PRESENTES SUR LA PAGE :\n' + imgUrls.join('\n') +
+      '\n\nPour les attributs graphiques, utilise UNIQUEMENT les valeurs du vocabulaire suivant (choisis tous ceux qui s\'appliquent) :' +
+      '\nForme: ' + VOCAB_GRAPHIQUE.forme.join(', ') +
+      '\nStructure: ' + VOCAB_GRAPHIQUE.structure.join(', ') +
+      '\nMotifs: ' + VOCAB_GRAPHIQUE.motifs.join(', ') +
+      '\nSymetrie: ' + VOCAB_GRAPHIQUE.symetrie.join(', ') +
+      '\nCouleur: ' + VOCAB_GRAPHIQUE.couleur.join(', ') +
+      '\nTypographie: ' + VOCAB_GRAPHIQUE.typographie.join(', ') +
+      '\nTexte-Symbole: ' + VOCAB_GRAPHIQUE.texte_symbole.join(', ') +
+      '\nStyle: ' + VOCAB_GRAPHIQUE.style.join(', ') +
+      '\nSymbolisme: ' + VOCAB_GRAPHIQUE.symbolisme.join(', ') +
+      '\n\nReponds UNIQUEMENT en JSON valide, sans texte avant ou apres :' +
+      '\n{"nom_projet":"...","client":"...","agence":"...","annee":2024,"image_logo_url":"URL de l\'image la plus representative du logo final. Mets null si aucune ne convient.",' +
+      '"brief":{"industrie":"...","valeurs":["...","...","..."],"cible":"...","positionnement":"haut de gamme|grand public|institutionnel|artisanal|engage"},' +
+      '"graphique":{"forme":["val1","val2"],"structure":["val1"],"motifs":["val1"],"symetrie":["val1"],"couleur":["val1","val2"],"typographie":["val1"],"texte_symbole":["val1"],"style":["val1","val2"],"symbolisme":["val1"]},' +
+      '"description":"Une phrase resumant ce que le logo communique."}';
+
 
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -1396,7 +1519,22 @@ async function importFromUrl() {
     }
 
     const briefAttrs = [ai.brief?.industrie, ...(ai.brief?.valeurs||[]), ai.brief?.cible, ai.brief?.positionnement].filter(Boolean);
-    const graphicAttrs = [ai.graphique?.type, ai.graphique?.forme, ai.graphique?.couleur_dominante, ai.graphique?.style, ai.graphique?.structure, ai.graphique?.typographie !== 'aucune' ? ai.graphique?.typographie : null].filter(Boolean);
+    // Extraire tous les attributs graphiques par catégorie (nouvelle structure)
+    const g = ai.graphique || {};
+    const graphicAttrs = [
+      ...(Array.isArray(g.forme)         ? g.forme         : g.forme         ? [g.forme]         : []),
+      ...(Array.isArray(g.structure)      ? g.structure      : g.structure      ? [g.structure]      : []),
+      ...(Array.isArray(g.motifs)         ? g.motifs         : g.motifs         ? [g.motifs]         : []),
+      ...(Array.isArray(g.symetrie)       ? g.symetrie       : g.symetrie       ? [g.symetrie]       : []),
+      ...(Array.isArray(g.couleur)        ? g.couleur        : g.couleur        ? [g.couleur]        : []),
+      ...(Array.isArray(g.typographie)    ? g.typographie    : g.typographie    ? [g.typographie]    : []),
+      ...(Array.isArray(g.texte_symbole)  ? g.texte_symbole  : g.texte_symbole  ? [g.texte_symbole]  : []),
+      ...(Array.isArray(g.style)          ? g.style          : g.style          ? [g.style]          : []),
+      ...(Array.isArray(g.symbolisme)     ? g.symbolisme     : g.symbolisme     ? [g.symbolisme]     : []),
+      // Rétrocompat ancienne structure
+      ...(g.type && !g.texte_symbole      ? [g.type]         : []),
+      ...(g.couleur_dominante             ? [g.couleur_dominante] : []),
+    ].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i); // dédoublonner
 
     imp._pendingBrief   = briefAttrs;
     imp._pendingGraphic = graphicAttrs;
