@@ -1,0 +1,1939 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logo Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #141210;
+    --ink-2: #5a5650;
+    --ink-3: #a09b94;
+    --paper: #f7f4ef;
+    --paper-2: #eeebe4;
+    --paper-3: #e4e0d8;
+    --rule: #d8d3ca;
+    --accent: #c8501a;
+    --accent-pale: #faf0eb;
+    --teal: #1a6b5c;
+    --teal-pale: #eaf4f1;
+    --gold: #a07010;
+    --gold-pale: #faf5e0;
+    --blue: #1a3f8c;
+    --blue-pale: #edf1fb;
+  }
+
+  .header-nav { display: flex; gap: 2px; background: rgba(255,255,255,0.07); padding: 3px; border-radius: 6px; }
+  .hnav {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 12.5px; font-weight: 500;
+    color: rgba(247,244,239,0.5);
+    background: none; border: none;
+    padding: 6px 14px; border-radius: 4px;
+    cursor: pointer; transition: all 0.15s; letter-spacing: 0.01em;
+  }
+  .hnav:hover { color: rgba(247,244,239,0.85); }
+  .hnav.active { background: rgba(255,255,255,0.12); color: #f7f4ef; }
+
+
+
+  body {
+    font-family: 'Instrument Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    font-size: 15px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--ink);
+    padding: 0 2.5rem;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+  }
+
+  .brand {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 19px;
+    color: var(--paper);
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brand-tag {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(200,80,26,0.15);
+    padding: 3px 8px;
+    border-radius: 2px;
+    font-style: normal;
+  }
+
+  .header-count {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 11px;
+    color: rgba(247,244,239,0.4);
+    letter-spacing: 0.05em;
+  }
+
+  /* ── LAYOUT ── */
+  .app { display: flex; min-height: calc(100vh - 60px); }
+
+  /* ── SIDEBAR BRIEF ── */
+  .sidebar {
+    width: 320px;
+    flex-shrink: 0;
+    background: var(--paper);
+    border-right: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 60px;
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+  }
+
+  .sidebar-head {
+    padding: 1.75rem 1.75rem 1rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .sidebar-label {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 0.5rem;
+  }
+
+  .sidebar-title {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .sidebar-body { padding: 1.25rem 1.75rem; flex: 1; display: flex; flex-direction: column; gap: 1.25rem; }
+
+  .filter-section { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .filter-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--ink-2);
+    text-transform: uppercase;
+  }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .tag {
+    font-size: 12.5px;
+    font-weight: 400;
+    padding: 5px 12px;
+    border-radius: 2px;
+    border: 1px solid var(--rule);
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--ink-2);
+    background: var(--paper);
+    user-select: none;
+    line-height: 1;
+  }
+  .tag:hover { border-color: var(--ink-3); color: var(--ink); }
+  .tag.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .tag.on-accent { background: var(--accent-pale); color: var(--accent); border-color: var(--accent); }
+  .tag.on-teal { background: var(--teal-pale); color: var(--teal); border-color: var(--teal); }
+
+  .divider { height: 1px; background: var(--rule); }
+
+  .btn-search {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 13.5px;
+    font-weight: 500;
+    padding: 13px 20px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    width: 100%;
+    letter-spacing: 0.02em;
+    transition: opacity 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-search:hover { opacity: 0.88; }
+  .btn-search svg { transition: transform 0.2s; }
+  .btn-search:hover svg { transform: translateX(3px); }
+
+  .brief-summary {
+    font-size: 11.5px;
+    color: var(--ink-3);
+    line-height: 1.6;
+    padding: 10px 12px;
+    background: var(--paper-2);
+    border-radius: 3px;
+    border-left: 2px solid var(--rule);
+    display: none;
+  }
+  .brief-summary.visible { display: block; }
+
+  /* ── MAIN ── */
+  main { flex: 1; display: flex; flex-direction: column; }
+
+  /* État initial */
+  .state-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .state-empty-icon {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 52px;
+    color: var(--paper-3);
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+
+  .state-empty-title {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 20px;
+    color: var(--ink-2);
+    letter-spacing: -0.01em;
+  }
+
+  .state-empty-sub {
+    font-size: 13.5px;
+    color: var(--ink-3);
+    max-width: 320px;
+    line-height: 1.6;
+  }
+
+  /* Barre résultats */
+  .results-bar {
+    padding: 1rem 2rem;
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    display: none;
+  }
+  .results-bar.visible { display: flex; }
+
+  .results-info { display: flex; align-items: baseline; gap: 10px; }
+
+  .results-count {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+  }
+
+  .results-sub {
+    font-size: 12.5px;
+    color: var(--ink-3);
+  }
+
+  .results-brief-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .rtag {
+    font-size: 11px;
+    font-family: 'Instrument Sans', sans-serif;
+    padding: 3px 9px;
+    border-radius: 2px;
+    letter-spacing: 0.02em;
+  }
+  .rtag.brief { background: var(--blue-pale); color: var(--blue); }
+  .rtag.valeur { background: var(--accent-pale); color: var(--accent); }
+  .rtag.graphique { background: var(--teal-pale); color: var(--teal); }
+
+  /* Grille logos */
+  .logo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border-top: 1px solid var(--rule);
+    display: none;
+  }
+  .logo-grid.visible { display: grid; }
+
+  .logo-card {
+    background: var(--paper);
+    cursor: pointer;
+    transition: background 0.15s;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: cardIn 0.35s ease forwards;
+  }
+  .logo-card:hover { background: var(--paper-2); }
+
+  @keyframes cardIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .logo-thumb {
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .logo-symbol {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 56px;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    transition: transform 0.3s ease;
+  }
+  .logo-card:hover .logo-symbol { transform: scale(1.06); }
+
+  .sim-pill {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 2px;
+    background: rgba(20,18,16,0.75);
+    color: #f7f4ef;
+    letter-spacing: 0.04em;
+  }
+
+  .match-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: var(--accent);
+    opacity: 0.7;
+    transition: width 0.6s ease;
+  }
+
+  .logo-body { padding: 14px 16px 16px; }
+
+  .logo-name {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    margin-bottom: 2px;
+  }
+
+  .logo-agency {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 10.5px;
+    color: var(--ink-3);
+    margin-bottom: 10px;
+    letter-spacing: 0.02em;
+  }
+
+  .logo-attrs { display: flex; flex-wrap: wrap; gap: 4px; }
+
+  .attr-pill {
+    font-size: 10.5px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    letter-spacing: 0.01em;
+  }
+  .attr-pill.b { background: var(--blue-pale); color: var(--blue); }
+  .attr-pill.g { background: var(--teal-pale); color: var(--teal); }
+
+  /* ── PANEL DÉTAIL ── */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(20,18,16,0.5);
+    z-index: 300;
+    backdrop-filter: blur(2px);
+  }
+  .overlay.open { display: block; }
+
+  .panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 440px;
+    height: 100vh;
+    background: var(--paper);
+    border-left: 1px solid var(--rule);
+    z-index: 400;
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  .panel.open { transform: translateX(0); }
+
+  .panel-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    background: var(--paper-2);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--ink-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+  }
+  .panel-close:hover { background: var(--paper-3); }
+
+  .panel-thumb {
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .panel-symbol {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 80px;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+
+  .panel-body { padding: 1.5rem 1.75rem; }
+
+  .panel-name {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 26px;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+
+  .panel-agency {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 11px;
+    color: var(--ink-3);
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.04em;
+  }
+
+  .panel-sim {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    background: var(--paper-2);
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+  }
+
+  .panel-sim-score {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 36px;
+    letter-spacing: -0.03em;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .panel-sim-label { font-size: 12.5px; color: var(--ink-2); line-height: 1.5; }
+
+  .panel-section { margin-bottom: 1.25rem; }
+
+  .panel-section-label {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 8px;
+  }
+
+  .panel-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .panel-tag {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 2px;
+    font-weight: 400;
+  }
+  .panel-tag.in { background: var(--blue-pale); color: var(--blue); }
+  .panel-tag.out { background: var(--teal-pale); color: var(--teal); }
+  .panel-tag.match { background: var(--accent-pale); color: var(--accent); border: 1px solid rgba(200,80,26,0.2); }
+
+  .match-reasons {
+    font-size: 12.5px;
+    color: var(--ink-2);
+    line-height: 1.7;
+    background: var(--paper-2);
+    padding: 12px 14px;
+    border-radius: 3px;
+    border-left: 2px solid var(--accent);
+  }
+
+  /* Stat mini dans le panel */
+  .mini-stats { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+
+  .mini-stat-row { display: flex; align-items: center; gap: 10px; }
+
+  .mini-stat-label { font-size: 12px; color: var(--ink-2); width: 180px; flex-shrink: 0; }
+
+  .mini-stat-track {
+    flex: 1;
+    height: 5px;
+    background: var(--paper-3);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .mini-stat-fill {
+    height: 100%;
+    background: var(--teal);
+    border-radius: 10px;
+    transition: width 0.7s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .mini-stat-pct {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 11px;
+    color: var(--ink-2);
+    width: 32px;
+    text-align: right;
+  }
+
+  /* Pagination / load more */
+  .load-more {
+    padding: 2rem;
+    text-align: center;
+    display: none;
+  }
+  .load-more.visible { display: block; }
+
+  .btn-more {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 13px;
+    padding: 10px 24px;
+    background: none;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    cursor: pointer;
+    color: var(--ink-2);
+    transition: all 0.15s;
+  }
+  .btn-more:hover { border-color: var(--ink-3); color: var(--ink); }
+
+  /* Skeleton loading */
+  .skeleton-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    display: none;
+  }
+  .skeleton-grid.visible { display: grid; }
+
+  .skeleton-card { background: var(--paper); }
+
+  .skeleton-thumb {
+    height: 160px;
+    background: var(--paper-2);
+    position: relative;
+    overflow: hidden;
+  }
+  .skeleton-thumb::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+    animation: shimmer 1.4s infinite;
+  }
+  @keyframes shimmer { from{transform:translateX(-100%)} to{transform:translateX(100%)} }
+
+  .skeleton-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .skeleton-line { height: 12px; background: var(--paper-2); border-radius: 2px; }
+  /* ── IMPORTER ── */
+  .view-root { display: block; }
+  .imp-layout { display: flex; min-height: calc(100vh - 60px); }
+
+  .imp-left {
+    width: 340px; flex-shrink: 0;
+    border-right: 1px solid var(--rule);
+    padding: 1.5rem 1.5rem 2rem;
+    display: flex; flex-direction: column; gap: 1.25rem;
+    overflow-y: auto; max-height: calc(100vh - 60px);
+  }
+  .imp-right {
+    flex: 1; overflow-y: auto;
+    max-height: calc(100vh - 60px);
+    display: flex; flex-direction: column;
+  }
+  .imp-section { display: flex; flex-direction: column; gap: 7px; }
+  .imp-section-label {
+    font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2);
+  }
+  .imp-input {
+    font-family: 'Instrument Sans', sans-serif; font-size: 13px;
+    padding: 9px 11px; border: 1px solid var(--rule); border-radius: 4px;
+    background: var(--paper); color: var(--ink); outline: none;
+    transition: border-color 0.15s; width: 100%;
+  }
+  .imp-input:focus { border-color: var(--ink-3); }
+  .imp-hint { font-size: 11.5px; color: var(--ink-3); line-height: 1.5; }
+  .imp-divider { height: 1px; background: var(--rule); margin: 0.25rem 0; }
+
+  /* Upload zone */
+  .imp-upload-zone {
+    border: 1.5px dashed var(--rule); border-radius: 6px;
+    padding: 1.25rem; cursor: pointer; transition: all 0.15s;
+    text-align: center;
+  }
+  .imp-upload-zone:hover { border-color: var(--ink-3); background: var(--paper-2); }
+  .imp-upload-zone.has-image { border-style: solid; border-color: var(--teal); padding: 0; overflow: hidden; }
+  .imp-upload-inner { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .imp-upload-icon { font-size: 24px; color: var(--ink-3); }
+  .imp-upload-text { font-size: 13px; font-weight: 500; color: var(--ink-2); }
+  .imp-upload-sub { font-size: 11px; color: var(--ink-3); }
+  .imp-upload-preview {
+    width: 100%; height: 120px; object-fit: contain;
+    background: var(--paper-2); padding: 12px; display: block;
+  }
+  .imp-upload-replace {
+    font-size: 11px; color: var(--ink-3); padding: 6px;
+    text-align: center; background: var(--paper-2);
+    border-top: 1px solid var(--rule);
+  }
+
+  .btn-scrape {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 13px; font-weight: 600;
+    padding: 10px 16px; background: var(--accent); color: white;
+    border: none; border-radius: 4px; cursor: pointer;
+    white-space: nowrap; display: flex; align-items: center; gap: 6px;
+    transition: opacity 0.15s;
+  }
+  .btn-scrape:hover { opacity: 0.88; }
+  .btn-scrape:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  /* Liste projets importés */
+  .imp-sources { display: flex; flex-direction: column; gap: 1px; }
+  .imp-empty-list { font-size: 12px; color: var(--ink-3); padding: 10px 0; }
+  .imp-source-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; background: var(--paper);
+    border: 1px solid var(--rule); border-radius: 4px;
+    margin-bottom: 4px;
+  }
+  .imp-source-thumb {
+    width: 36px; height: 36px; border-radius: 3px;
+    background: var(--paper-2); flex-shrink: 0;
+    overflow: hidden; display: flex; align-items: center; justify-content: center;
+  }
+  .imp-source-thumb img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
+  .imp-source-info { flex: 1; min-width: 0; }
+  .imp-source-name { font-size: 12.5px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .imp-source-meta { font-size: 10.5px; color: var(--ink-3); }
+  .imp-source-del {
+    font-size: 16px; color: var(--ink-3); background: none; border: none;
+    cursor: pointer; padding: 2px 4px; border-radius: 3px; line-height: 1;
+    transition: all 0.15s; flex-shrink: 0;
+  }
+  .imp-source-del:hover { color: var(--accent); background: var(--accent-pale); }
+
+  /* Colonne droite — résultat */
+  .imp-right-empty {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 4rem 2rem; text-align: center; gap: 10px;
+  }
+  .imp-right-empty-icon { font-size: 40px; color: var(--paper-3); }
+  .imp-right-empty-title { font-size: 16px; font-weight: 600; color: var(--ink-2); }
+  .imp-right-empty-sub { font-size: 13px; color: var(--ink-3); max-width: 300px; line-height: 1.6; }
+
+  #imp-result { padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .imp-res-preview {
+    display: flex; gap: 1.25rem; align-items: flex-start;
+    padding: 1.25rem; background: var(--paper-2);
+    border-radius: 8px; border: 1px solid var(--rule);
+  }
+  .imp-res-img-wrap {
+    width: 100px; height: 100px; flex-shrink: 0;
+    border-radius: 6px; overflow: hidden; background: white;
+    border: 1px solid var(--rule);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .imp-res-img-wrap img { width: 100%; height: 100%; object-fit: contain; padding: 8px; }
+  .imp-res-name { font-size: 17px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+  .imp-res-meta { font-size: 12px; color: var(--ink-3); margin-bottom: 10px; }
+  .imp-res-status {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11.5px; font-weight: 500;
+    padding: 4px 10px; border-radius: 20px;
+  }
+  .imp-res-status.analyzing { background: var(--accent-pale); color: var(--accent); }
+  .imp-res-status.done { background: var(--teal-pale); color: var(--teal); }
+  .imp-res-status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .imp-res-status.analyzing .imp-res-status-dot { animation: pulse 1s ease-in-out infinite; }
+
+  .imp-res-section { display: flex; flex-direction: column; gap: 8px; }
+  .imp-res-section-label {
+    font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+  .imp-res-tags { display: flex; flex-wrap: wrap; gap: 6px; min-height: 28px; }
+  .imp-res-tag {
+    font-size: 12.5px; padding: 4px 11px; border-radius: 3px; cursor: pointer;
+    transition: opacity 0.15s; position: relative;
+  }
+  .imp-res-tag.b { background: var(--blue-pale); color: var(--blue); }
+  .imp-res-tag.g { background: var(--teal-pale); color: var(--teal); }
+  .imp-res-tag:hover::after {
+    content: '✕'; position: absolute; top: -4px; right: -4px;
+    font-size: 9px; background: var(--accent); color: white;
+    width: 14px; height: 14px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .imp-tag-add {
+    font-size: 12px; padding: 4px 10px; border-radius: 3px;
+    border: 1px dashed var(--rule); color: var(--ink-3); cursor: pointer;
+    background: none; font-family: 'Instrument Sans', sans-serif;
+    transition: all 0.15s;
+  }
+  .imp-tag-add:hover { border-color: var(--ink-3); color: var(--ink); }
+
+  .imp-res-desc {
+    font-size: 13px; line-height: 1.7; color: var(--ink-2);
+    padding: 12px 14px; background: var(--paper-2);
+    border-radius: 4px; border-left: 2px solid var(--accent);
+  }
+
+  .imp-res-actions { display: flex; gap: 10px; padding-top: 0.5rem; }
+  .btn-save {
+    font-family: 'Instrument Sans', sans-serif; font-size: 13px; font-weight: 600;
+    padding: 11px 20px; background: var(--ink); color: var(--paper);
+    border: none; border-radius: 4px; cursor: pointer; transition: opacity 0.15s;
+  }
+  .btn-save:hover { opacity: 0.85; }
+  .btn-cancel {
+    font-family: 'Instrument Sans', sans-serif; font-size: 13px;
+    padding: 11px 16px; background: none; color: var(--ink-2);
+    border: 1px solid var(--rule); border-radius: 4px; cursor: pointer; transition: all 0.15s;
+  }
+  .btn-cancel:hover { border-color: var(--ink-3); color: var(--ink); }
+
+  .imp-textarea {
+    resize: vertical; min-height: 90px; max-height: 180px;
+    font-family: 'Instrument Sans', sans-serif; font-size: 12px;
+    line-height: 1.5;
+  }
+  .imp-paste-steps { display: flex; flex-direction: column; gap: 5px; margin-bottom: 2px; }
+  .imp-paste-step {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--ink-2); line-height: 1.4;
+  }
+  .imp-paste-num {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--ink); color: var(--paper);
+    font-size: 10px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  kbd {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 10px; font-weight: 600;
+    background: var(--paper-2); border: 1px solid var(--rule);
+    border-radius: 3px; padding: 1px 5px; color: var(--ink-2);
+  }
+
+  .imp-tabs {
+    display: flex; gap: 2px;
+    background: var(--paper-2); padding: 3px; border-radius: 6px;
+  }
+  .imp-tab {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 12px; font-weight: 500;
+    flex: 1; padding: 6px 10px; border: none; border-radius: 4px;
+    cursor: pointer; background: none; color: var(--ink-2);
+    transition: all 0.15s;
+  }
+  .imp-tab:hover { color: var(--ink); }
+  .imp-tab.active { background: var(--paper); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+  /* URL field */
+  .imp-url-field { display: flex; gap: 6px; }
+  .btn-fetch {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 12.5px; font-weight: 600;
+    padding: 9px 13px; background: var(--ink); color: var(--paper);
+    border: none; border-radius: 4px; cursor: pointer;
+    display: flex; align-items: center; gap: 5px;
+    white-space: nowrap; transition: opacity 0.15s; flex-shrink: 0;
+  }
+  .btn-fetch:hover { opacity: 0.85; }
+  .btn-fetch:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* Fetch status */
+  .imp-fetch-status {
+    font-size: 12px; padding: 8px 12px;
+    border-radius: 4px; display: flex; align-items: center; gap: 8px;
+  }
+  .imp-fetch-status.loading { background: var(--paper-2); color: var(--ink-2); }
+  .imp-fetch-status.error   { background: #fdf0eb; color: var(--accent); }
+  .imp-fetch-status.ok      { background: var(--teal-pale); color: var(--teal); }
+  .imp-fetch-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .imp-fetch-status.loading .imp-fetch-dot { animation: pulse 1s ease-in-out infinite; }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    Logo Intelligence
+    <span class="brand-tag">Prototype</span>
+  </div>
+  <nav class="header-nav">
+    <button class="hnav active" onclick="switchView('explorer', this)">Explorer</button>
+    <button class="hnav" onclick="switchView('importer', this)">Importer un portfolio</button>
+  </nav>
+  <div class="header-count" id="header-count">847 logos · 11 agences</div>
+</header>
+
+<div id="view-explorer" class="view-root">
+<div class="app">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <div class="sidebar-label">Outil de recherche</div>
+      <div class="sidebar-title">Construis ton brief</div>
+    </div>
+
+    <div class="sidebar-body">
+
+      <div class="filter-section">
+        <div class="filter-label">Industrie</div>
+        <div class="tags" id="tags-industrie">
+          <span class="tag" data-group="industrie" data-val="Finance & Banque">Finance</span>
+          <span class="tag" data-group="industrie" data-val="Luxe & Prestige">Luxe</span>
+          <span class="tag" data-group="industrie" data-val="Technologie">Tech</span>
+          <span class="tag" data-group="industrie" data-val="Santé">Santé</span>
+          <span class="tag" data-group="industrie" data-val="Sport">Sport</span>
+          <span class="tag" data-group="industrie" data-val="Culture & Médias">Culture</span>
+          <span class="tag" data-group="industrie" data-val="Alimentation">Food</span>
+          <span class="tag" data-group="industrie" data-val="Mobilité">Mobilité</span>
+          <span class="tag" data-group="industrie" data-val="Énergie">Énergie</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="filter-section">
+        <div class="filter-label">Valeurs à transmettre</div>
+        <div class="tags" id="tags-valeurs">
+          <span class="tag" data-group="valeurs" data-val="Confiance">Confiance</span>
+          <span class="tag" data-group="valeurs" data-val="Innovation">Innovation</span>
+          <span class="tag" data-group="valeurs" data-val="Solidité">Solidité</span>
+          <span class="tag" data-group="valeurs" data-val="Élégance">Élégance</span>
+          <span class="tag" data-group="valeurs" data-val="Dynamisme">Dynamisme</span>
+          <span class="tag" data-group="valeurs" data-val="Prestige">Prestige</span>
+          <span class="tag" data-group="valeurs" data-val="Tradition">Tradition</span>
+          <span class="tag" data-group="valeurs" data-val="Humanité">Humanité</span>
+          <span class="tag" data-group="valeurs" data-val="Durabilité">Durabilité</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="filter-section">
+        <div class="filter-label">Cible</div>
+        <div class="tags" id="tags-cible">
+          <span class="tag" data-group="cible" data-val="B2B">B2B</span>
+          <span class="tag" data-group="cible" data-val="B2C Grand public">B2C Grand public</span>
+          <span class="tag" data-group="cible" data-val="B2C Premium">B2C Premium</span>
+          <span class="tag" data-group="cible" data-val="Institutionnel">Institutionnel</span>
+          <span class="tag" data-group="cible" data-val="Jeunes actifs">Jeunes actifs</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="filter-section">
+        <div class="filter-label">Attributs graphiques souhaités</div>
+        <div class="tags" id="tags-graphique">
+          <span class="tag" data-group="graphique" data-val="Forme ronde">Forme ronde</span>
+          <span class="tag" data-group="graphique" data-val="Géométrique">Géométrique</span>
+          <span class="tag" data-group="graphique" data-val="Minimalisme">Minimalisme</span>
+          <span class="tag" data-group="graphique" data-val="Serif">Serif</span>
+          <span class="tag" data-group="graphique" data-val="Monogramme">Monogramme</span>
+          <span class="tag" data-group="graphique" data-val="Symétrie">Symétrie</span>
+          <span class="tag" data-group="graphique" data-val="Espace négatif">Espace négatif</span>
+          <span class="tag" data-group="graphique" data-val="Couleur unique">Couleur unique</span>
+        </div>
+      </div>
+
+      <div class="brief-summary" id="brief-summary"></div>
+
+      <button class="btn-search" id="btn-search" onclick="runSearch()">
+        Trouver les logos similaires
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M3 7h8M8 4l3 3-3 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main id="main">
+
+    <div class="state-empty" id="state-empty">
+      <div class="state-empty-icon">◈</div>
+      <div class="state-empty-title">Sélectionne des critères de brief</div>
+      <div class="state-empty-sub">Les logos dont les briefs initiaux correspondaient à tes critères s'afficheront ici, triés par similarité.</div>
+    </div>
+
+    <!-- Skeleton loading -->
+    <div class="results-bar" id="results-bar"></div>
+    <div class="skeleton-grid" id="skeleton-grid">
+      <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-body"><div class="skeleton-line" style="width:60%"></div><div class="skeleton-line" style="width:40%"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-body"><div class="skeleton-line" style="width:70%"></div><div class="skeleton-line" style="width:50%"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-body"><div class="skeleton-line" style="width:55%"></div><div class="skeleton-line" style="width:45%"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-body"><div class="skeleton-line" style="width:65%"></div><div class="skeleton-line" style="width:35%"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-body"><div class="skeleton-line" style="width:50%"></div><div class="skeleton-line" style="width:60%"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-body"><div class="skeleton-line" style="width:75%"></div><div class="skeleton-line" style="width:40%"></div></div></div>
+    </div>
+
+    <div class="logo-grid" id="logo-grid"></div>
+    <div class="load-more" id="load-more">
+      <button class="btn-more">Afficher plus de résultats</button>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── OVERLAY + PANEL ── -->
+<div class="overlay" id="overlay" onclick="closePanel()"></div>
+<div class="panel" id="panel">
+  <button class="panel-close" onclick="closePanel()">✕</button>
+  <div class="panel-thumb" id="panel-thumb"></div>
+  <div class="panel-body" id="panel-body"></div>
+</div>
+
+</div><!-- /view-explorer -->
+
+<!-- ══════════════════════════════════════════════
+     VUE IMPORTER
+══════════════════════════════════════════════ -->
+<div id="view-importer" class="view-root" style="display:none">
+<div class="imp-layout">
+
+  <!-- Colonne gauche : formulaire + liste projets importés -->
+  <div class="imp-left">
+
+    <div class="imp-section">
+      <div class="imp-section-label">Clé API Anthropic</div>
+      <input type="password" id="api-key" class="imp-input" placeholder="sk-ant-..." autocomplete="off">
+      <div class="imp-hint">Utilisée uniquement dans ton navigateur, jamais transmise ailleurs. <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--accent)">Obtenir une clé →</a></div>
+    </div>
+
+    <div class="imp-divider"></div>
+
+    <!-- Formulaire import projet unique -->
+    <div class="imp-section">
+      <div class="imp-section-label">Importer un projet</div>
+
+      <!-- Onglets Manuel / URL -->
+      <div class="imp-tabs">
+        <button class="imp-tab active" id="tab-url" onclick="switchTab('url')">Coller le texte</button>
+        <button class="imp-tab" id="tab-manual" onclick="switchTab('manual')">Upload manuel</button>
+      </div>
+
+      <!-- Tab Coller texte -->
+      <div id="tab-content-url" style="display:flex;flex-direction:column;gap:6px">
+        <div class="imp-paste-steps">
+          <div class="imp-paste-step"><span class="imp-paste-num">1</span>Va sur la page du projet dans ton navigateur</div>
+          <div class="imp-paste-step"><span class="imp-paste-num">2</span>Fais <kbd>Ctrl+A</kbd> puis <kbd>Ctrl+C</kbd> pour tout copier</div>
+          <div class="imp-paste-step"><span class="imp-paste-num">3</span>Colle ci-dessous avec <kbd>Ctrl+V</kbd></div>
+        </div>
+        <input type="text" id="proj-url" class="imp-input" placeholder="URL du projet (pour référence)">
+        <textarea id="proj-paste" class="imp-input imp-textarea"
+          placeholder="Colle ici le texte de la page (Ctrl+A sur la page, Ctrl+C, puis Ctrl+V ici)…"
+          oninput="document.getElementById('btn-fetch').disabled = this.value.trim().length < 50"></textarea>
+        <button class="btn-fetch" id="btn-fetch" onclick="fetchFromUrl()" disabled>
+          <span id="btn-fetch-label">Analyser avec Claude</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="imp-fetch-status" id="imp-fetch-status" style="display:none"></div>
+      </div>
+
+      <!-- Tab Manuel -->
+      <div id="tab-content-manual" style="display:none">
+        <!-- Upload image -->
+        <div class="imp-upload-zone" id="imp-upload-zone" onclick="document.getElementById('img-input').click()">
+          <input type="file" id="img-input" accept="image/*" style="display:none" onchange="onImageSelected(this)">
+          <div class="imp-upload-inner" id="imp-upload-inner">
+            <div class="imp-upload-icon">⬡</div>
+            <div class="imp-upload-text">Glisse ou clique pour uploader l'image du logo</div>
+            <div class="imp-upload-sub">PNG, JPG, SVG · max 5 Mo</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Champs communs (toujours visibles) -->
+      <input type="text" id="proj-name"   class="imp-input" placeholder="Nom du projet">
+      <input type="text" id="proj-client" class="imp-input" placeholder="Client">
+      <input type="text" id="proj-agency" class="imp-input" placeholder="Agence / Designer">
+      <input type="number" id="proj-year" class="imp-input" placeholder="Année" min="1900" max="2099">
+
+      <button class="btn-scrape" id="btn-analyze" onclick="analyzeProject()" style="width:100%;justify-content:center" disabled>
+        <span id="btn-analyze-label">Analyser avec Claude</span>
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2.5 6.5h8M7.5 3.5l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+    <div class="imp-divider"></div>
+
+    <!-- Projets importés -->
+    <div class="imp-section">
+      <div class="imp-section-label">Projets importés <span id="imp-count-label" style="font-weight:400;color:var(--ink-3)">(0)</span></div>
+      <div class="imp-sources" id="imp-sources">
+        <div class="imp-empty-list">Aucun projet encore importé</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Colonne droite : résultat de l'analyse en cours -->
+  <div class="imp-right">
+    <div class="imp-right-empty" id="imp-right-empty">
+      <div class="imp-right-empty-icon">◈</div>
+      <div class="imp-right-empty-title">Colle une URL ou uploade une image</div>
+      <div class="imp-right-empty-sub">Claude extraira le logo, le brief et les attributs graphiques automatiquement.</div>
+    </div>
+
+    <!-- Résultat analyse -->
+    <div id="imp-result" style="display:none; padding:2rem; display:none; flex-direction:column; gap:1.5rem;">
+
+      <!-- Aperçu image + statut -->
+      <div class="imp-res-preview">
+        <div class="imp-res-img-wrap" id="imp-res-img-wrap"></div>
+        <div class="imp-res-info">
+          <div class="imp-res-name" id="imp-res-name">—</div>
+          <div class="imp-res-meta" id="imp-res-meta">—</div>
+          <div class="imp-res-status" id="imp-res-status"></div>
+        </div>
+      </div>
+
+      <!-- Attributs brief -->
+      <div class="imp-res-section">
+        <div class="imp-res-section-label">Attributs de brief (INPUT)</div>
+        <div class="imp-res-tags" id="imp-res-brief"></div>
+      </div>
+
+      <!-- Attributs graphiques -->
+      <div class="imp-res-section">
+        <div class="imp-res-section-label">Attributs graphiques (OUTPUT)</div>
+        <div class="imp-res-tags" id="imp-res-graphic"></div>
+      </div>
+
+      <!-- Description IA -->
+      <div class="imp-res-section" id="imp-res-desc-wrap" style="display:none">
+        <div class="imp-res-section-label">Analyse Claude</div>
+        <div class="imp-res-desc" id="imp-res-desc"></div>
+      </div>
+
+      <!-- Actions -->
+      <div class="imp-res-actions">
+        <button class="btn-save" onclick="saveProject()">Ajouter à la base →</button>
+        <button class="btn-cancel" onclick="resetImporter()">Annuler</button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</div><!-- /view-importer -->
+
+<script>
+// ── BASE DE DONNÉES FICTIVE (représentative) ──
+const DB = [
+  {
+    id:1, name:'Chase Bank', client:'JPMorgan Chase', agency:'Chermayeff & Geismar', year:1961,
+    symbol:'◆', bg:'#dde8f8', color:'#1a3f8c',
+    brief: ['Finance & Banque','Confiance','Solidité','Institutionnel','B2B'],
+    graphic: ['Forme close','Géométrique','Symétrie','Couleur unique','Minimalisme','Sans-serif'],
+    desc:"Redesign institutionnel pour la premiere banque americaine. La forme octogonale traduit solidite et rigueur financiere.",
+    stats: [['Forme géométrique close', 92], ['Symétrie stricte', 87], ['Bleu dominant', 84], ['Minimalisme', 78]],
+  },
+  {
+    id:2, name:'HSBC', client:'HSBC Holdings', agency:'Interbrand', year:1983,
+    symbol:'⬡', bg:'#fdf0eb', color:'#c8501a',
+    brief: ['Finance & Banque','International','Confiance','Tradition','B2C Grand public'],
+    graphic: ['Structure en rayonnement','Géométrique','Symétrie','Forme close','Couleur unique'],
+    desc:"Identite globale construite sur le drapeau de la Hongkong and Shanghai Banking Corporation. La structure hexagonale en rayonnement communique la presence mondiale.",
+    stats: [['Structure en rayonnement', 95], ['Rouge & blanc', 88], ['Symétrie', 82], ['Géométrique strict', 79]],
+  },
+  {
+    id:3, name:'Goldman Sachs', client:'Goldman Sachs', agency:'Siegel+Gale', year:1999,
+    symbol:'GS', bg:'#f0ede8', color:'#141210',
+    brief: ['Finance & Banque','Prestige','Confiance','B2B','Exclusivité'],
+    graphic: ['Monogramme','Serif','Minimalisme','Couleur unique','Sans fioritures'],
+    desc:"Refonte minimaliste pour l'une des banques d'investissement les plus puissantes. Le wordmark serif transmet l'autorite sans ostentation.",
+    stats: [['Wordmark serif', 91], ['Noir & blanc', 86], ['Monogramme', 74], ['Minimalisme radical', 70]],
+  },
+  {
+    id:4, name:'Rolex', client:'Rolex SA', agency:'In-house', year:1965,
+    symbol:'♛', bg:'#fdf5e0', color:'#a07010',
+    brief: ['Luxe & Prestige','Tradition','Prestige','B2C Premium','Excellence'],
+    graphic: ['Couronne','Géométrique','Or','Serif','Héritage','Couleur unique'],
+    desc:"La couronne de Rolex est l'un des symboles les plus reconnus au monde. Chaque pointe represente un des cinq doigts qui remonte la montre.",
+    stats: [['Iconographie symbolique', 94], ['Or & noir', 88], ['Serif', 81], ['Héritage', 77]],
+  },
+  {
+    id:5, name:'Visa', client:'Visa Inc.', agency:'Chermayeff & Geismar', year:1976,
+    symbol:'VISA', bg:'#dde8f8', color:'#1a3f8c',
+    brief: ['Finance & Banque','Confiance','Accessibilité','B2C Grand public','International'],
+    graphic: ['Wordmark','Sans-serif','Bandes horizontales','Couleur unique','Lisibilité'],
+    desc:"L'une des marques les plus reconnaissables. Les bandes horizontales bleues et dorees renforcent la lecture a distance sur tous supports.",
+    stats: [['Wordmark sans-serif', 97], ['Bandes horizontales', 83], ['Bleu dominant', 91], ['Lisibilité maximale', 88]],
+  },
+  {
+    id:6, name:'American Express', client:'Amex', agency:'In-house', year:1958,
+    symbol:'Amex', bg:'#dde8f8', color:'#1a3f8c',
+    brief: ['Finance & Banque','Prestige','B2C Premium','Confiance','Exclusivité'],
+    graphic: ['Bleu ciel','Sans-serif','Forme rectangulaire','Centurion','Couleur unique'],
+    desc:"Le bleu caracteristique d'American Express est devenu synonyme de confiance et prestige dans la finance haut de gamme.",
+    stats: [['Bleu dominant', 93], ['Sans-serif', 80], ['Espace négatif', 68], ['Forme close', 72]],
+  },
+  {
+    id:7, name:'Zurich Insurance', client:'Zurich', agency:'Pentagram', year:2012,
+    symbol:'Z', bg:'#fdecea', color:'#b83020',
+    brief: ['Finance & Banque','Confiance','Protection','Solidité','B2B'],
+    graphic: ['Monogramme','Spirale','Rouge','Mouvement','Forme dynamique'],
+    desc:"Pentagram a transforme la lettre Z en symbole de mouvement et protection. La spirale integree suggere la continuite et la solidite.",
+    stats: [['Monogramme', 85], ['Rouge dominant', 78], ['Mouvement / dynamisme', 71], ['Forme ouverte', 66]],
+  },
+  {
+    id:8, name:'Barclays', client:'Barclays PLC', agency:'Lambie-Nairn', year:1986,
+    symbol:'◈', bg:'#dde8f8', color:'#1a3f8c',
+    brief: ['Finance & Banque','Confiance','Solidité','Tradition','B2C Premium'],
+    graphic: ['Aigle stylisé','Bleu profond','Forme close','Symétrie','Iconographie figurative'],
+    desc:"L'aigle heraldique stylise evoque le patrimoine de Barclays, actualise dans une forme epuree et moderne adaptee aux supports digitaux.",
+    stats: [['Iconographie figurative', 74], ['Bleu dominant', 89], ['Symétrie', 84], ['Héritage', 71]],
+  },
+  {
+    id:9, name:'Airbnb', client:'Airbnb', agency:'DesignStudio', year:2014,
+    symbol:'Ⓐ', bg:'#fdecea', color:'#b83020',
+    brief: ['Tech','Humanité','Accessibilité','B2C Grand public','Dynamisme'],
+    graphic: ['Forme organique','Espace négatif','Couleur unique','Minimalisme','Courbe'],
+    desc:"Le Belo combine en une forme le A d'Airbnb, un coeur, la localisation et la tete. Un des exercices d'espace negatif les plus reussis.",
+    stats: [['Espace négatif', 94], ['Forme organique', 88], ['Rouge-rose', 82], ['Signification multiple', 79]],
+  },
+  {
+    id:10, name:'BNP Paribas', client:'BNP Paribas', agency:'Dragon Rouge', year:2000,
+    symbol:'✦', bg:'#eaf4f1', color:'#1a6b5c',
+    brief: ['Finance & Banque','Confiance','International','Solidité','Europe'],
+    graphic: ['Étoile 4 branches','Vert & rouge','Équilibre','Géométrique','Couleur unique'],
+    desc:"L'etoile verte et rouge de BNP Paribas symbolise l'equilibre entre croissance et stabilite. Une palette distinctive dans un secteur domine par le bleu.",
+    stats: [['Structure étoilée', 82], ['Vert dominant', 76], ['Équilibre formel', 81], ['Géométrique', 77]],
+  },
+  {
+    id:11, name:'Credit Suisse', client:'Credit Suisse', agency:'Wirz', year:1980,
+    symbol:'✛', bg:'#fdecea', color:'#b83020',
+    brief: ['Finance & Banque','Prestige','Tradition','Confiance','International'],
+    graphic: ['Croix','Rouge & blanc','Symétrie','Forme close','Héritage'],
+    desc:"La croix suisse declinee avec rigueur. L'identite incarne l'heritage helvetique : precision, discretion, neutralite, transpose au secteur bancaire de luxe.",
+    stats: [['Croix / héritage national', 96], ['Rouge & blanc', 91], ['Symétrie', 88], ['Forme close', 83]],
+  },
+  {
+    id:12, name:'UBS', client:'UBS Group AG', agency:'In-house', year:1998,
+    symbol:'⚝', bg:'#f0ede8', color:'#141210',
+    brief: ['Finance & Banque','Prestige','B2C Premium','Confiance','Solidité'],
+    graphic: ['Trois clés','Géométrique','Noir','Symétrie','Lettrage custom'],
+    desc:"Les trois cles d'UBS symbolisent confiance, securite et discretion, les trois piliers de la banque privee suisse. Une iconographie directe.",
+    stats: [['Iconographie symbolique', 87], ['Noir dominant', 82], ['Symétrie', 85], ['Minimalisme', 79]],
+  },
+  {
+    id:13, name:'ING', client:'ING Group', agency:'LPK', year:1991,
+    symbol:'♌', bg:'#fdf5e0', color:'#a07010',
+    brief: ['Finance & Banque','Dynamisme','Innovation','Confiance','B2C Grand public'],
+    graphic: ['Lion','Orange','Iconographie figurative','Forme arrondie','Énergie'],
+    desc:"Le lion orange d'ING tranche radicalement dans l'univers du bleu bancaire. L'orange transmet l'energie, le lion la force et la confiance.",
+    stats: [['Orange dominant', 95], ['Iconographie animale', 82], ['Forme arrondie', 74], ['Énergie / dynamisme', 88]],
+  },
+  {
+    id:14, name:'Chanel', client:'Chanel', agency:'Coco Chanel', year:1925,
+    symbol:'CC', bg:'#f0ede8', color:'#141210',
+    brief: ['Luxe & Prestige','Élégance','Tradition','B2C Premium','Prestige'],
+    graphic: ['Monogramme','Noir & blanc','Entrelacement','Symétrie','Minimalisme'],
+    desc:"Le double C entrelace est l'un des monogrammes les plus copies de l'histoire du design. Son equilibre entre tension et symetrie reste intemporel.",
+    stats: [['Monogramme entrelacé', 98], ['Noir & blanc', 95], ['Symétrie', 92], ['Minimalisme', 88]],
+  },
+  {
+    id:15, name:'Mercedes-Benz', client:'Daimler', agency:'Gottlieb Daimler', year:1909,
+    symbol:'✲', bg:'#f0ede8', color:'#5a5650',
+    brief: ['Mobilité','Prestige','Élégance','Solidité','B2C Premium'],
+    graphic: ['Étoile à 3 branches','Géométrique','Argent','Symétrie','Forme close'],
+    desc:"L'etoile tripolaire symbolise la domination sur la terre, la mer et les airs. Cent ans de presence en ont fait l'une des formes les plus reconnues au monde.",
+    stats: [['Étoile géométrique', 97], ['Argent / métal', 85], ['Symétrie totale', 93], ['Forme close', 89]],
+  },
+  {
+    id:16, name:'Nike', client:'Nike Inc.', agency:'Carolyn Davidson', year:1971,
+    symbol:'✓', bg:'#f7f4ef', color:'#141210',
+    brief: ['Sport','Dynamisme','Innovation','B2C Grand public','Accessibilité'],
+    graphic: ['Swoosh','Mouvement','Minimalisme','Espace négatif','Couleur unique'],
+    desc:"Le Swoosh, dessine pour 35 dollars, est devenu le logo le plus reconnu au monde. Une lecon magistrale de reduction au geste essentiel.",
+    stats: [['Mouvement / dynamisme', 99], ['Minimalisme radical', 96], ['Espace négatif', 91], ['Couleur unique', 94]],
+  },
+];
+
+// ── État de l'application ──
+const state = {
+  selected: { industrie: [], valeurs: [], cible: [], graphique: [] },
+  results: [],
+  activeCard: null,
+};
+
+// ── Initialisation des tags ──
+document.querySelectorAll('.tag').forEach(tag => {
+  tag.addEventListener('click', () => {
+    const group = tag.dataset.group;
+    const val   = tag.dataset.val;
+    const idx   = state.selected[group].indexOf(val);
+    if (idx > -1) {
+      state.selected[group].splice(idx, 1);
+      tag.classList.remove('on', 'on-accent', 'on-teal');
+    } else {
+      state.selected[group].push(val);
+      if (group === 'graphique') tag.classList.add('on-teal');
+      else if (group === 'valeurs') tag.classList.add('on-accent');
+      else tag.classList.add('on');
+    }
+    updateSummary();
+  });
+});
+
+function updateSummary() {
+  const all = [
+    ...state.selected.industrie,
+    ...state.selected.valeurs,
+    ...state.selected.cible,
+    ...state.selected.graphique,
+  ];
+  const el = document.getElementById('brief-summary');
+  if (all.length === 0) {
+    el.classList.remove('visible');
+    return;
+  }
+  el.classList.add('visible');
+  el.textContent = all.join(' · ');
+}
+
+// ── Calcul de similarité ──
+function computeScore(logo) {
+  const sel = state.selected;
+  let score = 0, total = 0;
+
+  const check = (selArr, logoArr, weight) => {
+    if (selArr.length === 0) return;
+    total += selArr.length * weight;
+    selArr.forEach(v => {
+      if (logoArr.includes(v)) score += weight;
+    });
+  };
+
+  check(sel.industrie,  logo.brief,   3);
+  check(sel.valeurs,    logo.brief,   2.5);
+  check(sel.cible,      logo.brief,   2);
+  check(sel.graphique,  logo.graphic, 2);
+
+  if (total === 0) return 0;
+  return Math.round((score / total) * 100);
+}
+
+// ── Lancer la recherche ──
+function runSearch() {
+  const all = [
+    ...state.selected.industrie,
+    ...state.selected.valeurs,
+    ...state.selected.cible,
+    ...state.selected.graphique,
+  ];
+  if (all.length === 0) {
+    document.getElementById('btn-search').style.animation = 'shake 0.3s ease';
+    setTimeout(() => document.getElementById('btn-search').style.animation = '', 400);
+    return;
+  }
+
+  // Masquer état vide, afficher skeleton
+  document.getElementById('state-empty').style.display = 'none';
+  document.getElementById('logo-grid').classList.remove('visible');
+  document.getElementById('load-more').classList.remove('visible');
+  document.getElementById('skeleton-grid').classList.add('visible');
+  document.getElementById('results-bar').classList.remove('visible');
+
+  // Simuler délai réseau
+  setTimeout(() => {
+    // Calculer scores
+    state.results = DB
+      .map(logo => ({ ...logo, score: computeScore(logo) }))
+      .filter(l => l.score > 0)
+      .sort((a, b) => b.score - a.score);
+
+    // Masquer skeleton
+    document.getElementById('skeleton-grid').classList.remove('visible');
+
+    if (state.results.length === 0) {
+      document.getElementById('state-empty').style.display = 'flex';
+      document.getElementById('state-empty').querySelector('.state-empty-title').textContent = 'Aucun résultat';
+      document.getElementById('state-empty').querySelector('.state-empty-sub').textContent = 'Essaie de réduire le nombre de critères.';
+      return;
+    }
+
+    renderResultsBar();
+    renderGrid();
+  }, 900);
+}
+
+function renderResultsBar() {
+  const bar = document.getElementById('results-bar');
+  const sel = state.selected;
+  const allTags = [
+    ...sel.industrie.map(v => `<span class="rtag brief">${v}</span>`),
+    ...sel.valeurs.map(v => `<span class="rtag valeur">${v}</span>`),
+    ...sel.cible.map(v => `<span class="rtag brief">${v}</span>`),
+    ...sel.graphique.map(v => `<span class="rtag graphique">${v}</span>`),
+  ].join('');
+
+  bar.innerHTML = `
+    <div class="results-info">
+      <div class="results-count">${state.results.length}</div>
+      <div class="results-sub">logos correspondants</div>
+    </div>
+    <div class="results-brief-tags">${allTags}</div>`;
+  bar.classList.add('visible');
+}
+
+function renderGrid() {
+  const grid = document.getElementById('logo-grid');
+  grid.innerHTML = '';
+
+  state.results.forEach((logo, i) => {
+    const card = document.createElement('div');
+    card.className = 'logo-card';
+    card.style.animationDelay = `${i * 55}ms`;
+
+    const briefPills = logo.brief.slice(0, 2).map(a => `<span class="attr-pill b">${a}</span>`).join('');
+    const graphPills = logo.graphic.slice(0, 2).map(a => `<span class="attr-pill g">${a}</span>`).join('');
+
+    const barColor = logo.score >= 80 ? '#c8501a' : logo.score >= 60 ? '#1a6b5c' : '#a09b94';
+
+    card.innerHTML = `
+      <div class="logo-thumb" style="background:${logo.bg}">
+        <div class="logo-symbol" style="color:${logo.color}">${logo.symbol}</div>
+        <div class="sim-pill">${logo.score}%</div>
+        <div class="match-bar" style="width:${logo.score}%;background:${barColor}"></div>
+      </div>
+      <div class="logo-body">
+        <div class="logo-name">${logo.name}</div>
+        <div class="logo-agency">${logo.agency} · ${logo.year}</div>
+        <div class="logo-attrs">${briefPills}${graphPills}</div>
+      </div>`;
+
+    card.addEventListener('click', () => openPanel(logo));
+    grid.appendChild(card);
+  });
+
+  grid.classList.add('visible');
+  if (state.results.length >= 8) {
+    document.getElementById('load-more').classList.add('visible');
+  }
+}
+
+// ── Panel détail ──
+function openPanel(logo) {
+  state.activeCard = logo;
+
+  // Calculer les attributs matchés
+  const sel = state.selected;
+  const allSel = [
+    ...sel.industrie, ...sel.valeurs, ...sel.cible, ...sel.graphique
+  ];
+  const matchedBrief   = logo.brief.filter(a => allSel.includes(a));
+  const matchedGraphic = logo.graphic.filter(a => allSel.includes(a));
+  const otherBrief     = logo.brief.filter(a => !allSel.includes(a));
+  const otherGraphic   = logo.graphic.filter(a => !allSel.includes(a));
+
+  // Thumb
+  const thumb = document.getElementById('panel-thumb');
+  thumb.style.background = logo.bg;
+  thumb.innerHTML = `<div class="panel-symbol" style="color:${logo.color}">${logo.symbol}</div>`;
+
+  // Body
+  const body = document.getElementById('panel-body');
+
+  const makeTag = (a, type, isMatch) => {
+    const cls = isMatch ? 'match' : type;
+    return `<span class="panel-tag ${cls}">${isMatch ? '✓ ' : ''}${a}</span>`;
+  };
+
+  const statRows = (logo.stats || []).map(([label, pct]) => `
+    <div class="mini-stat-row">
+      <div class="mini-stat-label">${label}</div>
+      <div class="mini-stat-track"><div class="mini-stat-fill" style="width:0%" data-pct="${pct}"></div></div>
+      <div class="mini-stat-pct">${pct}%</div>
+    </div>`).join('');
+
+  body.innerHTML = `
+    <div class="panel-name">${logo.name}</div>
+    <div class="panel-agency">${logo.agency} &nbsp;·&nbsp; ${logo.year} &nbsp;·&nbsp; ${logo.client}</div>
+
+    <div class="panel-sim">
+      <div class="panel-sim-score">${logo.score}%</div>
+      <div class="panel-sim-label">de similarité<br>avec ton brief</div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-label">Éléments du brief (INPUT)</div>
+      <div class="panel-tags">
+        ${matchedBrief.map(a => makeTag(a,'in',true)).join('')}
+        ${otherBrief.map(a => makeTag(a,'in',false)).join('')}
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-label">Attributs graphiques (OUTPUT)</div>
+      <div class="panel-tags">
+        ${matchedGraphic.map(a => makeTag(a,'out',true)).join('')}
+        ${otherGraphic.map(a => makeTag(a,'out',false)).join('')}
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-label">Pourquoi ce logo correspond</div>
+      <div class="match-reasons">${logo.desc}</div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-label">Fréquence des attributs graphiques utilisés<br>pour ce type de brief (base entière)</div>
+      <div class="mini-stats">${statRows}</div>
+    </div>`;
+
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('panel').classList.add('open');
+
+  // Animer les barres après rendu
+  setTimeout(() => {
+    body.querySelectorAll('.mini-stat-fill').forEach(bar => {
+      bar.style.width = bar.dataset.pct + '%';
+    });
+  }, 120);
+}
+
+function closePanel() {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('panel').classList.remove('open');
+}
+
+
+// ── Tabs URL / Manuel ──
+function switchTab(tab) {
+  document.getElementById('tab-url').classList.toggle('active', tab === 'url');
+  document.getElementById('tab-manual').classList.toggle('active', tab === 'manual');
+  document.getElementById('tab-content-url').style.display    = tab === 'url'    ? 'flex' : 'none';
+  document.getElementById('tab-content-manual').style.display = tab === 'manual' ? 'block' : 'none';
+  document.getElementById('tab-content-url').style.flexDirection = 'column';
+  document.getElementById('tab-content-url').style.gap = '6px';
+}
+
+// ── Import depuis URL ──
+async function fetchFromUrl() {
+  const pastedText = document.getElementById('proj-paste').value.trim();
+  const url        = document.getElementById('proj-url').value.trim();
+  const apiKey     = document.getElementById('api-key').value.trim();
+
+  if (!apiKey.startsWith('sk-ant-')) {
+    setFetchStatus('error', 'Clé API Anthropic manquante dans le champ en haut.');
+    return;
+  }
+  if (pastedText.length < 50) {
+    setFetchStatus('error', 'Colle d\'abord le texte de la page dans le champ.');
+    return;
+  }
+
+  document.getElementById('btn-fetch').disabled = true;
+  document.getElementById('btn-fetch-label').textContent = 'Analyse…';
+  setFetchStatus('loading', 'Claude analyse le contenu collé…');
+
+  // Afficher l'état dans la colonne droite
+  document.getElementById('imp-right-empty').style.display = 'none';
+  const result = document.getElementById('imp-result');
+  result.style.display = 'flex';
+  document.getElementById('imp-res-name').textContent = 'Extraction en cours…';
+  document.getElementById('imp-res-meta').textContent  = url || 'Texte collé';
+  const statusEl = document.getElementById('imp-res-status');
+  statusEl.className = 'imp-res-status analyzing';
+  statusEl.innerHTML = '<div class="imp-res-status-dot"></div>Claude analyse…';
+  document.getElementById('imp-res-img-wrap').innerHTML = '<div style="font-size:28px;color:var(--ink-3)">⬡</div>';
+  document.getElementById('imp-res-brief').innerHTML   = '<div class="skeleton-tag"></div><div class="skeleton-tag"></div><div class="skeleton-tag"></div>';
+  document.getElementById('imp-res-graphic').innerHTML = '<div class="skeleton-tag"></div><div class="skeleton-tag"></div><div class="skeleton-tag"></div>';
+  document.getElementById('imp-res-desc-wrap').style.display = 'none';
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1024,
+        messages: [{
+          role: 'user',
+          content: `Tu es expert en branding et identité visuelle.
+
+Voici le contenu textuel d'une page de présentation d'un projet de logo :
+${url ? `URL : ${url}\n` : ''}
+CONTENU :
+${pastedText.slice(0, 8000)}
+
+En te basant sur ce contenu, extrais les informations et réponds UNIQUEMENT en JSON valide, sans aucun texte avant ou après :
+{
+  "nom_projet": "nom du projet ou de la marque identifiée",
+  "client": "nom du client",
+  "agence": "nom de l'agence ou du studio auteur du design",
+  "annee": 2024,
+  "brief": {
+    "industrie": "secteur d'activité du client",
+    "valeurs": ["valeur1", "valeur2", "valeur3"],
+    "cible": "public cible estimé",
+    "positionnement": "haut de gamme|grand public|institutionnel|artisanal|engagé"
+  },
+  "graphique": {
+    "type": "wordmark|lettermark|logomark|combination|emblem",
+    "forme": "description courte de la forme principale",
+    "couleur_dominante": "couleur principale",
+    "style": "minimaliste|géométrique|organique|typographique|illustratif|abstrait",
+    "structure": "symétrie|rayonnement|répétition|libre",
+    "typographie": "serif|sans-serif|script|custom|aucune"
+  },
+  "description": "Une phrase résumant ce que le logo communique visuellement."
+}`,
+        }],
+      }),
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.error?.message || `Erreur API ${resp.status}`);
+    }
+
+    const data = await resp.json();
+    const textBlock = data.content?.find(b => b.type === 'text');
+    const text = textBlock?.text || '';
+    const clean = text.replace(/```json|```/g, '').trim();
+
+    let ai;
+    try { ai = JSON.parse(clean); }
+    catch(e) {
+      const match = clean.match(/\{[\s\S]*\}/);
+      if (match) ai = JSON.parse(match[0]);
+      else throw new Error('Réponse IA non parseable');
+    }
+
+    // Remplir les champs
+    if (ai.nom_projet) document.getElementById('proj-name').value   = ai.nom_projet;
+    if (ai.client)     document.getElementById('proj-client').value = ai.client;
+    if (ai.agence)     document.getElementById('proj-agency').value = ai.agence;
+    if (ai.annee)      document.getElementById('proj-year').value   = ai.annee;
+
+    const briefAttrs = [
+      ai.brief?.industrie,
+      ...(ai.brief?.valeurs || []),
+      ai.brief?.cible,
+      ai.brief?.positionnement,
+    ].filter(Boolean);
+
+    const graphicAttrs = [
+      ai.graphique?.type,
+      ai.graphique?.forme,
+      ai.graphique?.couleur_dominante,
+      ai.graphique?.style,
+      ai.graphique?.structure,
+      ai.graphique?.typographie !== 'aucune' ? ai.graphique?.typographie : null,
+    ].filter(Boolean);
+
+    imp._pendingBrief   = briefAttrs;
+    imp._pendingGraphic = graphicAttrs;
+    imp._pendingDesc    = ai.description || '';
+
+    document.getElementById('imp-res-name').textContent = ai.nom_projet || 'Projet';
+    document.getElementById('imp-res-meta').textContent = [ai.agence, ai.client, ai.annee].filter(Boolean).join(' · ');
+
+    document.getElementById('imp-res-brief').innerHTML =
+      briefAttrs.map(a => `<span class="imp-res-tag b">${a}</span>`).join('') +
+      '<button class="imp-tag-add" onclick="addTag(\'brief\')">+ Ajouter</button>';
+
+    document.getElementById('imp-res-graphic').innerHTML =
+      graphicAttrs.map(a => `<span class="imp-res-tag g">${a}</span>`).join('') +
+      '<button class="imp-tag-add" onclick="addTag(\'graphic\')">+ Ajouter</button>';
+
+    if (ai.description) {
+      document.getElementById('imp-res-desc').textContent = ai.description;
+      document.getElementById('imp-res-desc-wrap').style.display = 'flex';
+    }
+
+    statusEl.className = 'imp-res-status done';
+    statusEl.innerHTML = '<div class="imp-res-status-dot"></div>Extraction terminée — upload l\'image du logo puis "Analyser avec Claude"';
+    document.getElementById('btn-analyze').disabled = !imp.imageBase64 && !imp._imageFromUrl;
+    setFetchStatus('ok', 'Infos extraites. Passe en "Upload manuel" pour ajouter l\'image du logo.');
+
+    document.getElementById('btn-analyze').disabled = false;
+    setFetchStatus('ok', 'Page analysée avec succès — vérifie et ajuste si besoin.');
+
+  } catch(e) {
+    setFetchStatus('error', `Erreur : ${e.message}`);
+    statusEl.className = 'imp-res-status analyzing';
+    statusEl.innerHTML = `<div class="imp-res-status-dot"></div>${e.message}`;
+    document.getElementById('imp-res-brief').innerHTML   = '';
+    document.getElementById('imp-res-graphic').innerHTML = '';
+  }
+
+  document.getElementById('btn-fetch').disabled = false;
+  document.getElementById('btn-fetch-label').textContent = 'Importer';
+}
+
+function setFetchStatus(type, msg) {
+  const el = document.getElementById('imp-fetch-status');
+  el.style.display = 'flex';
+  el.className = `imp-fetch-status ${type}`;
+  el.innerHTML = `<div class="imp-fetch-dot"></div><span>${msg}</span>`;
+}
+
+// ── Navigation entre vues ──
+function switchView(view, btn) {
+  document.querySelectorAll('.hnav').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('view-explorer').style.display = view === 'explorer' ? 'block' : 'none';
+  document.getElementById('view-importer').style.display = view === 'importer' ? 'block' : 'none';
+}
+
+// ── État importer ──
+const imp = {
+  imageBase64: null,
+  imageMime: null,
+  imageUrl: null,   // URL blob pour affichage
+  projects: [],     // projets importés
+};
+
+// ── Upload image ──
+function onImageSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  imp.imageMime = file.type;
+  imp.imageUrl  = URL.createObjectURL(file);
+
+  // Afficher preview dans la zone upload
+  const zone = document.getElementById('imp-upload-zone');
+  zone.classList.add('has-image');
+  zone.innerHTML = `
+    <img class="imp-upload-preview" src="${imp.imageUrl}" alt="Logo">
+    <div class="imp-upload-replace">Cliquer pour changer l'image</div>
+    <input type="file" id="img-input" accept="image/*" style="display:none" onchange="onImageSelected(this)">`;
+  zone.onclick = () => document.getElementById('img-input').click();
+
+  // Afficher aperçu dans la colonne droite
+  document.getElementById('imp-right-empty').style.display = 'none';
+  const result = document.getElementById('imp-result');
+  result.style.display = 'flex';
+  document.getElementById('imp-res-img-wrap').innerHTML = `<img src="${imp.imageUrl}" alt="Logo">`;
+  document.getElementById('imp-res-name').textContent = document.getElementById('proj-name').value || 'Nom du projet';
+  document.getElementById('imp-res-meta').textContent = '— en attente d\'analyse';
+  document.getElementById('imp-res-status').className = 'imp-res-status';
+  document.getElementById('imp-res-status').innerHTML = '';
+  document.getElementById('imp-res-brief').innerHTML = '';
+  document.getElementById('imp-res-graphic').innerHTML = '';
+  document.getElementById('imp-res-desc-wrap').style.display = 'none';
+
+  // Activer le bouton analyser
+  document.getElementById('btn-analyze').disabled = false;
+
+  // Lire en base64 pour l'API
+  const reader = new FileReader();
+  reader.onload = e => { imp.imageBase64 = e.target.result.split(',')[1]; };
+  reader.readAsDataURL(file);
+}
+
+// Drag & drop
+const zone = document.getElementById('imp-upload-zone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = 'var(--accent)'; });
+zone.addEventListener('dragleave', () => { zone.style.borderColor = ''; });
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.style.borderColor = '';
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    const fakeInput = { files: dt.files };
+    onImageSelected(fakeInput);
+  }
+});
+
+// ── Analyser avec Claude ──
+async function analyzeProject() {
+  const apiKey = document.getElementById('api-key').value.trim();
+  const name   = document.getElementById('proj-name').value.trim();
+  const client = document.getElementById('proj-client').value.trim();
+  const agency = document.getElementById('proj-agency').value.trim();
+  const year   = document.getElementById('proj-year').value.trim();
+
+  if (!imp.imageBase64 && !imp._imageFromUrl) { alert('Upload une image ou importe depuis une URL d\'abord.'); return; }
+  if (!apiKey.startsWith('sk-ant-')) { alert('Clé API Anthropic manquante ou invalide.'); return; }
+
+  // UI — état analyse
+  const btn = document.getElementById('btn-analyze');
+  btn.disabled = true;
+  document.getElementById('btn-analyze-label').textContent = 'Analyse en cours…';
+
+  document.getElementById('imp-res-name').textContent = name || 'Projet';
+  document.getElementById('imp-res-meta').textContent = [agency, client, year].filter(Boolean).join(' · ');
+
+  const statusEl = document.getElementById('imp-res-status');
+  statusEl.className = 'imp-res-status analyzing';
+  statusEl.innerHTML = '<div class="imp-res-status-dot"></div>Claude analyse le logo…';
+
+  // Skeletons
+  document.getElementById('imp-res-brief').innerHTML   = '<div class="skeleton-tag"></div><div class="skeleton-tag"></div><div class="skeleton-tag"></div>';
+  document.getElementById('imp-res-graphic').innerHTML = '<div class="skeleton-tag"></div><div class="skeleton-tag"></div><div class="skeleton-tag"></div>';
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 600,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: imp.imageBase64
+                ? { type: 'base64', media_type: imp.imageMime, data: imp.imageBase64 }
+                : { type: 'url',    url: imp._imageFromUrl } },
+            { type: 'text', text: `Tu es expert en identité visuelle et branding. Analyse ce logo de marque avec précision.
+
+Réponds UNIQUEMENT en JSON valide, sans texte avant ou après :
+{
+  "brief": {
+    "industrie": "secteur d'activité principal",
+    "valeurs": ["valeur1", "valeur2", "valeur3"],
+    "cible": "public cible estimé",
+    "positionnement": "haut de gamme|grand public|institutionnel|jeune"
+  },
+  "graphique": {
+    "type": "wordmark|lettermark|logomark|combination|emblem",
+    "forme": "forme principale",
+    "couleur_dominante": "couleur principale",
+    "style": "minimaliste|géométrique|organique|typographique|illustratif|abstrait",
+    "structure": "symétrie|rayonnement|répétition|libre",
+    "typographie": "serif|sans-serif|script|custom|aucune"
+  },
+  "description": "Une phrase décrivant ce que le logo communique visuellement et pourquoi."
+}` }
+          ],
+        }],
+      }),
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.error?.message || `Erreur ${resp.status}`);
+    }
+
+    const data = await resp.json();
+    const text = data.content?.[0]?.text || '';
+    const clean = text.replace(/```json|```/g, '').trim();
+    const ai = JSON.parse(clean);
+
+    // Construire les listes d'attributs
+    const briefAttrs = [
+      ai.brief?.industrie,
+      ...(ai.brief?.valeurs || []),
+      ai.brief?.cible,
+      ai.brief?.positionnement,
+    ].filter(Boolean);
+
+    const graphicAttrs = [
+      ai.graphique?.type,
+      ai.graphique?.forme,
+      ai.graphique?.couleur_dominante,
+      ai.graphique?.style,
+      ai.graphique?.structure,
+      ai.graphique?.typographie !== 'aucune' ? ai.graphique?.typographie : null,
+    ].filter(Boolean);
+
+    // Stocker pour la sauvegarde
+    imp._pendingBrief   = briefAttrs;
+    imp._pendingGraphic = graphicAttrs;
+    imp._pendingDesc    = ai.description || '';
+
+    // Afficher les attributs
+    document.getElementById('imp-res-brief').innerHTML =
+      briefAttrs.map(a => `<span class="imp-res-tag b">${a}</span>`).join('') +
+      '<button class="imp-tag-add" onclick="addTag(\'brief\')">+ Ajouter</button>';
+
+    document.getElementById('imp-res-graphic').innerHTML =
+      graphicAttrs.map(a => `<span class="imp-res-tag g">${a}</span>`).join('') +
+      '<button class="imp-tag-add" onclick="addTag(\'graphic\')">+ Ajouter</button>';
+
+    if (ai.description) {
+      document.getElementById('imp-res-desc').textContent = ai.description;
+      document.getElementById('imp-res-desc-wrap').style.display = 'flex';
+    }
+
+    statusEl.className = 'imp-res-status done';
+    statusEl.innerHTML = '<div class="imp-res-status-dot"></div>Analyse terminée';
+
+  } catch(e) {
+    statusEl.className = 'imp-res-status analyzing';
+    statusEl.innerHTML = `<div class="imp-res-status-dot"></div>Erreur : ${e.message}`;
+    document.getElementById('imp-res-brief').innerHTML   = '';
+    document.getElementById('imp-res-graphic').innerHTML = '';
+  }
+
+  btn.disabled = false;
+  document.getElementById('btn-analyze-label').textContent = 'Analyser avec Claude';
+}
+
+function addTag(type) {
+  const val = prompt(type === 'brief' ? 'Ajouter un attribut de brief :' : 'Ajouter un attribut graphique :');
+  if (!val) return;
+  const container = document.getElementById(type === 'brief' ? 'imp-res-brief' : 'imp-res-graphic');
+  const cls = type === 'brief' ? 'b' : 'g';
+  const addBtn = container.querySelector('.imp-tag-add');
+  const tag = document.createElement('span');
+  tag.className = `imp-res-tag ${cls}`;
+  tag.textContent = val.trim();
+  container.insertBefore(tag, addBtn);
+}
+
+// ── Sauvegarder le projet ──
+function saveProject() {
+  const name   = document.getElementById('proj-name').value.trim() || 'Projet sans titre';
+  const client = document.getElementById('proj-client').value.trim() || '—';
+  const agency = document.getElementById('proj-agency').value.trim() || '—';
+  const year   = parseInt(document.getElementById('proj-year').value) || new Date().getFullYear();
+
+  const project = {
+    id: Date.now(),
+    name, client, agency, year,
+    imageUrl: imp.imageUrl,
+    brief:   imp._pendingBrief   || [],
+    graphic: imp._pendingGraphic || [],
+    desc:    imp._pendingDesc    || '',
+  };
+
+  imp.projects.unshift(project);
+  renderSourceList();
+  resetImporter();
+}
+
+function renderSourceList() {
+  const list = document.getElementById('imp-sources');
+  document.getElementById('imp-count-label').textContent = `(${imp.projects.length})`;
+
+  if (imp.projects.length === 0) {
+    list.innerHTML = '<div class="imp-empty-list">Aucun projet encore importé</div>';
+    return;
+  }
+
+  list.innerHTML = imp.projects.map(p => `
+    <div class="imp-source-row" id="src-${p.id}">
+      <div class="imp-source-thumb">
+        ${p.imageUrl ? `<img src="${p.imageUrl}" alt="${p.name}">` : '<span style="font-size:18px;color:var(--ink-3)">◈</span>'}
+      </div>
+      <div class="imp-source-info">
+        <div class="imp-source-name">${p.name}</div>
+        <div class="imp-source-meta">${p.agency} · ${p.year}</div>
+      </div>
+      <button class="imp-source-del" onclick="deleteProject(${p.id})" title="Supprimer">×</button>
+    </div>`).join('');
+}
+
+function deleteProject(id) {
+  if (!confirm('Supprimer ce projet de la base ?')) return;
+  imp.projects = imp.projects.filter(p => p.id !== id);
+  renderSourceList();
+}
+
+function resetImporter() {
+  imp.imageBase64 = null;
+  imp.imageMime   = null;
+  imp.imageUrl    = null;
+  imp._imageFromUrl   = null;
+  imp._pendingBrief   = [];
+  imp._pendingGraphic = [];
+  imp._pendingDesc    = '';
+
+  // Reset formulaire
+  ['proj-name','proj-client','proj-agency','proj-year','proj-url','proj-paste'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const fs = document.getElementById('imp-fetch-status');
+  if (fs) fs.style.display = 'none';
+
+  // Reset zone upload
+  const zone = document.getElementById('imp-upload-zone');
+  zone.className = 'imp-upload-zone';
+  zone.onclick = () => document.getElementById('img-input').click();
+  zone.innerHTML = `
+    <input type="file" id="img-input" accept="image/*" style="display:none" onchange="onImageSelected(this)">
+    <div class="imp-upload-inner">
+      <div class="imp-upload-icon">⬡</div>
+      <div class="imp-upload-text">Glisse ou clique pour uploader l'image du logo</div>
+      <div class="imp-upload-sub">PNG, JPG, SVG · max 5 Mo</div>
+    </div>`;
+
+  document.getElementById('btn-analyze').disabled = true;
+  document.getElementById('imp-result').style.display = 'none';
+  document.getElementById('imp-right-empty').style.display = 'flex';
+}
+
+</script>
+</body>
+</html>
