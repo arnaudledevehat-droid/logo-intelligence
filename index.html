@@ -1176,7 +1176,6 @@ async function loadLogosFromSupabase() {
         brief:    Array.isArray(row.brief)   ? row.brief   : [],
         graphic:  Array.isArray(row.graphic) ? row.graphic : [],
         desc:     row.description || '',
-        lettreInitiale: row.lettre_initiale || null,
         stats:    [],
       });
     });
@@ -1200,7 +1199,6 @@ async function saveToSupabase(p) {
       graphic:         p.graphic,
       description:     p.desc,
       source_url:      p.sourceUrl || null,
-      lettre_initiale: p.lettreInitiale || null,
     }),
   });
 }
@@ -1750,8 +1748,7 @@ async function importFromUrl() {
     }
 
     // Stocker la lettre
-    imp._pendingLettre = lettreInitiale;
-
+  
     const briefAttrs = [
       ai.brief?.industrie,
       ...(ai.brief?.valeurs || []),
@@ -1761,8 +1758,7 @@ async function importFromUrl() {
     ].filter(Boolean);
 
     // Stocker la lettre initiale séparément pour le matching de recherche
-    imp._lettreInitiale = lettreInitiale;
-
+  
     // Extraire tous les attributs graphiques par catégorie (nouvelle structure)
     const g = ai.graphique || {};
     const graphicAttrs = [
@@ -1844,7 +1840,6 @@ async function saveProject() {
     graphic:        imp._pendingGraphic || [],
     desc:           imp._pendingDesc    || '',
     sourceUrl:      document.getElementById('proj-url')?.value || null,
-    lettreInitiale: imp._pendingLettre || null,
   };
 
   try {
@@ -1856,7 +1851,7 @@ async function saveProject() {
       agency: p.brief[0] || '—', year: new Date().getFullYear(),
       symbol: '◈', bg: '#f0ede8', color: '#5a5650',
       imageUrl: p.imageUrl, brief: p.brief, graphic: p.graphic,
-      desc: p.desc, lettreInitiale: p.lettreInitiale, stats: [],
+      desc: p.desc, stats: [],
     };
     DB.unshift(localP);
     imp.projects.unshift(localP);
@@ -1909,7 +1904,6 @@ async function deleteProject(id) {
 function resetImporter() {
   imp.imageUrl = null; imp._imageFromUrl = null;
   imp._pendingBrief = []; imp._pendingGraphic = []; imp._pendingDesc = ''; imp._pendingLettre = null;
-  imp._lettreInitiale = null;
   const urlEl = document.getElementById('proj-url');
   if (urlEl) urlEl.value = '';
   const fs = document.getElementById('imp-fetch-status');
