@@ -947,136 +947,63 @@
 
 </div><!-- /view-explorer -->
 
-<!-- ══════════════════════════════════════════════
-     VUE IMPORTER
-══════════════════════════════════════════════ -->
 <div id="view-importer" class="view-root" style="display:none">
 <div class="imp-layout">
-
-  <!-- Colonne gauche : formulaire + liste projets importés -->
   <div class="imp-left">
-
     <div class="imp-section">
       <div class="imp-section-label">Clé API Anthropic</div>
       <input type="password" id="api-key" class="imp-input" placeholder="sk-ant-..." autocomplete="off">
-      <div class="imp-hint">Utilisée uniquement dans ton navigateur, jamais transmise ailleurs. <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--accent)">Obtenir une clé →</a></div>
+      <div class="imp-hint">Utilisée ici uniquement. <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--accent)">Obtenir une clé →</a></div>
     </div>
-
     <div class="imp-divider"></div>
-
-    <!-- Formulaire import projet unique -->
     <div class="imp-section">
       <div class="imp-section-label">Importer un projet</div>
-
-      <!-- Onglets Manuel / URL -->
-      <div class="imp-tabs">
-        <button class="imp-tab active" id="tab-url" onclick="switchTab('url')">Coller le texte</button>
-        <button class="imp-tab" id="tab-manual" onclick="switchTab('manual')">Upload manuel</button>
-      </div>
-
-      <!-- Tab Coller texte -->
-      <div id="tab-content-url" style="display:flex;flex-direction:column;gap:6px">
-        <div class="imp-paste-steps">
-          <div class="imp-paste-step"><span class="imp-paste-num">1</span>Va sur la page du projet dans ton navigateur</div>
-          <div class="imp-paste-step"><span class="imp-paste-num">2</span>Fais <kbd>Ctrl+A</kbd> puis <kbd>Ctrl+C</kbd> pour tout copier</div>
-          <div class="imp-paste-step"><span class="imp-paste-num">3</span>Colle ci-dessous avec <kbd>Ctrl+V</kbd></div>
-        </div>
-        <input type="text" id="proj-url" class="imp-input" placeholder="URL du projet (pour référence)">
-        <textarea id="proj-paste" class="imp-input imp-textarea"
-          placeholder="Colle ici le texte de la page (Ctrl+A sur la page, Ctrl+C, puis Ctrl+V ici)…"
-          oninput="document.getElementById('btn-fetch').disabled = this.value.trim().length < 50"></textarea>
-        <button class="btn-fetch" id="btn-fetch" onclick="fetchFromUrl()" disabled>
-          <span id="btn-fetch-label">Analyser avec Claude</span>
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="imp-fetch-status" id="imp-fetch-status" style="display:none"></div>
-      </div>
-
-      <!-- Tab Manuel -->
-      <div id="tab-content-manual" style="display:none">
-        <!-- Upload image -->
-        <div class="imp-upload-zone" id="imp-upload-zone" onclick="document.getElementById('img-input').click()">
-          <input type="file" id="img-input" accept="image/*" style="display:none" onchange="onImageSelected(this)">
-          <div class="imp-upload-inner" id="imp-upload-inner">
-            <div class="imp-upload-icon">⬡</div>
-            <div class="imp-upload-text">Glisse ou clique pour uploader l'image du logo</div>
-            <div class="imp-upload-sub">PNG, JPG, SVG · max 5 Mo</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Champs communs (toujours visibles) -->
-      <input type="text" id="proj-name"   class="imp-input" placeholder="Nom du projet">
-      <input type="text" id="proj-client" class="imp-input" placeholder="Client">
-      <input type="text" id="proj-agency" class="imp-input" placeholder="Agence / Designer">
-      <input type="number" id="proj-year" class="imp-input" placeholder="Année" min="1900" max="2099">
-
-      <button class="btn-scrape" id="btn-analyze" onclick="analyzeProject()" style="width:100%;justify-content:center" disabled>
-        <span id="btn-analyze-label">Analyser avec Claude</span>
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2.5 6.5h8M7.5 3.5l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <input type="text" id="proj-url" class="imp-input" placeholder="https://grapheine.com/portfolio/…" oninput="document.getElementById('btn-import').disabled = !this.value.trim()">
+      <button class="btn-scrape" id="btn-import" onclick="importFromUrl()" disabled style="width:100%;justify-content:center">
+        <span id="btn-import-label">Importer →</span>
       </button>
+      <div class="imp-fetch-status" id="imp-fetch-status" style="display:none"></div>
     </div>
-
     <div class="imp-divider"></div>
-
-    <!-- Projets importés -->
     <div class="imp-section">
       <div class="imp-section-label">Projets importés <span id="imp-count-label" style="font-weight:400;color:var(--ink-3)">(0)</span></div>
-      <div class="imp-sources" id="imp-sources">
-        <div class="imp-empty-list">Aucun projet encore importé</div>
-      </div>
+      <div class="imp-sources" id="imp-sources"><div class="imp-empty-list">Aucun projet encore importé</div></div>
     </div>
-
   </div>
 
-  <!-- Colonne droite : résultat de l'analyse en cours -->
   <div class="imp-right">
     <div class="imp-right-empty" id="imp-right-empty">
       <div class="imp-right-empty-icon">◈</div>
-      <div class="imp-right-empty-title">Colle une URL ou uploade une image</div>
-      <div class="imp-right-empty-sub">Claude extraira le logo, le brief et les attributs graphiques automatiquement.</div>
+      <div class="imp-right-empty-title">Colle l'URL d'un projet</div>
+      <div class="imp-right-empty-sub">Claude récupère la page, extrait le logo et génère tous les attributs automatiquement.</div>
     </div>
-
-    <!-- Résultat analyse -->
-    <div id="imp-result" style="display:none; padding:2rem; display:none; flex-direction:column; gap:1.5rem;">
-
-      <!-- Aperçu image + statut -->
+    <div id="imp-result" style="display:none;flex-direction:column;gap:1.5rem;padding:2rem">
       <div class="imp-res-preview">
-        <div class="imp-res-img-wrap" id="imp-res-img-wrap"></div>
+        <div class="imp-res-img-wrap" id="imp-res-img-wrap"><div style="font-size:28px;color:var(--ink-3)">⬡</div></div>
         <div class="imp-res-info">
           <div class="imp-res-name" id="imp-res-name">—</div>
           <div class="imp-res-meta" id="imp-res-meta">—</div>
           <div class="imp-res-status" id="imp-res-status"></div>
         </div>
       </div>
-
-      <!-- Attributs brief -->
       <div class="imp-res-section">
         <div class="imp-res-section-label">Attributs de brief (INPUT)</div>
         <div class="imp-res-tags" id="imp-res-brief"></div>
       </div>
-
-      <!-- Attributs graphiques -->
       <div class="imp-res-section">
         <div class="imp-res-section-label">Attributs graphiques (OUTPUT)</div>
         <div class="imp-res-tags" id="imp-res-graphic"></div>
       </div>
-
-      <!-- Description IA -->
       <div class="imp-res-section" id="imp-res-desc-wrap" style="display:none">
         <div class="imp-res-section-label">Analyse Claude</div>
-        <div class="imp-res-desc" id="imp-res-desc"></div>
+        <div class="match-reasons" id="imp-res-desc"></div>
       </div>
-
-      <!-- Actions -->
       <div class="imp-res-actions">
         <button class="btn-save" onclick="saveProject()">Ajouter à la base →</button>
         <button class="btn-cancel" onclick="resetImporter()">Annuler</button>
       </div>
-
     </div>
   </div>
-
 </div>
 </div><!-- /view-importer -->
 
@@ -1462,50 +1389,63 @@ function closePanel() {
 }
 
 
-// ── Tabs URL / Manuel ──
-function switchTab(tab) {
-  document.getElementById('tab-url').classList.toggle('active', tab === 'url');
-  document.getElementById('tab-manual').classList.toggle('active', tab === 'manual');
-  document.getElementById('tab-content-url').style.display    = tab === 'url'    ? 'flex' : 'none';
-  document.getElementById('tab-content-manual').style.display = tab === 'manual' ? 'block' : 'none';
-  document.getElementById('tab-content-url').style.flexDirection = 'column';
-  document.getElementById('tab-content-url').style.gap = '6px';
-}
-
 // ── Import depuis URL ──
-async function fetchFromUrl() {
-  const pastedText = document.getElementById('proj-paste').value.trim();
-  const url        = document.getElementById('proj-url').value.trim();
-  const apiKey     = document.getElementById('api-key').value.trim();
+const imp = {
+  imageUrl: null, _imageFromUrl: null,
+  _pendingBrief: [], _pendingGraphic: [], _pendingDesc: '',
+  projects: []
+};
 
-  if (!apiKey.startsWith('sk-ant-')) {
-    setFetchStatus('error', 'Clé API Anthropic manquante dans le champ en haut.');
-    return;
-  }
-  if (pastedText.length < 50) {
-    setFetchStatus('error', 'Colle d\'abord le texte de la page dans le champ.');
-    return;
-  }
+async function importFromUrl() {
+  const url    = document.getElementById('proj-url').value.trim();
+  const apiKey = document.getElementById('api-key').value.trim();
+  if (!url) return;
+  if (!apiKey.startsWith('sk-ant-')) { setFetchStatus('error', 'Cle API manquante.'); return; }
 
-  document.getElementById('btn-fetch').disabled = true;
-  document.getElementById('btn-fetch-label').textContent = 'Analyse…';
-  setFetchStatus('loading', 'Claude analyse le contenu collé…');
+  const btn = document.getElementById('btn-import');
+  btn.disabled = true;
+  document.getElementById('btn-import-label').textContent = 'Analyse en cours...';
+  setFetchStatus('loading', 'Recuperation de la page...');
 
-  // Afficher l'état dans la colonne droite
   document.getElementById('imp-right-empty').style.display = 'none';
-  const result = document.getElementById('imp-result');
-  result.style.display = 'flex';
-  document.getElementById('imp-res-name').textContent = 'Extraction en cours…';
-  document.getElementById('imp-res-meta').textContent  = url || 'Texte collé';
+  document.getElementById('imp-result').style.display = 'flex';
+  document.getElementById('imp-res-name').textContent = 'Analyse en cours...';
+  document.getElementById('imp-res-meta').textContent = url;
   const statusEl = document.getElementById('imp-res-status');
   statusEl.className = 'imp-res-status analyzing';
-  statusEl.innerHTML = '<div class="imp-res-status-dot"></div>Claude analyse…';
-  document.getElementById('imp-res-img-wrap').innerHTML = '<div style="font-size:28px;color:var(--ink-3)">⬡</div>';
+  statusEl.innerHTML = '<div class="imp-res-status-dot"></div>Recuperation de la page...';
   document.getElementById('imp-res-brief').innerHTML   = '<div class="skeleton-tag"></div><div class="skeleton-tag"></div><div class="skeleton-tag"></div>';
   document.getElementById('imp-res-graphic').innerHTML = '<div class="skeleton-tag"></div><div class="skeleton-tag"></div><div class="skeleton-tag"></div>';
   document.getElementById('imp-res-desc-wrap').style.display = 'none';
+  document.getElementById('imp-res-img-wrap').innerHTML = '<div style="font-size:28px;color:var(--ink-3)">⬡</div>';
 
   try {
+    statusEl.innerHTML = '<div class="imp-res-status-dot"></div>Telechargement de la page...';
+    setFetchStatus('loading', 'Telechargement de la page...');
+
+    const proxyResp = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url));
+    if (!proxyResp.ok) throw new Error('Impossible de recuperer la page.');
+    const proxyData = await proxyResp.json();
+    const html = proxyData.contents || '';
+    if (!html || html.length < 100) throw new Error('Page vide ou inaccessible.');
+
+    const imgUrls = [...html.matchAll(/src=["']([^"']+\.(jpg|jpeg|png|gif|webp|svg)[^"']*)/gi)]
+      .map(m => m[1])
+      .filter(s => !s.includes('data:') && !s.includes('pixel') && !s.includes('icon') && s.length > 10)
+      .map(s => s.startsWith('http') ? s : (function(){ try { return new URL(s, url).href; } catch(e) { return s; } })())
+      .slice(0, 15);
+
+    const pageText = html
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ').trim().slice(0, 6000);
+
+    statusEl.innerHTML = '<div class="imp-res-status-dot"></div>Claude analyse le contenu...';
+    setFetchStatus('loading', 'Claude analyse le projet...');
+
+    const prompt = 'Tu es expert en branding et identite visuelle.\n\nVoici le contenu d\'une page de presentation d\'un projet de logo :\nURL : ' + url + '\n\nTEXTE DE LA PAGE :\n' + pageText + '\n\nURLS D\'IMAGES PRESENTES SUR LA PAGE :\n' + imgUrls.join('\n') + '\n\nReponds UNIQUEMENT en JSON valide, sans texte avant ou apres :\n{"nom_projet":"...","client":"...","agence":"...","annee":2024,"image_logo_url":"URL de l\'image la plus representative du logo final parmi celles listees. Choisis la plus grande, evite thumbnails et icones. Mets null si aucune ne convient.","brief":{"industrie":"...","valeurs":["...","...","..."],"cible":"...","positionnement":"haut de gamme|grand public|institutionnel|artisanal|engage"},"graphique":{"type":"wordmark|lettermark|logomark|combination|emblem","forme":"...","couleur_dominante":"...","style":"minimaliste|geometrique|organique|typographique|illustratif|abstrait","structure":"symetrie|rayonnement|repetition|libre","typographie":"serif|sans-serif|script|custom|aucune"},"description":"..."}';
+
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -1517,80 +1457,31 @@ async function fetchFromUrl() {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1024,
-        messages: [{
-          role: 'user',
-          content: `Tu es expert en branding et identité visuelle.
-
-Voici le contenu textuel d'une page de présentation d'un projet de logo :
-${url ? `URL : ${url}\n` : ''}
-CONTENU :
-${pastedText.slice(0, 8000)}
-
-En te basant sur ce contenu, extrais les informations et réponds UNIQUEMENT en JSON valide, sans aucun texte avant ou après :
-{
-  "nom_projet": "nom du projet ou de la marque identifiée",
-  "client": "nom du client",
-  "agence": "nom de l'agence ou du studio auteur du design",
-  "annee": 2024,
-  "brief": {
-    "industrie": "secteur d'activité du client",
-    "valeurs": ["valeur1", "valeur2", "valeur3"],
-    "cible": "public cible estimé",
-    "positionnement": "haut de gamme|grand public|institutionnel|artisanal|engagé"
-  },
-  "graphique": {
-    "type": "wordmark|lettermark|logomark|combination|emblem",
-    "forme": "description courte de la forme principale",
-    "couleur_dominante": "couleur principale",
-    "style": "minimaliste|géométrique|organique|typographique|illustratif|abstrait",
-    "structure": "symétrie|rayonnement|répétition|libre",
-    "typographie": "serif|sans-serif|script|custom|aucune"
-  },
-  "description": "Une phrase résumant ce que le logo communique visuellement."
-}`,
-        }],
+        messages: [{ role: 'user', content: prompt }],
       }),
     });
 
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({}));
-      throw new Error(err.error?.message || `Erreur API ${resp.status}`);
+      throw new Error(err.error?.message || 'Erreur API ' + resp.status);
     }
 
     const data = await resp.json();
-    const textBlock = data.content?.find(b => b.type === 'text');
-    const text = textBlock?.text || '';
-    const clean = text.replace(/```json|```/g, '').trim();
-
+    const rawText = data.content?.find(b => b.type === 'text')?.text || '';
+    const clean = rawText.replace(/```json|```/g, '').trim();
     let ai;
     try { ai = JSON.parse(clean); }
-    catch(e) {
-      const match = clean.match(/\{[\s\S]*\}/);
-      if (match) ai = JSON.parse(match[0]);
-      else throw new Error('Réponse IA non parseable');
+    catch(e) { const m = clean.match(/\{[\s\S]*\}/); if (m) ai = JSON.parse(m[0]); else throw new Error('Reponse IA non parseable'); }
+
+    if (ai.image_logo_url && ai.image_logo_url !== 'null' && ai.image_logo_url !== null) {
+      imp._imageFromUrl = ai.image_logo_url;
+      imp.imageUrl = ai.image_logo_url;
+      document.getElementById('imp-res-img-wrap').innerHTML =
+        '<img src="' + ai.image_logo_url + '" style="width:100%;height:100%;object-fit:contain;padding:8px" onerror="this.parentNode.innerHTML=\'<div style=font-size:28px;color:var(--ink-3)>◈</div>\'">';
     }
 
-    // Remplir les champs
-    if (ai.nom_projet) document.getElementById('proj-name').value   = ai.nom_projet;
-    if (ai.client)     document.getElementById('proj-client').value = ai.client;
-    if (ai.agence)     document.getElementById('proj-agency').value = ai.agence;
-    if (ai.annee)      document.getElementById('proj-year').value   = ai.annee;
-
-    const briefAttrs = [
-      ai.brief?.industrie,
-      ...(ai.brief?.valeurs || []),
-      ai.brief?.cible,
-      ai.brief?.positionnement,
-    ].filter(Boolean);
-
-    const graphicAttrs = [
-      ai.graphique?.type,
-      ai.graphique?.forme,
-      ai.graphique?.couleur_dominante,
-      ai.graphique?.style,
-      ai.graphique?.structure,
-      ai.graphique?.typographie !== 'aucune' ? ai.graphique?.typographie : null,
-    ].filter(Boolean);
+    const briefAttrs = [ai.brief?.industrie, ...(ai.brief?.valeurs||[]), ai.brief?.cible, ai.brief?.positionnement].filter(Boolean);
+    const graphicAttrs = [ai.graphique?.type, ai.graphique?.forme, ai.graphique?.couleur_dominante, ai.graphique?.style, ai.graphique?.structure, ai.graphique?.typographie !== 'aucune' ? ai.graphique?.typographie : null].filter(Boolean);
 
     imp._pendingBrief   = briefAttrs;
     imp._pendingGraphic = graphicAttrs;
@@ -1598,14 +1489,8 @@ En te basant sur ce contenu, extrais les informations et réponds UNIQUEMENT en 
 
     document.getElementById('imp-res-name').textContent = ai.nom_projet || 'Projet';
     document.getElementById('imp-res-meta').textContent = [ai.agence, ai.client, ai.annee].filter(Boolean).join(' · ');
-
-    document.getElementById('imp-res-brief').innerHTML =
-      briefAttrs.map(a => `<span class="imp-res-tag b">${a}</span>`).join('') +
-      '<button class="imp-tag-add" onclick="addTag(\'brief\')">+ Ajouter</button>';
-
-    document.getElementById('imp-res-graphic').innerHTML =
-      graphicAttrs.map(a => `<span class="imp-res-tag g">${a}</span>`).join('') +
-      '<button class="imp-tag-add" onclick="addTag(\'graphic\')">+ Ajouter</button>';
+    document.getElementById('imp-res-brief').innerHTML   = briefAttrs.map(a => '<span class="imp-res-tag b">' + a + '</span>').join('') + '<button class="imp-tag-add" onclick="addTag(\'brief\')">+ Ajouter</button>';
+    document.getElementById('imp-res-graphic').innerHTML = graphicAttrs.map(a => '<span class="imp-res-tag g">' + a + '</span>').join('') + '<button class="imp-tag-add" onclick="addTag(\'graphic\')">+ Ajouter</button>';
 
     if (ai.description) {
       document.getElementById('imp-res-desc').textContent = ai.description;
@@ -1613,323 +1498,79 @@ En te basant sur ce contenu, extrais les informations et réponds UNIQUEMENT en 
     }
 
     statusEl.className = 'imp-res-status done';
-    statusEl.innerHTML = '<div class="imp-res-status-dot"></div>Extraction terminée — upload l\'image du logo puis "Analyser avec Claude"';
-    document.getElementById('btn-analyze').disabled = !imp.imageBase64 && !imp._imageFromUrl;
-    setFetchStatus('ok', 'Infos extraites. Passe en "Upload manuel" pour ajouter l\'image du logo.');
-
-    document.getElementById('btn-analyze').disabled = false;
-    setFetchStatus('ok', 'Page analysée avec succès — vérifie et ajuste si besoin.');
+    statusEl.innerHTML = '<div class="imp-res-status-dot"></div>Analyse terminee';
+    setFetchStatus('ok', 'Projet extrait — verifie et clique "Ajouter a la base".');
 
   } catch(e) {
-    setFetchStatus('error', `Erreur : ${e.message}`);
     statusEl.className = 'imp-res-status analyzing';
-    statusEl.innerHTML = `<div class="imp-res-status-dot"></div>${e.message}`;
-    document.getElementById('imp-res-brief').innerHTML   = '';
-    document.getElementById('imp-res-graphic').innerHTML = '';
+    statusEl.innerHTML = '<div class="imp-res-status-dot"></div>Erreur : ' + e.message;
+    setFetchStatus('error', e.message);
   }
 
-  document.getElementById('btn-fetch').disabled = false;
-  document.getElementById('btn-fetch-label').textContent = 'Importer';
+  btn.disabled = false;
+  document.getElementById('btn-import-label').textContent = 'Importer →';
 }
 
 function setFetchStatus(type, msg) {
   const el = document.getElementById('imp-fetch-status');
   el.style.display = 'flex';
-  el.className = `imp-fetch-status ${type}`;
-  el.innerHTML = `<div class="imp-fetch-dot"></div><span>${msg}</span>`;
-}
-
-// ── Navigation entre vues ──
-function switchView(view, btn) {
-  document.querySelectorAll('.hnav').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('view-explorer').style.display = view === 'explorer' ? 'block' : 'none';
-  document.getElementById('view-importer').style.display = view === 'importer' ? 'block' : 'none';
-}
-
-// ── État importer ──
-const imp = {
-  imageBase64: null,
-  imageMime: null,
-  imageUrl: null,   // URL blob pour affichage
-  projects: [],     // projets importés
-};
-
-// ── Upload image ──
-function onImageSelected(input) {
-  const file = input.files[0];
-  if (!file) return;
-
-  imp.imageMime = file.type;
-  imp.imageUrl  = URL.createObjectURL(file);
-
-  // Afficher preview dans la zone upload
-  const zone = document.getElementById('imp-upload-zone');
-  zone.classList.add('has-image');
-  zone.innerHTML = `
-    <img class="imp-upload-preview" src="${imp.imageUrl}" alt="Logo">
-    <div class="imp-upload-replace">Cliquer pour changer l'image</div>
-    <input type="file" id="img-input" accept="image/*" style="display:none" onchange="onImageSelected(this)">`;
-  zone.onclick = () => document.getElementById('img-input').click();
-
-  // Afficher aperçu dans la colonne droite
-  document.getElementById('imp-right-empty').style.display = 'none';
-  const result = document.getElementById('imp-result');
-  result.style.display = 'flex';
-  document.getElementById('imp-res-img-wrap').innerHTML = `<img src="${imp.imageUrl}" alt="Logo">`;
-  document.getElementById('imp-res-name').textContent = document.getElementById('proj-name').value || 'Nom du projet';
-  document.getElementById('imp-res-meta').textContent = '— en attente d\'analyse';
-  document.getElementById('imp-res-status').className = 'imp-res-status';
-  document.getElementById('imp-res-status').innerHTML = '';
-  document.getElementById('imp-res-brief').innerHTML = '';
-  document.getElementById('imp-res-graphic').innerHTML = '';
-  document.getElementById('imp-res-desc-wrap').style.display = 'none';
-
-  // Activer le bouton analyser
-  document.getElementById('btn-analyze').disabled = false;
-
-  // Lire en base64 pour l'API
-  const reader = new FileReader();
-  reader.onload = e => { imp.imageBase64 = e.target.result.split(',')[1]; };
-  reader.readAsDataURL(file);
-}
-
-// Drag & drop
-const zone = document.getElementById('imp-upload-zone');
-zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = 'var(--accent)'; });
-zone.addEventListener('dragleave', () => { zone.style.borderColor = ''; });
-zone.addEventListener('drop', e => {
-  e.preventDefault();
-  zone.style.borderColor = '';
-  const file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) {
-    const dt = new DataTransfer();
-    dt.items.add(file);
-    const fakeInput = { files: dt.files };
-    onImageSelected(fakeInput);
-  }
-});
-
-// ── Analyser avec Claude ──
-async function analyzeProject() {
-  const apiKey = document.getElementById('api-key').value.trim();
-  const name   = document.getElementById('proj-name').value.trim();
-  const client = document.getElementById('proj-client').value.trim();
-  const agency = document.getElementById('proj-agency').value.trim();
-  const year   = document.getElementById('proj-year').value.trim();
-
-  if (!imp.imageBase64 && !imp._imageFromUrl) { alert('Upload une image ou importe depuis une URL d\'abord.'); return; }
-  if (!apiKey.startsWith('sk-ant-')) { alert('Clé API Anthropic manquante ou invalide.'); return; }
-
-  // UI — état analyse
-  const btn = document.getElementById('btn-analyze');
-  btn.disabled = true;
-  document.getElementById('btn-analyze-label').textContent = 'Analyse en cours…';
-
-  document.getElementById('imp-res-name').textContent = name || 'Projet';
-  document.getElementById('imp-res-meta').textContent = [agency, client, year].filter(Boolean).join(' · ');
-
-  const statusEl = document.getElementById('imp-res-status');
-  statusEl.className = 'imp-res-status analyzing';
-  statusEl.innerHTML = '<div class="imp-res-status-dot"></div>Claude analyse le logo…';
-
-  // Skeletons
-  document.getElementById('imp-res-brief').innerHTML   = '<div class="skeleton-tag"></div><div class="skeleton-tag"></div><div class="skeleton-tag"></div>';
-  document.getElementById('imp-res-graphic').innerHTML = '<div class="skeleton-tag"></div><div class="skeleton-tag"></div><div class="skeleton-tag"></div>';
-
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 600,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image', source: imp.imageBase64
-                ? { type: 'base64', media_type: imp.imageMime, data: imp.imageBase64 }
-                : { type: 'url',    url: imp._imageFromUrl } },
-            { type: 'text', text: `Tu es expert en identité visuelle et branding. Analyse ce logo de marque avec précision.
-
-Réponds UNIQUEMENT en JSON valide, sans texte avant ou après :
-{
-  "brief": {
-    "industrie": "secteur d'activité principal",
-    "valeurs": ["valeur1", "valeur2", "valeur3"],
-    "cible": "public cible estimé",
-    "positionnement": "haut de gamme|grand public|institutionnel|jeune"
-  },
-  "graphique": {
-    "type": "wordmark|lettermark|logomark|combination|emblem",
-    "forme": "forme principale",
-    "couleur_dominante": "couleur principale",
-    "style": "minimaliste|géométrique|organique|typographique|illustratif|abstrait",
-    "structure": "symétrie|rayonnement|répétition|libre",
-    "typographie": "serif|sans-serif|script|custom|aucune"
-  },
-  "description": "Une phrase décrivant ce que le logo communique visuellement et pourquoi."
-}` }
-          ],
-        }],
-      }),
-    });
-
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({}));
-      throw new Error(err.error?.message || `Erreur ${resp.status}`);
-    }
-
-    const data = await resp.json();
-    const text = data.content?.[0]?.text || '';
-    const clean = text.replace(/```json|```/g, '').trim();
-    const ai = JSON.parse(clean);
-
-    // Construire les listes d'attributs
-    const briefAttrs = [
-      ai.brief?.industrie,
-      ...(ai.brief?.valeurs || []),
-      ai.brief?.cible,
-      ai.brief?.positionnement,
-    ].filter(Boolean);
-
-    const graphicAttrs = [
-      ai.graphique?.type,
-      ai.graphique?.forme,
-      ai.graphique?.couleur_dominante,
-      ai.graphique?.style,
-      ai.graphique?.structure,
-      ai.graphique?.typographie !== 'aucune' ? ai.graphique?.typographie : null,
-    ].filter(Boolean);
-
-    // Stocker pour la sauvegarde
-    imp._pendingBrief   = briefAttrs;
-    imp._pendingGraphic = graphicAttrs;
-    imp._pendingDesc    = ai.description || '';
-
-    // Afficher les attributs
-    document.getElementById('imp-res-brief').innerHTML =
-      briefAttrs.map(a => `<span class="imp-res-tag b">${a}</span>`).join('') +
-      '<button class="imp-tag-add" onclick="addTag(\'brief\')">+ Ajouter</button>';
-
-    document.getElementById('imp-res-graphic').innerHTML =
-      graphicAttrs.map(a => `<span class="imp-res-tag g">${a}</span>`).join('') +
-      '<button class="imp-tag-add" onclick="addTag(\'graphic\')">+ Ajouter</button>';
-
-    if (ai.description) {
-      document.getElementById('imp-res-desc').textContent = ai.description;
-      document.getElementById('imp-res-desc-wrap').style.display = 'flex';
-    }
-
-    statusEl.className = 'imp-res-status done';
-    statusEl.innerHTML = '<div class="imp-res-status-dot"></div>Analyse terminée';
-
-  } catch(e) {
-    statusEl.className = 'imp-res-status analyzing';
-    statusEl.innerHTML = `<div class="imp-res-status-dot"></div>Erreur : ${e.message}`;
-    document.getElementById('imp-res-brief').innerHTML   = '';
-    document.getElementById('imp-res-graphic').innerHTML = '';
-  }
-
-  btn.disabled = false;
-  document.getElementById('btn-analyze-label').textContent = 'Analyser avec Claude';
+  el.className = 'imp-fetch-status ' + type;
+  el.innerHTML = '<div class="imp-fetch-dot"></div><span>' + msg + '</span>';
 }
 
 function addTag(type) {
   const val = prompt(type === 'brief' ? 'Ajouter un attribut de brief :' : 'Ajouter un attribut graphique :');
   if (!val) return;
   const container = document.getElementById(type === 'brief' ? 'imp-res-brief' : 'imp-res-graphic');
-  const cls = type === 'brief' ? 'b' : 'g';
   const addBtn = container.querySelector('.imp-tag-add');
   const tag = document.createElement('span');
-  tag.className = `imp-res-tag ${cls}`;
+  tag.className = 'imp-res-tag ' + (type === 'brief' ? 'b' : 'g');
   tag.textContent = val.trim();
   container.insertBefore(tag, addBtn);
 }
 
-// ── Sauvegarder le projet ──
 function saveProject() {
-  const name   = document.getElementById('proj-name').value.trim() || 'Projet sans titre';
-  const client = document.getElementById('proj-client').value.trim() || '—';
-  const agency = document.getElementById('proj-agency').value.trim() || '—';
-  const year   = parseInt(document.getElementById('proj-year').value) || new Date().getFullYear();
-
-  const project = {
+  const p = {
     id: Date.now(),
-    name, client, agency, year,
+    name:    document.getElementById('imp-res-name').textContent || 'Sans titre',
     imageUrl: imp.imageUrl,
     brief:   imp._pendingBrief   || [],
     graphic: imp._pendingGraphic || [],
     desc:    imp._pendingDesc    || '',
   };
-
-  imp.projects.unshift(project);
+  imp.projects.unshift(p);
   renderSourceList();
   resetImporter();
 }
 
 function renderSourceList() {
   const list = document.getElementById('imp-sources');
-  document.getElementById('imp-count-label').textContent = `(${imp.projects.length})`;
-
-  if (imp.projects.length === 0) {
-    list.innerHTML = '<div class="imp-empty-list">Aucun projet encore importé</div>';
-    return;
-  }
-
-  list.innerHTML = imp.projects.map(p => `
-    <div class="imp-source-row" id="src-${p.id}">
-      <div class="imp-source-thumb">
-        ${p.imageUrl ? `<img src="${p.imageUrl}" alt="${p.name}">` : '<span style="font-size:18px;color:var(--ink-3)">◈</span>'}
-      </div>
-      <div class="imp-source-info">
-        <div class="imp-source-name">${p.name}</div>
-        <div class="imp-source-meta">${p.agency} · ${p.year}</div>
-      </div>
-      <button class="imp-source-del" onclick="deleteProject(${p.id})" title="Supprimer">×</button>
-    </div>`).join('');
+  document.getElementById('imp-count-label').textContent = '(' + imp.projects.length + ')';
+  if (!imp.projects.length) { list.innerHTML = '<div class="imp-empty-list">Aucun projet encore importe</div>'; return; }
+  list.innerHTML = imp.projects.map(p =>
+    '<div class="imp-source-row" id="src-' + p.id + '">' +
+    '<div class="imp-source-thumb">' + (p.imageUrl ? '<img src="' + p.imageUrl + '" alt="' + p.name + '">' : '<span style="font-size:18px;color:var(--ink-3)">◈</span>') + '</div>' +
+    '<div class="imp-source-info"><div class="imp-source-name">' + p.name + '</div><div class="imp-source-meta">' + p.brief.slice(0,2).join(' · ') + '</div></div>' +
+    '<button class="imp-source-del" onclick="deleteProject(' + p.id + ')" title="Supprimer">×</button>' +
+    '</div>'
+  ).join('');
 }
 
 function deleteProject(id) {
-  if (!confirm('Supprimer ce projet de la base ?')) return;
+  if (!confirm('Supprimer ce projet ?')) return;
   imp.projects = imp.projects.filter(p => p.id !== id);
   renderSourceList();
 }
 
 function resetImporter() {
-  imp.imageBase64 = null;
-  imp.imageMime   = null;
-  imp.imageUrl    = null;
-  imp._imageFromUrl   = null;
-  imp._pendingBrief   = [];
-  imp._pendingGraphic = [];
-  imp._pendingDesc    = '';
-
-  // Reset formulaire
-  ['proj-name','proj-client','proj-agency','proj-year','proj-url','proj-paste'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
+  imp.imageUrl = null; imp._imageFromUrl = null;
+  imp._pendingBrief = []; imp._pendingGraphic = []; imp._pendingDesc = '';
+  const urlEl = document.getElementById('proj-url');
+  if (urlEl) urlEl.value = '';
   const fs = document.getElementById('imp-fetch-status');
   if (fs) fs.style.display = 'none';
-
-  // Reset zone upload
-  const zone = document.getElementById('imp-upload-zone');
-  zone.className = 'imp-upload-zone';
-  zone.onclick = () => document.getElementById('img-input').click();
-  zone.innerHTML = `
-    <input type="file" id="img-input" accept="image/*" style="display:none" onchange="onImageSelected(this)">
-    <div class="imp-upload-inner">
-      <div class="imp-upload-icon">⬡</div>
-      <div class="imp-upload-text">Glisse ou clique pour uploader l'image du logo</div>
-      <div class="imp-upload-sub">PNG, JPG, SVG · max 5 Mo</div>
-    </div>`;
-
-  document.getElementById('btn-analyze').disabled = true;
+  const btn = document.getElementById('btn-import');
+  if (btn) { btn.disabled = true; }
   document.getElementById('imp-result').style.display = 'none';
   document.getElementById('imp-right-empty').style.display = 'flex';
 }
