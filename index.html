@@ -1336,32 +1336,24 @@ async function uploadImageToStorage(fileOrUrl) {
   let blob;
   if (fileOrUrl instanceof File) {
     blob = fileOrUrl;
-    console.log('uploadImageToStorage — File:', blob.name, blob.size, blob.type);
   } else if (typeof fileOrUrl === 'string' && fileOrUrl.startsWith('http')) {
-    console.log('uploadImageToStorage — URL:', fileOrUrl);
     try {
       const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(fileOrUrl);
       const r = await fetch(proxyUrl);
       if (!r.ok) throw new Error('fetch failed ' + r.status);
       blob = await r.blob();
-      console.log('uploadImageToStorage — fetched blob:', blob.size, blob.type);
     } catch(e) {
-      console.warn('uploadImageToStorage — URL fetch failed, keeping external URL:', e.message);
       return fileOrUrl;
     }
   } else {
-    console.warn('uploadImageToStorage — unhandled input, returning as-is:', typeof fileOrUrl);
     return fileOrUrl;
   }
 
   const mimeType = blob.type || 'image/jpeg';
   const ext = mimeType.includes('png') ? '.png' : mimeType.includes('svg') ? '.svg' : mimeType.includes('gif') ? '.gif' : '.jpg';
   const fname = 'logo_' + Date.now() + '_' + Math.random().toString(36).slice(2) + ext;
-  const uploadUrl = SUPA_URL + '/storage/v1/object/logos/' + fname;
 
-  console.log('uploadImageToStorage — uploading to:', uploadUrl, 'mime:', mimeType);
-
-  const r = await fetch(uploadUrl, {
+  const r = await fetch(SUPA_URL + '/storage/v1/object/logos/' + fname, {
     method: 'POST',
     headers: {
       'apikey': SUPA_KEY,
@@ -1372,17 +1364,12 @@ async function uploadImageToStorage(fileOrUrl) {
     body: blob,
   });
 
-  console.log('uploadImageToStorage — response status:', r.status);
-
   if (!r.ok) {
     const e = await r.json().catch(()=>{});
-    console.error('uploadImageToStorage — error body:', e);
     throw new Error('Storage upload failed: ' + (e?.message || r.status));
   }
 
-  const publicUrl = SUPA_URL + '/storage/v1/object/public/logos/' + fname;
-  console.log('uploadImageToStorage — success, public URL:', publicUrl);
-  return publicUrl;
+  return SUPA_URL + '/storage/v1/object/public/logos/' + fname;
 }
 
 
@@ -1883,10 +1870,8 @@ async function saveEditPanel() {
       btn.textContent = 'Upload image…';
       if (newFile) {
         editLogo.imageUrl = await uploadImageToStorage(newFile);
-        console.log('After upload, editLogo.imageUrl =', editLogo.imageUrl);
       } else if (newUrl && !newUrl.startsWith('blob:')) {
         editLogo.imageUrl = await uploadImageToStorage(newUrl);
-        console.log('After upload, editLogo.imageUrl =', editLogo.imageUrl);
       }
     } catch(e) {
       alert('Erreur upload image : ' + e.message);
@@ -1900,8 +1885,7 @@ async function saveEditPanel() {
     const finalImageUrl = (editLogo.imageUrl && !editLogo.imageUrl.startsWith('blob:'))
       ? editLogo.imageUrl
       : null;
-    console.log('saveEditPanel PATCH — id:', editLogo.id, 'image_url:', finalImageUrl);
-    const patchResult = await supaFetch('/rest/v1/logos?id=eq.' + editLogo.id, {
+    await supaFetch('/rest/v1/logos?id=eq.' + editLogo.id, {
       method: 'PATCH',
       headers: { 'Prefer': 'return=representation' },
       body: JSON.stringify({
@@ -1911,7 +1895,6 @@ async function saveEditPanel() {
         graphic:   editLogo.graphic,
       }),
     });
-    console.log('saveEditPanel PATCH result:', patchResult);
 
     const idx = DB.findIndex(l => l.id == editLogo.id);
     if (idx > -1) {
