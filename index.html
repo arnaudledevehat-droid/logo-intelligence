@@ -854,6 +854,18 @@
     align-items: center; justify-content: center;
   }
   .img-picker-thumb.selected .pick-check { display: flex; }
+  .imp-mode-tabs { display:flex;gap:2px;background:var(--paper-2);padding:3px;border-radius:6px;margin-top:6px }
+  .imp-mode-tab { flex:1;padding:5px 8px;border:none;background:none;border-radius:4px;font-family:'Instrument Sans',sans-serif;font-size:12px;font-weight:500;color:var(--ink-3);cursor:pointer;transition:all .15s }
+  .imp-mode-tab:hover { color:var(--ink) }
+  .imp-mode-tab.active { background:var(--paper);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08) }
+  .portfolio-item { display:flex;align-items:center;gap:7px;padding:5px 7px;border:0.5px solid var(--rule);border-radius:4px;background:var(--paper);cursor:pointer;transition:all .12s }
+  .portfolio-item:hover { border-color:var(--rule-2) }
+  .portfolio-item input[type=checkbox] { flex-shrink:0;cursor:pointer;width:13px;height:13px;accent-color:var(--accent) }
+  .portfolio-item-name { font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;color:var(--ink) }
+  .portfolio-item-url { font-size:9.5px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis }
+  .portfolio-item.done { opacity:.45 }
+  .portfolio-item.current { border-color:var(--accent);background:var(--accent-pale) }
+
   .img-upload-fallback {
     display: inline-flex; align-items: center;
     font-size: 12px; color: var(--ink-2);
@@ -1251,13 +1263,48 @@
     </div>
     <div class="imp-divider"></div>
     <div class="imp-section">
-      <div class="imp-section-label">Importer un projet</div>
+      <div class="imp-section-label">Mode d'import</div>
+      <div class="imp-mode-tabs">
+        <button class="imp-mode-tab active" id="mode-tab-single" onclick="switchImportMode('single', this)">Projet unique</button>
+        <button class="imp-mode-tab" id="mode-tab-portfolio" onclick="switchImportMode('portfolio', this)">Portfolio complet</button>
+      </div>
+    </div>
+    <div class="imp-divider"></div>
+
+    <!-- Mode projet unique -->
+    <div id="mode-single" class="imp-section">
+      <div class="imp-section-label">URL du projet</div>
       <input type="text" id="proj-url" class="imp-input" placeholder="https://grapheine.com/portfolio/…" oninput="document.getElementById('btn-import').disabled = !this.value.trim()">
       <button class="btn-scrape" id="btn-import" onclick="importFromUrl()" disabled style="width:100%;justify-content:center">
-        <span id="btn-import-label">Importer →</span>
+        <span id="btn-import-label">Analyser →</span>
       </button>
       <div class="imp-fetch-status" id="imp-fetch-status" style="display:none"></div>
     </div>
+
+    <!-- Mode portfolio -->
+    <div id="mode-portfolio" class="imp-section" style="display:none">
+      <div class="imp-section-label">URL du portfolio</div>
+      <input type="text" id="portfolio-url" class="imp-input" placeholder="https://grapheine.com/portfolio/" oninput="document.getElementById('btn-scan').disabled = !this.value.trim()">
+      <button class="btn-scrape" id="btn-scan" onclick="scanPortfolio()" disabled style="width:100%;justify-content:center">
+        <span id="btn-scan-label">Scanner le portfolio →</span>
+      </button>
+      <div class="imp-fetch-status" id="portfolio-fetch-status" style="display:none"></div>
+      <!-- Liste des projets détectés -->
+      <div id="portfolio-list" style="display:none;margin-top:10px;display:none;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div class="imp-section-label" id="portfolio-list-label">Projets détectés</div>
+          <div style="display:flex;gap:6px">
+            <button class="imp-tag-add" onclick="toggleAllPortfolio(true)">Tout</button>
+            <button class="imp-tag-add" onclick="toggleAllPortfolio(false)">Aucun</button>
+          </div>
+        </div>
+        <div id="portfolio-items" style="display:flex;flex-direction:column;gap:3px;max-height:280px;overflow-y:auto"></div>
+        <button class="btn-scrape" id="btn-start-portfolio" onclick="startPortfolioImport()" style="width:100%;justify-content:center;margin-top:4px">
+          <span id="btn-start-label">Démarrer l'import →</span>
+        </button>
+      </div>
+    </div>
+
     <div class="imp-divider"></div>
     <div class="imp-section">
       <div class="imp-section-label">Projets importés <span id="imp-count-label" style="font-weight:400;color:var(--ink-3)">(0)</span></div>
@@ -1266,10 +1313,23 @@
   </div>
 
   <div class="imp-right">
+    <!-- Barre de progression portfolio -->
+    <div id="portfolio-progress" style="display:none;padding:10px 16px;background:var(--paper-2);border-bottom:1px solid var(--rule);gap:10px;align-items:center">
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:11.5px;font-weight:600;color:var(--ink)" id="portfolio-progress-label">Projet 1 / 12</span>
+          <span style="font-size:11px;color:var(--ink-3)" id="portfolio-progress-name"></span>
+        </div>
+        <div style="height:3px;background:var(--rule);border-radius:2px;overflow:hidden">
+          <div id="portfolio-progress-bar" style="height:100%;background:var(--accent);transition:width .4s;width:0%"></div>
+        </div>
+      </div>
+    </div>
+
     <div class="imp-right-empty" id="imp-right-empty">
       <div class="imp-right-empty-icon">◈</div>
-      <div class="imp-right-empty-title">Colle l'URL d'un projet</div>
-      <div class="imp-right-empty-sub">Claude récupère la page, extrait le logo et génère tous les attributs automatiquement.</div>
+      <div class="imp-right-empty-title" id="imp-right-empty-title">Colle l'URL d'un projet</div>
+      <div class="imp-right-empty-sub" id="imp-right-empty-sub">Claude récupère la page, extrait le logo et génère tous les attributs automatiquement.</div>
     </div>
     <div id="imp-result" style="display:none;flex-direction:column;gap:1.5rem;padding:2rem">
       <div class="imp-res-preview">
@@ -1307,8 +1367,8 @@
         <div class="match-reasons" id="imp-res-desc"></div>
       </div>
       <div class="imp-res-actions">
-        <button class="btn-save" onclick="saveProject()">Ajouter à la base →</button>
-        <button class="btn-cancel" onclick="resetImporter()">Annuler</button>
+        <button class="btn-save" id="btn-save-project" onclick="saveProject()">Ajouter à la base →</button>
+        <button class="btn-cancel" id="btn-skip-project" onclick="skipOrCancel()">Ignorer</button>
       </div>
     </div>
   </div>
@@ -1951,7 +2011,213 @@ function switchView(view, btn) {
   if (view === 'explorer') showAllProjects();
 }
 
-// ── Import depuis URL ──
+// ── Mode import ──
+function switchImportMode(mode, btn) {
+  document.querySelectorAll('.imp-mode-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('mode-single').style.display    = mode === 'single'    ? 'flex' : 'none';
+  document.getElementById('mode-portfolio').style.display = mode === 'portfolio' ? 'flex' : 'none';
+  document.getElementById('mode-single').style.flexDirection = 'column';
+  document.getElementById('mode-single').style.gap = '6px';
+  document.getElementById('mode-portfolio').style.flexDirection = 'column';
+  document.getElementById('mode-portfolio').style.gap = '6px';
+  if (mode === 'single') {
+    document.getElementById('imp-right-empty-title').textContent = 'Colle l\'URL d\'un projet';
+    document.getElementById('imp-right-empty-sub').textContent = 'Claude récupère la page, extrait le logo et génère tous les attributs automatiquement.';
+  } else {
+    document.getElementById('imp-right-empty-title').textContent = 'Scanne un portfolio';
+    document.getElementById('imp-right-empty-sub').textContent = 'L\'app détecte tous les projets, puis tu les importes un par un.';
+  }
+}
+
+// ── State portfolio ──
+const portfolio = {
+  urls: [],       // [{url, name, selected, status: 'pending'|'done'|'skipped'}]
+  currentIdx: -1,
+  running: false,
+};
+
+async function scanPortfolio() {
+  const url = document.getElementById('portfolio-url').value.trim();
+  const btn = document.getElementById('btn-scan');
+  btn.disabled = true;
+  document.getElementById('btn-scan-label').textContent = 'Scan en cours…';
+  setPortfolioStatus('loading', 'Récupération du portfolio…');
+
+  try {
+    let html = '';
+    const proxies = [
+      () => fetch('https://corsproxy.io/?' + encodeURIComponent(url)).then(r => r.ok ? r.text() : Promise.reject()),
+      () => fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url)).then(r => r.ok ? r.json().then(d => d.contents) : Promise.reject()),
+    ];
+    for (const proxy of proxies) {
+      try { html = await proxy(); if (html && html.length > 200) break; } catch(e) { continue; }
+    }
+    if (!html || html.length < 100) throw new Error('Impossible de récupérer la page.');
+
+    // Extraire tous les liens internes qui ressemblent à des projets
+    const baseUrl = new URL(url);
+    const allLinks = [...html.matchAll(/href=["']([^"'#?]+)["']/gi)]
+      .map(m => {
+        try {
+          const u = new URL(m[1], url);
+          return u.href;
+        } catch(e) { return null; }
+      })
+      .filter(u => u && u.startsWith(baseUrl.origin))
+      // Garder les liens qui ont plus de segments que la page index
+      .filter(u => {
+        try {
+          const p = new URL(u).pathname;
+          const base = new URL(url).pathname;
+          return p !== base && p !== '/' && p.startsWith(base) && p.length > base.length + 2;
+        } catch(e) { return false; }
+      });
+
+    // Dédoublonner
+    const unique = [...new Set(allLinks)];
+
+    // Filtrer ceux déjà en base (même source_url)
+    const existingUrls = DB.map(l => l.sourceUrl).filter(Boolean);
+    const filtered = unique.filter(u => !existingUrls.includes(u));
+
+    if (filtered.length === 0) throw new Error('Aucun projet détecté — tous déjà importés ou page vide.');
+
+    // Extraire un nom lisible depuis l'URL
+    portfolio.urls = filtered.map(u => {
+      const slug = new URL(u).pathname.replace(/\/$/, '').split('/').pop();
+      const name = slug.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      return { url: u, name, selected: true, status: 'pending' };
+    });
+
+    renderPortfolioList();
+    setPortfolioStatus('ok', filtered.length + ' projets détectés');
+
+  } catch(e) {
+    setPortfolioStatus('error', e.message);
+  }
+
+  btn.disabled = false;
+  document.getElementById('btn-scan-label').textContent = 'Scanner le portfolio →';
+}
+
+function setPortfolioStatus(type, msg) {
+  const el = document.getElementById('portfolio-fetch-status');
+  el.style.display = 'flex';
+  el.className = 'imp-fetch-status ' + type;
+  el.innerHTML = '<div class="imp-fetch-dot"></div><span>' + msg + '</span>';
+}
+
+function renderPortfolioList() {
+  const list = document.getElementById('portfolio-list');
+  list.style.display = 'flex';
+  const container = document.getElementById('portfolio-items');
+  const selected = portfolio.urls.filter(p => p.selected).length;
+  document.getElementById('portfolio-list-label').textContent = portfolio.urls.length + ' projets — ' + selected + ' sélectionnés';
+  container.innerHTML = portfolio.urls.map((p, i) =>
+    '<div class="portfolio-item' + (p.status === 'done' ? ' done' : '') + '" id="pitem-' + i + '" onclick="togglePortfolioItem(' + i + ')">' +
+      '<input type="checkbox"' + (p.selected ? ' checked' : '') + ' onclick="event.stopPropagation();togglePortfolioItem(' + i + ')">' +
+      '<div style="flex:1;min-width:0">' +
+        '<div class="portfolio-item-name">' + p.name + '</div>' +
+        '<div class="portfolio-item-url">' + p.url.replace(/^https?:\/\//, '') + '</div>' +
+      '</div>' +
+    '</div>'
+  ).join('');
+}
+
+function togglePortfolioItem(i) {
+  portfolio.urls[i].selected = !portfolio.urls[i].selected;
+  renderPortfolioList();
+}
+
+function toggleAllPortfolio(val) {
+  portfolio.urls.forEach(p => { if (p.status === 'pending') p.selected = val; });
+  renderPortfolioList();
+}
+
+async function startPortfolioImport() {
+  const toImport = portfolio.urls.filter(p => p.selected && p.status === 'pending');
+  if (toImport.length === 0) { alert('Aucun projet sélectionné.'); return; }
+  portfolio.running = true;
+  portfolio.currentIdx = portfolio.urls.findIndex(p => p.selected && p.status === 'pending');
+
+  // Afficher la barre de progression
+  document.getElementById('portfolio-progress').style.display = 'flex';
+  document.getElementById('btn-save-project').textContent = 'Ajouter et continuer →';
+  document.getElementById('btn-skip-project').textContent = 'Ignorer ce projet';
+
+  updatePortfolioProgress();
+  await importPortfolioProject(portfolio.currentIdx);
+}
+
+function updatePortfolioProgress() {
+  const total   = portfolio.urls.filter(p => p.selected).length;
+  const done    = portfolio.urls.filter(p => p.status === 'done' || p.status === 'skipped').length;
+  const current = portfolio.urls[portfolio.currentIdx];
+  document.getElementById('portfolio-progress-label').textContent = 'Projet ' + (done + 1) + ' / ' + total;
+  document.getElementById('portfolio-progress-name').textContent  = current?.name || '';
+  document.getElementById('portfolio-progress-bar').style.width   = (total > 0 ? (done / total * 100) : 0) + '%';
+  // Highlight item actuel
+  document.querySelectorAll('.portfolio-item').forEach(el => el.classList.remove('current'));
+  const cur = document.getElementById('pitem-' + portfolio.currentIdx);
+  if (cur) { cur.classList.add('current'); cur.scrollIntoView({ block: 'nearest' }); }
+}
+
+async function importPortfolioProject(idx) {
+  const p = portfolio.urls[idx];
+  if (!p) { finishPortfolioImport(); return; }
+  // Injecter l'URL dans le champ et lancer l'analyse
+  document.getElementById('proj-url').value = p.url;
+  await importFromUrl();
+}
+
+async function skipOrCancel() {
+  if (portfolio.running && portfolio.currentIdx >= 0) {
+    // Marquer comme ignoré
+    portfolio.urls[portfolio.currentIdx].status = 'skipped';
+    renderPortfolioList();
+    await nextPortfolioProject();
+  } else {
+    resetImporter();
+  }
+}
+
+async function nextPortfolioProject() {
+  // Trouver le prochain projet sélectionné et pending
+  const next = portfolio.urls.findIndex((p, i) => i > portfolio.currentIdx && p.selected && p.status === 'pending');
+  if (next === -1) {
+    finishPortfolioImport();
+    return;
+  }
+  portfolio.currentIdx = next;
+  updatePortfolioProgress();
+  resetImporterForNext();
+  await importPortfolioProject(next);
+}
+
+function resetImporterForNext() {
+  imp.imageUrl = null; imp._imageFromUrl = null; imp._manualImageFile = null;
+  imp._pendingBrief = []; imp._pendingGraphic = []; imp._pendingDesc = '';
+  document.getElementById('imp-result').style.display = 'none';
+  document.getElementById('imp-right-empty').style.display = 'flex';
+  const fs = document.getElementById('imp-fetch-status');
+  if (fs) fs.style.display = 'none';
+}
+
+function finishPortfolioImport() {
+  portfolio.running = false;
+  portfolio.currentIdx = -1;
+  document.getElementById('portfolio-progress').style.display = 'none';
+  document.getElementById('btn-save-project').textContent = 'Ajouter à la base →';
+  document.getElementById('btn-skip-project').textContent = 'Ignorer';
+  resetImporterForNext();
+  document.getElementById('imp-right-empty-title').textContent = 'Import terminé !';
+  document.getElementById('imp-right-empty-sub').textContent = portfolio.urls.filter(p => p.status === 'done').length + ' projets importés avec succès.';
+  document.getElementById('imp-right-empty').style.display = 'flex';
+  renderPortfolioList();
+}
+
+
 const imp = {
   imageUrl: null, _imageFromUrl: null,
   _pendingBrief: [], _pendingGraphic: [], _pendingDesc: '',
@@ -2363,7 +2629,15 @@ async function saveProject() {
     imp.projects.unshift(localP);
     updateHeaderCount();
     renderSourceList();
-    resetImporter();
+
+    // Mode portfolio — marquer comme done et passer au suivant
+    if (portfolio.running && portfolio.currentIdx >= 0) {
+      portfolio.urls[portfolio.currentIdx].status = 'done';
+      renderPortfolioList();
+      await nextPortfolioProject();
+    } else {
+      resetImporter();
+    }
   } catch(e) {
     alert('Erreur sauvegarde : ' + e.message);
     btn.textContent = 'Ajouter à la base →';
@@ -2415,9 +2689,14 @@ function resetImporter() {
   const fs = document.getElementById('imp-fetch-status');
   if (fs) fs.style.display = 'none';
   const btn = document.getElementById('btn-import');
-  if (btn) { btn.disabled = true; }
+  if (btn) btn.disabled = true;
   document.getElementById('imp-result').style.display = 'none';
   document.getElementById('imp-right-empty').style.display = 'flex';
+  if (!portfolio.running) {
+    document.getElementById('portfolio-progress').style.display = 'none';
+    document.getElementById('btn-save-project').textContent = 'Ajouter à la base →';
+    document.getElementById('btn-skip-project').textContent = 'Ignorer';
+  }
 }
 
 </script>
