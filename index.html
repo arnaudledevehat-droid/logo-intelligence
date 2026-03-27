@@ -228,7 +228,7 @@
   .brief-summary.visible { display: block; }
 
   /* ── MAIN ── */
-  main { flex: 1; display: flex; flex-direction: column; }
+  main { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
 
   /* État initial */
   .state-empty {
@@ -307,7 +307,7 @@
   /* Grille logos */
   .logo-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 1px;
     background: var(--rule);
     border-top: 1px solid var(--rule);
@@ -323,7 +323,9 @@
     animation: cardIn 0.35s ease forwards;
     position: relative;
     overflow: hidden;
-    aspect-ratio: 1;
+    aspect-ratio: 1 / 1;
+    display: block;
+    width: 100%;
   }
 
   @keyframes cardIn { to { opacity: 1; transform: translateY(0); } }
