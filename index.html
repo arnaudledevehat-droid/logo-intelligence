@@ -1883,8 +1883,10 @@ async function saveEditPanel() {
       btn.textContent = 'Upload image…';
       if (newFile) {
         editLogo.imageUrl = await uploadImageToStorage(newFile);
+        console.log('After upload, editLogo.imageUrl =', editLogo.imageUrl);
       } else if (newUrl && !newUrl.startsWith('blob:')) {
         editLogo.imageUrl = await uploadImageToStorage(newUrl);
+        console.log('After upload, editLogo.imageUrl =', editLogo.imageUrl);
       }
     } catch(e) {
       alert('Erreur upload image : ' + e.message);
