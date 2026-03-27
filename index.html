@@ -337,7 +337,7 @@
 
   .logo-thumb img {
     width: 100%; height: 100%;
-    object-fit: contain; padding: 20px;
+    object-fit: cover; padding: 0;
     transition: transform 0.3s ease;
   }
   .logo-card:hover .logo-thumb img { transform: scale(1.04); }
@@ -1258,7 +1258,8 @@
   <div class="imp-left">
     <div class="imp-section">
       <div class="imp-section-label">Clé API Anthropic</div>
-      <input type="password" id="api-key" class="imp-input" placeholder="sk-ant-..." autocomplete="off">
+      <input type="password" id="api-key" class="imp-input" placeholder="sk-ant-..." autocomplete="off"
+        oninput="localStorage.setItem('li_api_key', this.value)">
       <div class="imp-hint">Utilisée ici uniquement. <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--accent)">Obtenir une clé →</a></div>
     </div>
     <div class="imp-divider"></div>
@@ -1511,6 +1512,15 @@ function showAllProjects() {
 
 // Charger depuis Supabase au démarrage
 loadLogosFromSupabase();
+
+// Restaurer la clé API sauvegardée
+(function() {
+  const saved = localStorage.getItem('li_api_key');
+  if (saved) {
+    const el = document.getElementById('api-key');
+    if (el) el.value = saved;
+  }
+})();
 
 // ── Contrôles de recherche ──
 function onSelectChange() { updateSummary(); }
@@ -2221,6 +2231,8 @@ async function nextPortfolioProject() {
   portfolio.currentIdx = next;
   updatePortfolioProgress();
   resetImporterForNext();
+  // Pause de 3s pour éviter de surcharger l'API Anthropic
+  await new Promise(r => setTimeout(r, 3000));
   await importPortfolioProject(next);
 }
 
@@ -2415,24 +2427,33 @@ async function importFromUrl() {
       '\n\nPour "image_candidates" : selectionne les 3 a 4 URLs d\'images parmi celles listees qui sont les plus susceptibles d\'etre le logo ou l\'identite visuelle principale du projet. Prefere les PNG/SVG, les images isolees sur fond neutre, evite les photos et screenshots.';
 
 
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1024,
-        messages: [{ role: 'user', content: prompt }],
-      }),
-    });
-
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({}));
-      throw new Error(err.error?.message || 'Erreur API ' + resp.status);
+    // Appel Claude avec retry sur overload
+    let resp, retries = 0;
+    while (retries < 3) {
+      resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1024,
+          messages: [{ role: 'user', content: prompt }],
+        }),
+      });
+      if (resp.ok) break;
+      const errData = await resp.json().catch(() => ({}));
+      const errMsg = errData.error?.message || '';
+      if ((resp.status === 529 || errMsg.toLowerCase().includes('overload')) && retries < 2) {
+        retries++;
+        statusEl.innerHTML = '<div class="imp-res-status-dot"></div>API surchargée — nouvelle tentative ' + retries + '/3…';
+        await new Promise(r => setTimeout(r, 8000 * retries));
+        continue;
+      }
+      throw new Error(errMsg || 'Erreur API ' + resp.status);
     }
 
     const data = await resp.json();
