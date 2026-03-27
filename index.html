@@ -833,13 +833,13 @@
 
   .img-picker {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
     margin-top: 4px;
   }
   .img-picker-thumb {
     border: 2px solid var(--rule);
-    border-radius: 6px;
+    border-radius: 4px;
     overflow: hidden;
     cursor: pointer;
     background: var(--paper-2);
@@ -1053,22 +1053,15 @@
         <div class="select-wrap">
           <select id="sel-industrie" class="filter-select" onchange="onMultiSelect('industrie', this)">
             <option value="">+ Ajouter un secteur</option>
-            <optgroup label="── Familles complètes ──">
-              <option value="__fam__Économie & Finance">Économie & Finance (tous)</option>
-              <option value="__fam__Commerce & Distribution">Commerce & Distribution (tous)</option>
-              <option value="__fam__Tech & Innovation">Tech & Innovation (tous)</option>
-              <option value="__fam__Santé & Sciences">Santé & Sciences (tous)</option>
-              <option value="__fam__Industrie & Énergie">Industrie & Énergie (tous)</option>
-              <option value="__fam__Culture & Médias">Culture & Médias (tous)</option>
-              <option value="__fam__Institution & Social">Institution & Social (tous)</option>
-            </optgroup>
             <optgroup label="Économie & Finance">
+              <option value="__fam__Économie & Finance">→ Économie & Finance (famille complète)</option>
               <option>Finance & Banque</option>
               <option>Assurance</option>
               <option>Immobilier</option>
               <option>Conseil & Management</option>
             </optgroup>
             <optgroup label="Commerce & Distribution">
+              <option value="__fam__Commerce & Distribution">→ Commerce & Distribution (famille complète)</option>
               <option>Retail & Grande distribution</option>
               <option>Luxe & Prestige</option>
               <option>Mode & Textile</option>
@@ -1076,17 +1069,20 @@
               <option>Restauration</option>
             </optgroup>
             <optgroup label="Tech & Innovation">
+              <option value="__fam__Tech & Innovation">→ Tech & Innovation (famille complète)</option>
               <option>Technologie & SaaS</option>
               <option>Télécommunications</option>
               <option>Intelligence artificielle</option>
               <option>Jeux vidéo & Esport</option>
             </optgroup>
             <optgroup label="Santé & Sciences">
+              <option value="__fam__Santé & Sciences">→ Santé & Sciences (famille complète)</option>
               <option>Santé & Médical</option>
               <option>Pharmacie & Biotech</option>
               <option>Bien-être & Beauté</option>
             </optgroup>
             <optgroup label="Industrie & Énergie">
+              <option value="__fam__Industrie & Énergie">→ Industrie & Énergie (famille complète)</option>
               <option>Énergie & Utilities</option>
               <option>Industrie & Manufacture</option>
               <option>Construction & BTP</option>
@@ -1094,12 +1090,14 @@
               <option>Aéronautique & Défense</option>
             </optgroup>
             <optgroup label="Culture & Médias">
+              <option value="__fam__Culture & Médias">→ Culture & Médias (famille complète)</option>
               <option>Culture & Médias</option>
               <option>Sport</option>
               <option>Tourisme & Hôtellerie</option>
               <option>Éducation & Formation</option>
             </optgroup>
             <optgroup label="Institution & Social">
+              <option value="__fam__Institution & Social">→ Institution & Social (famille complète)</option>
               <option>Institutionnel & Public</option>
               <option>ONG & Association</option>
               <option>Agriculture & Terroir</option>
@@ -1115,16 +1113,8 @@
         <div class="select-wrap">
           <select id="sel-valeurs" class="filter-select" onchange="onMultiSelect('valeurs', this)">
             <option value="">+ Ajouter une valeur</option>
-            <optgroup label="── Familles complètes ──">
-              <option value="__fam__Confiance & Solidité">Confiance & Solidité (tous)</option>
-              <option value="__fam__Excellence & Prestige">Excellence & Prestige (tous)</option>
-              <option value="__fam__Énergie & Mouvement">Énergie & Mouvement (tous)</option>
-              <option value="__fam__Humanité & Proximité">Humanité & Proximité (tous)</option>
-              <option value="__fam__Héritage & Tradition">Héritage & Tradition (tous)</option>
-              <option value="__fam__Engagement & Valeurs">Engagement & Valeurs (tous)</option>
-              <option value="__fam__Simplicité & Clarté">Simplicité & Clarté (tous)</option>
-            </optgroup>
             <optgroup label="Confiance & Solidité">
+              <option value="__fam__Confiance & Solidité">→ Confiance & Solidité (famille complète)</option>
               <option>Confiance</option>
               <option>Solidité</option>
               <option>Fiabilité</option>
@@ -1133,6 +1123,7 @@
               <option>Transparence</option>
             </optgroup>
             <optgroup label="Excellence & Prestige">
+              <option value="__fam__Excellence & Prestige">→ Excellence & Prestige (famille complète)</option>
               <option>Prestige</option>
               <option>Excellence</option>
               <option>Élégance</option>
@@ -1140,6 +1131,7 @@
               <option>Exclusivité</option>
             </optgroup>
             <optgroup label="Énergie & Mouvement">
+              <option value="__fam__Énergie & Mouvement">→ Énergie & Mouvement (famille complète)</option>
               <option>Dynamisme</option>
               <option>Innovation</option>
               <option>Audace</option>
@@ -1147,6 +1139,7 @@
               <option>Conquête</option>
             </optgroup>
             <optgroup label="Humanité & Proximité">
+              <option value="__fam__Humanité & Proximité">→ Humanité & Proximité (famille complète)</option>
               <option>Humanité</option>
               <option>Bienveillance</option>
               <option>Accessibilité</option>
@@ -1154,18 +1147,21 @@
               <option>Authenticité</option>
             </optgroup>
             <optgroup label="Héritage & Tradition">
+              <option value="__fam__Héritage & Tradition">→ Héritage & Tradition (famille complète)</option>
               <option>Tradition</option>
               <option>Héritage</option>
               <option>Savoir-faire</option>
               <option>Artisanat</option>
             </optgroup>
             <optgroup label="Engagement & Valeurs">
+              <option value="__fam__Engagement & Valeurs">→ Engagement & Valeurs (famille complète)</option>
               <option>Durabilité</option>
               <option>Responsabilité</option>
               <option>Engagement</option>
               <option>Nature</option>
             </optgroup>
             <optgroup label="Simplicité & Clarté">
+              <option value="__fam__Simplicité & Clarté">→ Simplicité & Clarté (famille complète)</option>
               <option>Minimalisme</option>
               <option>Clarté</option>
               <option>Efficacité</option>
@@ -1370,11 +1366,11 @@
       <div class="imp-res-section" id="img-picker-wrap" style="display:none">
         <div class="imp-res-section-label" id="img-picker-label">Choisir l'image du logo</div>
         <div class="img-picker" id="img-picker"></div>
-        <!-- Upload manuel en fallback -->
-        <div id="img-manual-upload" style="display:none;margin-top:8px">
+        <!-- Upload manuel — toujours visible -->
+        <div id="img-manual-upload" style="margin-top:8px">
           <label class="img-upload-fallback">
             <input type="file" accept="image/*" style="display:none" onchange="onManualImageFallback(this)">
-            <span>+ Uploader l'image manuellement</span>
+            <span id="img-manual-label">+ Uploader l'image manuellement</span>
           </label>
         </div>
       </div>
@@ -2403,7 +2399,7 @@ async function importFromUrl() {
       .map(m => m[1])
       .filter(s => !s.includes('data:') && !s.includes('pixel') && !s.includes('icon') && s.length > 10)
       .map(s => s.startsWith('http') ? s : (function(){ try { return new URL(s, url).href; } catch(e) { return s; } })())
-      .slice(0, 15);
+      .slice(0, 25);
 
     const pageText = html
       .replace(/<script[\s\S]*?<\/script>/gi, '')
@@ -2424,7 +2420,7 @@ async function importFromUrl() {
       document.getElementById('imp-res-graphic').innerHTML = '<button class="imp-tag-add" onclick="addTag(\'graphic\')">+ Ajouter un attribut graphique</button>';
       document.getElementById('img-picker-wrap').style.display = 'flex';
       document.getElementById('img-picker-label').textContent = 'Aucune image détectée — upload manuel';
-      document.getElementById('img-manual-upload').style.display = 'block';
+      
       document.getElementById('img-picker').innerHTML = '<div style="font-size:11.5px;color:var(--ink-3);line-height:1.6;">Ce site charge son contenu en JavaScript — impossible de l\'extraire automatiquement.<br>Upload le logo manuellement et saisis les attributs à la main.</div>';
       btn.disabled = false;
       document.getElementById('btn-import-label').textContent = 'Importer →';
@@ -2502,7 +2498,7 @@ async function importFromUrl() {
       '\n  "client": "nom du client",' +
       '\n  "agence": "nom de l\'agence ou studio",' +
       '\n  "annee": 2024,' +
-      '\n  "image_candidates": ["URL1","URL2","URL3","URL4"],' +
+      '\n  "image_candidates": ["URL1","URL2","URL3","URL4","URL5","URL6","URL7","URL8"],' +
       '\n  "lettre_initiale": "C",' +
       '\n  "brief": {' +
       '\n    "industrie": "valeur exacte du vocabulaire industrie",' +
@@ -2515,7 +2511,7 @@ async function importFromUrl() {
       '\n  },' +
       '\n  "description": "Une phrase resumant ce que le logo communique visuellement."' +
       '\n}' +
-      '\n\nPour "image_candidates" : selectionne les 3 a 4 URLs d\'images parmi celles listees qui sont les plus susceptibles d\'etre le logo ou l\'identite visuelle principale du projet. Prefere les PNG/SVG, les images isolees sur fond neutre, evite les photos et screenshots.';
+      '\n\nPour "image_candidates" : selectionne les 8 a 9 URLs d\'images parmi celles listees qui sont les plus susceptibles d\'etre le logo ou l\'identite visuelle principale du projet. Prefere les PNG/SVG, les images isolees sur fond neutre, evite les photos de personnes. Si moins de 8 images disponibles, mets toutes celles qui peuvent etre pertinentes.';
 
 
     // Appel Claude avec retry sur overload
@@ -2562,7 +2558,6 @@ async function importFromUrl() {
 
     if (candidates.length > 0) {
       document.getElementById('img-picker-label').textContent = 'Choisir l\'image du logo';
-      document.getElementById('img-manual-upload').style.display = 'none';
       // Sélectionner la première par défaut
       imp.imageUrl = candidates[0];
       imp._imageFromUrl = candidates[0];
@@ -2579,7 +2574,7 @@ async function importFromUrl() {
     } else {
       // Aucune image trouvée — probablement un site JS-rendu
       document.getElementById('img-picker-label').textContent = 'Aucune image détectée (site JS)';
-      document.getElementById('img-manual-upload').style.display = 'block';
+      
       picker.innerHTML = '<div style="font-size:11.5px;color:var(--ink-3);line-height:1.6;">Ce site charge ses images dynamiquement — le proxy ne peut pas les récupérer. Upload l\'image du logo manuellement ci-dessous.</div>';
     }
 
@@ -2703,7 +2698,7 @@ function onManualImageFallback(input) {
   imp._manualImageFile = file; // stocker le File pour upload Storage
   document.getElementById('imp-res-img-wrap').innerHTML =
     '<img src="' + url + '" style="width:100%;height:100%;object-fit:contain;padding:8px">';
-  document.getElementById('img-manual-upload').querySelector('span').textContent = '✓ Image uploadée — changer';
+  document.getElementById('img-manual-label').textContent = '✓ Image uploadée — changer';
 }
 
 function selectImage(url, el) {
