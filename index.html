@@ -468,9 +468,14 @@
   }
   .panel-edit-input:focus { border-color: var(--ink-3); }
 
-  .panel-edit-actions {
-    display: flex; gap: 8px; padding: 0 1.25rem 1.25rem;
+  .panel-edit-actions { display: flex; gap: 8px; padding: 0 1.25rem 1.25rem; align-items: center; }
+  .panel-edit-delete {
+    font-size: 15px; padding: 8px 10px;
+    background: none; border: 1px solid var(--rule);
+    border-radius: 6px; cursor: pointer; color: var(--ink-3);
+    transition: all 0.15s; line-height: 1; margin-left: auto;
   }
+  .panel-edit-delete:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-pale); }
   .panel-edit-save {
     flex: 1; font-family: 'Instrument Sans', sans-serif;
     font-size: 13px; font-weight: 600;
@@ -1767,7 +1772,8 @@ function openEditPanel(id) {
   acts.className = 'panel-edit-actions';
   acts.innerHTML =
     '<button class="panel-edit-save" onclick="saveEditPanel()">Enregistrer</button>' +
-    '<button class="panel-edit-cancel" onclick="closePanel()">Annuler</button>';
+    '<button class="panel-edit-cancel" onclick="closePanel()">Annuler</button>' +
+    '<button class="panel-edit-delete" onclick="deleteFromEditPanel()" title="Supprimer ce projet">🗑</button>';
   panel.appendChild(acts);
 
   document.getElementById('overlay').classList.add('open');
@@ -1812,11 +1818,25 @@ function triggerEditImg() {
 function onEditImgChange(input) {
   const file = input.files[0];
   if (!file) return;
-  const url = URL.createObjectURL(file);
+  const blobUrl = URL.createObjectURL(file);
   editLogo._newImageFile = file;
   editLogo._newImageUrl  = null;
-  const zone = document.getElementById('edit-img-zone');
-  zone.innerHTML = '<img id="edit-img-preview" src="' + url + '"><div class="panel-img-overlay">Changer l\'image</div>';
+  // Mettre à jour l'aperçu sans toucher au onclick de la zone
+  const preview = document.getElementById('edit-img-preview');
+  if (preview) {
+    preview.src = blobUrl;
+    preview.style.opacity = '1';
+  } else {
+    const zone = document.getElementById('edit-img-zone');
+    // Insérer l'img avant l'overlay
+    const overlay = zone.querySelector('.panel-img-overlay');
+    const img = document.createElement('img');
+    img.id = 'edit-img-preview';
+    img.src = blobUrl;
+    zone.insertBefore(img, overlay);
+    // Retirer le placeholder ⬡ si présent
+    zone.querySelectorAll('div:not(.panel-img-overlay)').forEach(d => d.remove());
+  }
   document.getElementById('edit-img-url').value = '';
 }
 
@@ -1824,8 +1844,19 @@ function onEditImgUrl(val) {
   if (!val.trim()) return;
   editLogo._newImageUrl  = val.trim();
   editLogo._newImageFile = null;
-  const zone = document.getElementById('edit-img-zone');
-  zone.innerHTML = '<img id="edit-img-preview" src="' + val.trim() + '" onerror="this.parentNode.innerHTML=\'<div style=font-size:28px;color:var(--ink-3)>⬡</div>\'"><div class="panel-img-overlay">Changer</div>';
+  const preview = document.getElementById('edit-img-preview');
+  if (preview) {
+    preview.src = val.trim();
+  } else {
+    const zone = document.getElementById('edit-img-zone');
+    const overlay = zone.querySelector('.panel-img-overlay');
+    const img = document.createElement('img');
+    img.id = 'edit-img-preview';
+    img.src = val.trim();
+    img.onerror = () => { img.style.opacity = '0.2'; };
+    zone.insertBefore(img, overlay);
+    zone.querySelectorAll('div:not(.panel-img-overlay)').forEach(d => d.remove());
+  }
 }
 
 async function saveEditPanel() {
@@ -1872,6 +1903,25 @@ async function saveEditPanel() {
   } catch(e) {
     alert('Erreur : ' + e.message);
     btn.textContent = 'Enregistrer'; btn.disabled = false;
+  }
+}
+
+async function deleteFromEditPanel() {
+  if (!editLogo || !confirm('Supprimer "' + editLogo.name + '" de la base ?')) return;
+  const btn = document.querySelector('.panel-edit-delete');
+  btn.textContent = '…';
+  try {
+    await deleteFromSupabase(editLogo.id);
+    const idx = DB.findIndex(p => p.id == editLogo.id);
+    if (idx > -1) DB.splice(idx, 1);
+    imp.projects = imp.projects.filter(p => p.id != editLogo.id);
+    updateHeaderCount();
+    closePanel();
+    showAllProjects();
+    renderSourceList();
+  } catch(e) {
+    alert('Erreur suppression : ' + e.message);
+    btn.textContent = '🗑';
   }
 }
 
