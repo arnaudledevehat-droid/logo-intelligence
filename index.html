@@ -1049,9 +1049,19 @@
       <!-- Industrie -->
       <div class="filter-section">
         <div class="filter-label">Industrie / secteur</div>
+        <div class="selected-tags" id="industrie-tags"></div>
         <div class="select-wrap">
-          <select id="sel-industrie" class="filter-select" onchange="onSelectChange()">
-            <option value="">Toutes les industries</option>
+          <select id="sel-industrie" class="filter-select" onchange="onMultiSelect('industrie', this)">
+            <option value="">+ Ajouter un secteur</option>
+            <optgroup label="── Familles complètes ──">
+              <option value="__fam__Économie & Finance">Économie & Finance (tous)</option>
+              <option value="__fam__Commerce & Distribution">Commerce & Distribution (tous)</option>
+              <option value="__fam__Tech & Innovation">Tech & Innovation (tous)</option>
+              <option value="__fam__Santé & Sciences">Santé & Sciences (tous)</option>
+              <option value="__fam__Industrie & Énergie">Industrie & Énergie (tous)</option>
+              <option value="__fam__Culture & Médias">Culture & Médias (tous)</option>
+              <option value="__fam__Institution & Social">Institution & Social (tous)</option>
+            </optgroup>
             <optgroup label="Économie & Finance">
               <option>Finance & Banque</option>
               <option>Assurance</option>
@@ -1105,6 +1115,15 @@
         <div class="select-wrap">
           <select id="sel-valeurs" class="filter-select" onchange="onMultiSelect('valeurs', this)">
             <option value="">+ Ajouter une valeur</option>
+            <optgroup label="── Familles complètes ──">
+              <option value="__fam__Confiance & Solidité">Confiance & Solidité (tous)</option>
+              <option value="__fam__Excellence & Prestige">Excellence & Prestige (tous)</option>
+              <option value="__fam__Énergie & Mouvement">Énergie & Mouvement (tous)</option>
+              <option value="__fam__Humanité & Proximité">Humanité & Proximité (tous)</option>
+              <option value="__fam__Héritage & Tradition">Héritage & Tradition (tous)</option>
+              <option value="__fam__Engagement & Valeurs">Engagement & Valeurs (tous)</option>
+              <option value="__fam__Simplicité & Clarté">Simplicité & Clarté (tous)</option>
+            </optgroup>
             <optgroup label="Confiance & Solidité">
               <option>Confiance</option>
               <option>Solidité</option>
@@ -1488,7 +1507,8 @@ async function deleteFromSupabase(id) {
 
 // ── État de l'application ──
 const state = {
-  selectedValeurs: [],
+  selectedIndustrie: [],  // [{label, values}]
+  selectedValeurs:   [],  // [{label, values}]
   selectedLetter: null,
   results: [],
   activeCard: null,
@@ -1527,30 +1547,85 @@ loadLogosFromSupabase();
   }
 })();
 
+// ── Map des familles ──
+const FAMILLE_MAP = {
+  industrie: {
+    'Économie & Finance':      ['Finance & Banque','Assurance','Immobilier','Conseil & Management'],
+    'Commerce & Distribution': ['Retail & Grande distribution','Luxe & Prestige','Mode & Textile','Alimentation & Boisson','Restauration'],
+    'Tech & Innovation':       ['Technologie & SaaS','Télécommunications','Intelligence artificielle','Jeux vidéo & Esport'],
+    'Santé & Sciences':        ['Santé & Médical','Pharmacie & Biotech','Bien-être & Beauté'],
+    'Industrie & Énergie':     ['Énergie & Utilities','Industrie & Manufacture','Construction & BTP','Mobilité & Transport','Aéronautique & Défense'],
+    'Culture & Médias':        ['Culture & Médias','Sport','Tourisme & Hôtellerie','Éducation & Formation'],
+    'Institution & Social':    ['Institutionnel & Public','ONG & Association','Agriculture & Terroir'],
+  },
+  valeurs: {
+    'Confiance & Solidité':  ['Confiance','Solidité','Fiabilité','Sécurité','Stabilité','Transparence'],
+    'Excellence & Prestige': ['Prestige','Excellence','Élégance','Raffinement','Exclusivité'],
+    'Énergie & Mouvement':   ['Dynamisme','Innovation','Audace','Performance','Conquête'],
+    'Humanité & Proximité':  ['Humanité','Bienveillance','Accessibilité','Proximité','Authenticité'],
+    'Héritage & Tradition':  ['Tradition','Héritage','Savoir-faire','Artisanat'],
+    'Engagement & Valeurs':  ['Durabilité','Responsabilité','Engagement','Nature'],
+    'Simplicité & Clarté':   ['Minimalisme','Clarté','Efficacité','Sobriété'],
+  },
+};
+
 // ── Contrôles de recherche ──
 function onSelectChange() { updateSummary(); }
 
 function onMultiSelect(group, select) {
   const val = select.value;
   if (!val) return;
-  if (group === 'valeurs' && !state.selectedValeurs.includes(val)) {
-    state.selectedValeurs.push(val);
+  select.value = '';
+
+  let toAdd = [];
+  if (val.startsWith('__fam__')) {
+    const famName = val.replace('__fam__', '');
+    const members = FAMILLE_MAP[group]?.[famName] || [];
+    // Ajouter la famille comme tag + tous ses membres dans le matching
+    toAdd = [{ label: famName + ' ✦', values: members }];
+  } else {
+    toAdd = [{ label: val, values: [val] }];
+  }
+
+  if (group === 'industrie') {
+    toAdd.forEach(item => {
+      if (!state.selectedIndustrie.find(s => s.label === item.label))
+        state.selectedIndustrie.push(item);
+    });
+    renderIndustrieTags();
+  } else if (group === 'valeurs') {
+    toAdd.forEach(item => {
+      if (!state.selectedValeurs.find(s => s.label === item.label))
+        state.selectedValeurs.push(item);
+    });
     renderValeurTags();
   }
-  select.value = '';
   updateSummary();
 }
 
-function removeValeur(val) {
-  state.selectedValeurs = state.selectedValeurs.filter(v => v !== val);
+function removeIndustrie(label) {
+  state.selectedIndustrie = state.selectedIndustrie.filter(v => v.label !== label);
+  renderIndustrieTags();
+  updateSummary();
+}
+
+function removeValeur(label) {
+  state.selectedValeurs = state.selectedValeurs.filter(v => v.label !== label);
   renderValeurTags();
   updateSummary();
+}
+
+function renderIndustrieTags() {
+  const el = document.getElementById('industrie-tags');
+  el.innerHTML = state.selectedIndustrie.map(v =>
+    '<span class="sel-tag">' + v.label + '<span class="sel-tag-x" onclick="removeIndustrie(\'' + v.label.replace(/'/g,"\\'") + '\')">×</span></span>'
+  ).join('');
 }
 
 function renderValeurTags() {
   const el = document.getElementById('valeurs-tags');
   el.innerHTML = state.selectedValeurs.map(v =>
-    '<span class="sel-tag">' + v + '<span class="sel-tag-x" onclick="removeValeur(\'' + v.replace(/'/g, "\\'") + '\')">×</span></span>'
+    '<span class="sel-tag">' + v.label + '<span class="sel-tag-x" onclick="removeValeur(\'' + v.label.replace(/'/g,"\\'") + '\')">×</span></span>'
   ).join('');
 }
 
@@ -1568,10 +1643,11 @@ function toggleLetter(btn) {
 }
 
 function updateSummary() {
-  const industrie     = document.getElementById('sel-industrie').value;
   const positionnement = document.getElementById('sel-positionnement').value;
   const parts = [
-    industrie, ...state.selectedValeurs, positionnement,
+    ...state.selectedIndustrie.map(v => v.label),
+    ...state.selectedValeurs.map(v => v.label),
+    positionnement,
     state.selectedLetter ? 'Commence par ' + state.selectedLetter : ''
   ].filter(Boolean);
   const el = document.getElementById('brief-summary');
@@ -1584,8 +1660,10 @@ function resetSearch() {
   document.getElementById('sel-industrie').value = '';
   document.getElementById('sel-valeurs').value = '';
   document.getElementById('sel-positionnement').value = '';
-  state.selectedValeurs = [];
-  state.selectedLetter = null;
+  state.selectedIndustrie = [];
+  state.selectedValeurs   = [];
+  state.selectedLetter    = null;
+  renderIndustrieTags();
   renderValeurTags();
   document.querySelectorAll('.letter-btn').forEach(b => b.classList.remove('on'));
   document.getElementById('brief-summary').classList.remove('visible');
@@ -1608,22 +1686,33 @@ function getFirstLetter(logo) {
 }
 
 function computeScore(logo) {
-  const industrie      = document.getElementById('sel-industrie').value;
   const positionnement = document.getElementById('sel-positionnement').value;
-  const valeurs        = state.selectedValeurs;
+  const industries     = state.selectedIndustrie; // [{label, values}]
+  const valeurs        = state.selectedValeurs;   // [{label, values}]
   const letter         = state.selectedLetter;
   const brief          = logo.brief || [];
 
   let score = 0, total = 0;
 
-  if (industrie) {
-    total += 3;
-    if (brief.some(b => b.toLowerCase().includes(industrie.toLowerCase()) || industrie.toLowerCase().includes(b.toLowerCase()))) score += 3;
+  // Industrie — match si brief contient au moins une des valeurs du groupe
+  if (industries.length) {
+    industries.forEach(item => {
+      total += 3;
+      const matches = item.values.filter(v => brief.some(b => b.toLowerCase().includes(v.toLowerCase()) || v.toLowerCase().includes(b.toLowerCase())));
+      if (matches.length > 0) score += 3;
+    });
   }
+
+  // Valeurs — match partiel selon combien de valeurs du groupe matchent
   if (valeurs.length) {
-    total += valeurs.length * 2.5;
-    valeurs.forEach(v => { if (brief.some(b => b.toLowerCase().includes(v.toLowerCase()))) score += 2.5; });
+    valeurs.forEach(item => {
+      total += item.values.length * 2.5;
+      item.values.forEach(v => {
+        if (brief.some(b => b.toLowerCase().includes(v.toLowerCase()))) score += 2.5;
+      });
+    });
   }
+
   if (positionnement) {
     total += 2;
     if (brief.some(b => b.toLowerCase().includes(positionnement.toLowerCase()))) score += 2;
@@ -1633,15 +1722,14 @@ function computeScore(logo) {
     if (getFirstLetter(logo) === letter) score += 2;
   }
 
-  if (total === 0) return 100; // pas de filtre = tout correspond
+  if (total === 0) return 100;
   return Math.round((score / total) * 100);
 }
 
 // ── Lancer la recherche ──
 function runSearch() {
-  const industrie      = document.getElementById('sel-industrie').value;
   const positionnement = document.getElementById('sel-positionnement').value;
-  const hasFilters     = industrie || state.selectedValeurs.length || positionnement || state.selectedLetter;
+  const hasFilters     = state.selectedIndustrie.length || state.selectedValeurs.length || positionnement || state.selectedLetter;
 
   document.getElementById('state-empty').style.display = 'none';
   document.getElementById('logo-grid').classList.remove('visible');
@@ -1677,16 +1765,15 @@ function runSearch() {
 
 function renderResultsBar() {
   const bar = document.getElementById('results-bar');
-  const industrie      = document.getElementById('sel-industrie').value;
   const positionnement = document.getElementById('sel-positionnement').value;
   const tags = [
-    industrie      ? '<span class="rtag brief">' + industrie + '</span>' : '',
-    ...state.selectedValeurs.map(v => '<span class="rtag valeur">' + v + '</span>'),
+    ...state.selectedIndustrie.map(v => '<span class="rtag brief">' + v.label + '</span>'),
+    ...state.selectedValeurs.map(v => '<span class="rtag valeur">' + v.label + '</span>'),
     positionnement ? '<span class="rtag brief">' + positionnement + '</span>' : '',
     state.selectedLetter ? '<span class="rtag graphique">Commence par ' + state.selectedLetter + '</span>' : '',
   ].join('');
 
-  const isFiltered = industrie || state.selectedValeurs.length || positionnement || state.selectedLetter;
+  const isFiltered = state.selectedIndustrie.length || state.selectedValeurs.length || positionnement || state.selectedLetter;
   bar.innerHTML =
     '<div class="results-info"><div class="results-count">' + state.results.length + '</div>' +
     '<div class="results-sub">' + (isFiltered ? 'logos correspondants' : 'logos dans la base') + '</div></div>' +
@@ -1698,9 +1785,8 @@ function renderGrid() {
   const grid = document.getElementById('logo-grid');
   grid.innerHTML = '';
 
-  const industrie      = document.getElementById('sel-industrie').value;
   const positionnement = document.getElementById('sel-positionnement').value;
-  const hasFilters     = industrie || state.selectedValeurs.length || positionnement || state.selectedLetter;
+  const hasFilters     = state.selectedIndustrie.length || state.selectedValeurs.length || positionnement || state.selectedLetter;
   const showDelete     = !hasFilters; // bouton suppr uniquement en vue "tous les projets"
 
   state.results.forEach((logo, i) => {
