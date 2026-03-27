@@ -332,11 +332,12 @@
   .logo-thumb {
     position: absolute;
     inset: 0;
-    display: flex; align-items: center; justify-content: center;
     overflow: hidden;
   }
 
   .logo-thumb img {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -347,11 +348,14 @@
   .logo-card:hover .logo-thumb img { transform: scale(1.04); }
 
   .logo-symbol {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
     font-family: 'Instrument Sans', sans-serif;
     font-size: 56px; letter-spacing: -0.04em; line-height: 1;
     transition: transform 0.3s ease;
   }
-  .logo-card:hover .logo-symbol { transform: scale(1.06); }
+  .logo-card:hover .logo-symbol { transform: translate(-50%, -50%) scale(1.06); }
 
   /* Hover overlay — s'étend vers le bas si nécessaire */
   .card-hover {
