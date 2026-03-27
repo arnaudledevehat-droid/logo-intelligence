@@ -1901,9 +1901,9 @@ async function saveEditPanel() {
       ? editLogo.imageUrl
       : null;
     console.log('saveEditPanel PATCH — id:', editLogo.id, 'image_url:', finalImageUrl);
-    await supaFetch('/rest/v1/logos?id=eq.' + editLogo.id, {
+    const patchResult = await supaFetch('/rest/v1/logos?id=eq.' + editLogo.id, {
       method: 'PATCH',
-      headers: { 'Prefer': 'return=minimal' },
+      headers: { 'Prefer': 'return=representation' },
       body: JSON.stringify({
         name:      editLogo.name,
         image_url: finalImageUrl,
@@ -1911,6 +1911,7 @@ async function saveEditPanel() {
         graphic:   editLogo.graphic,
       }),
     });
+    console.log('saveEditPanel PATCH result:', patchResult);
 
     const idx = DB.findIndex(l => l.id == editLogo.id);
     if (idx > -1) {
