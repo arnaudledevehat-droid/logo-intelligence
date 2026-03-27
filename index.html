@@ -1947,10 +1947,32 @@ async function importFromUrl() {
       .replace(/<script[\s\S]*?<\/script>/gi, '')
       .replace(/<style[\s\S]*?<\/style>/gi, '')
       .replace(/<[^>]+>/g, ' ')
-      .replace(/\s+/g, ' ').trim().slice(0, 6000);
+      .replace(/\s+/g, ' ').trim();
+
+    // Détecter si le site est rendu en JS (contenu trop pauvre)
+    const isJsRendered = pageText.length < 400 && imgUrls.length === 0;
+    if (isJsRendered) {
+      // Afficher mode saisie manuelle
+      document.getElementById('imp-res-name').textContent = new URL(url).hostname;
+      document.getElementById('imp-res-meta').textContent = url;
+      statusEl.className = 'imp-res-status analyzing';
+      statusEl.innerHTML = '<div class="imp-res-status-dot"></div>Site JS — contenu non accessible via proxy';
+      setFetchStatus('error', 'Site JS détecté — saisis les attributs manuellement ci-dessous.');
+      document.getElementById('imp-res-brief').innerHTML = '<button class="imp-tag-add" onclick="addTag(\'brief\')">+ Ajouter un attribut de brief</button>';
+      document.getElementById('imp-res-graphic').innerHTML = '<button class="imp-tag-add" onclick="addTag(\'graphic\')">+ Ajouter un attribut graphique</button>';
+      document.getElementById('img-picker-wrap').style.display = 'flex';
+      document.getElementById('img-picker-label').textContent = 'Aucune image détectée — upload manuel';
+      document.getElementById('img-manual-upload').style.display = 'block';
+      document.getElementById('img-picker').innerHTML = '<div style="font-size:11.5px;color:var(--ink-3);line-height:1.6;">Ce site charge son contenu en JavaScript — impossible de l\'extraire automatiquement.<br>Upload le logo manuellement et saisis les attributs à la main.</div>';
+      btn.disabled = false;
+      document.getElementById('btn-import-label').textContent = 'Importer →';
+      return;
+    }
 
     statusEl.innerHTML = '<div class="imp-res-status-dot"></div>Claude analyse le contenu...';
     setFetchStatus('loading', 'Claude analyse le projet...');
+
+    const pageTextTrimmed = pageText.slice(0, 6000);
 
     // Vocabulaire contrôlé — DOIT correspondre exactement aux valeurs des menus de recherche
     const VOCAB_BRIEF = {
@@ -1994,7 +2016,7 @@ async function importFromUrl() {
       'Tu es expert en branding et identite visuelle.' +
       '\n\nVoici le contenu d\'une page de presentation d\'un projet de logo :' +
       '\nURL : ' + url +
-      '\n\nTEXTE DE LA PAGE :\n' + pageText +
+      '\n\nTEXTE DE LA PAGE :\n' + pageTextTrimmed +
       '\n\nURLS D\'IMAGES PRESENTES SUR LA PAGE :\n' + imgUrls.join('\n') +
       '\n\n=== VOCABULAIRE CONTROLE - utilise UNIQUEMENT ces valeurs exactes ===' +
       '\n\nBRIEF - Industrie (choisis 1) : ' + VOCAB_BRIEF.industrie.join(' | ') +
