@@ -2071,11 +2071,12 @@ async function scanPortfolio() {
     const linkMatches = [...html.matchAll(/href=["']([^"'#?][^"']*?)["']/gi)];
     const allLinks = linkMatches
       .map(m => {
+        const href = m[1].trim();
+        if (!href || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('javascript:')) return null;
         try {
-          const u = new URL(m[1], url);
-          // Garder uniquement même domaine, pas de fichiers
+          const u = new URL(href, url);
           if (u.origin !== baseUrl.origin) return null;
-          if (/\.(jpg|jpeg|png|gif|svg|pdf|zip|css|js|xml|json)$/i.test(u.pathname)) return null;
+          if (/\.(jpg|jpeg|png|gif|svg|pdf|zip|css|js|xml|json|ico|woff|ttf)$/i.test(u.pathname)) return null;
           return u.origin + u.pathname.replace(/\/$/, '');
         } catch(e) { return null; }
       })
