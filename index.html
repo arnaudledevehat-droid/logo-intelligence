@@ -2231,6 +2231,9 @@ function resetImporterForNext() {
   document.getElementById('imp-right-empty').style.display = 'flex';
   const fs = document.getElementById('imp-fetch-status');
   if (fs) fs.style.display = 'none';
+  // Réactiver le bouton save pour le projet suivant
+  const btn = document.getElementById('btn-save-project');
+  if (btn) { btn.disabled = false; btn.textContent = 'Ajouter et continuer →'; }
 }
 
 function finishPortfolioImport() {
@@ -2564,6 +2567,12 @@ async function importFromUrl() {
 
   btn.disabled = false;
   document.getElementById('btn-import-label').textContent = 'Importer →';
+  // Réactiver le bouton save (peut avoir été désactivé par un saveProject précédent)
+  const saveBtn = document.getElementById('btn-save-project');
+  if (saveBtn) {
+    saveBtn.disabled = false;
+    saveBtn.textContent = portfolio.running ? 'Ajouter et continuer →' : 'Ajouter à la base →';
+  }
 }
 
 function setFetchStatus(type, msg) {
