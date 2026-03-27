@@ -1895,10 +1895,10 @@ async function saveEditPanel() {
 
   try {
     btn.textContent = 'Enregistrement…';
-    // Sécurité : ne jamais sauvegarder une blob URL en base
     const finalImageUrl = (editLogo.imageUrl && !editLogo.imageUrl.startsWith('blob:'))
       ? editLogo.imageUrl
       : null;
+    console.log('saveEditPanel PATCH — id:', editLogo.id, 'image_url:', finalImageUrl);
     await supaFetch('/rest/v1/logos?id=eq.' + editLogo.id, {
       method: 'PATCH',
       headers: { 'Prefer': 'return=minimal' },
