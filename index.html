@@ -2047,43 +2047,71 @@ async function scanPortfolio() {
   try {
     let html = '';
     const proxies = [
-      () => fetch('https://corsproxy.io/?' + encodeURIComponent(url)).then(r => r.ok ? r.text() : Promise.reject()),
-      () => fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url)).then(r => r.ok ? r.json().then(d => d.contents) : Promise.reject()),
+      () => fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url)).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); }),
+      () => fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url)).then(r => r.ok ? r.json().then(d => d.contents || '') : Promise.reject()),
+      () => fetch('https://corsproxy.io/?url=' + encodeURIComponent(url)).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); }),
+      () => fetch('https://corsproxy.io/?' + encodeURIComponent(url)).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); }),
+      () => fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url)).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); }),
     ];
-    for (const proxy of proxies) {
-      try { html = await proxy(); if (html && html.length > 200) break; } catch(e) { continue; }
-    }
-    if (!html || html.length < 100) throw new Error('Impossible de récupérer la page.');
 
-    // Extraire tous les liens internes qui ressemblent à des projets
+    for (const proxy of proxies) {
+      try {
+        const result = await proxy();
+        if (result && result.length > 300) { html = result; break; }
+      } catch(e) { continue; }
+    }
+
+    if (!html || html.length < 300) throw new Error('Aucun proxy n\'a pu récupérer la page. Essaie avec une URL différente ou vérifie que le site est accessible.');
+
+    // Extraire base
     const baseUrl = new URL(url);
-    const allLinks = [...html.matchAll(/href=["']([^"'#?]+)["']/gi)]
+    const basePath = baseUrl.pathname.replace(/\/$/, '');
+
+    // Extraire tous les liens href
+    const linkMatches = [...html.matchAll(/href=["']([^"'#?][^"']*?)["']/gi)];
+    const allLinks = linkMatches
       .map(m => {
         try {
           const u = new URL(m[1], url);
-          return u.href;
+          // Garder uniquement même domaine, pas de fichiers
+          if (u.origin !== baseUrl.origin) return null;
+          if (/\.(jpg|jpeg|png|gif|svg|pdf|zip|css|js|xml|json)$/i.test(u.pathname)) return null;
+          return u.origin + u.pathname.replace(/\/$/, '');
         } catch(e) { return null; }
       })
-      .filter(u => u && u.startsWith(baseUrl.origin))
-      // Garder les liens qui ont plus de segments que la page index
-      .filter(u => {
-        try {
-          const p = new URL(u).pathname;
-          const base = new URL(url).pathname;
-          return p !== base && p !== '/' && p.startsWith(base) && p.length > base.length + 2;
-        } catch(e) { return false; }
-      });
+      .filter(Boolean);
 
     // Dédoublonner
     const unique = [...new Set(allLinks)];
 
-    // Filtrer ceux déjà en base (même source_url)
-    const existingUrls = DB.map(l => l.sourceUrl).filter(Boolean);
-    const filtered = unique.filter(u => !existingUrls.includes(u));
+    // Filtrer : garder les liens qui ont plus de profondeur que l'URL de base
+    const projectLinks = unique.filter(u => {
+      try {
+        const p = new URL(u).pathname.replace(/\/$/, '');
+        // Doit commencer par le chemin de base et avoir au moins un segment de plus
+        if (basePath && !p.startsWith(basePath)) return false;
+        const extra = p.slice(basePath.length);
+        return extra.length > 2 && extra.startsWith('/');
+      } catch(e) { return false; }
+    });
 
-    if (filtered.length === 0) throw new Error('Aucun projet détecté — tous déjà importés ou page vide.');
+    // Si pas de liens dans le sous-chemin, prendre tous les liens internes sauf la page elle-même
+    const finalLinks = projectLinks.length > 0
+      ? projectLinks
+      : unique.filter(u => u !== url && u !== url.replace(/\/$/, '') && new URL(u).pathname !== '/');
 
-    // Extraire un nom lisible depuis l'URL
+    // Filtrer ceux déjà en base
+    const existingUrls = new Set(DB.map(l => l.sourceUrl).filter(Boolean).map(u => u.replace(/\/$/, '')));
+    const filtered = finalLinks.filter(u => !existingUrls.has(u));
+
+    if (filtered.length === 0 && finalLinks.length > 0) {
+      throw new Error('Tous les projets détectés sont déjà dans la base.');
+    }
+    if (filtered.length === 0) {
+      throw new Error('Aucun lien de projet détecté sur cette page. Essaie l\'URL d\'une page de listing spécifique.');
+    }
+
+    // Extraire un nom lisible
     portfolio.urls = filtered.map(u => {
       const slug = new URL(u).pathname.replace(/\/$/, '').split('/').pop();
       const name = slug.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -2091,7 +2119,7 @@ async function scanPortfolio() {
     });
 
     renderPortfolioList();
-    setPortfolioStatus('ok', filtered.length + ' projets détectés');
+    setPortfolioStatus('ok', filtered.length + ' projet' + (filtered.length > 1 ? 's' : '') + ' détecté' + (filtered.length > 1 ? 's' : ''));
 
   } catch(e) {
     setPortfolioStatus('error', e.message);
@@ -2253,8 +2281,10 @@ async function importFromUrl() {
 
     let html = '';
     const proxies = [
+      () => fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url)).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); }),
+      () => fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url)).then(r => r.ok ? r.json().then(d => d.contents || '') : Promise.reject()),
+      () => fetch('https://corsproxy.io/?url=' + encodeURIComponent(url)).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); }),
       () => fetch('https://corsproxy.io/?' + encodeURIComponent(url)).then(r => r.ok ? r.text() : Promise.reject()),
-      () => fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url)).then(r => r.ok ? r.json().then(d => d.contents) : Promise.reject()),
       () => fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url)).then(r => r.ok ? r.text() : Promise.reject()),
     ];
     for (const proxy of proxies) {
