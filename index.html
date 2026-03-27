@@ -1333,31 +1333,35 @@ async function supaFetch(path, opts = {}) {
 // Upload un fichier File ou un blob (fetch depuis URL) dans Supabase Storage
 // Retourne l'URL publique permanente
 async function uploadImageToStorage(fileOrUrl) {
-  const filename = 'logo_' + Date.now() + '_' + Math.random().toString(36).slice(2) + '.jpg';
-
   let blob;
   if (fileOrUrl instanceof File) {
     blob = fileOrUrl;
+    console.log('uploadImageToStorage — File:', blob.name, blob.size, blob.type);
   } else if (typeof fileOrUrl === 'string' && fileOrUrl.startsWith('http')) {
-    // Télécharger l'image depuis l'URL via proxy pour l'uploader
+    console.log('uploadImageToStorage — URL:', fileOrUrl);
     try {
       const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(fileOrUrl);
       const r = await fetch(proxyUrl);
-      if (!r.ok) throw new Error('fetch failed');
+      if (!r.ok) throw new Error('fetch failed ' + r.status);
       blob = await r.blob();
+      console.log('uploadImageToStorage — fetched blob:', blob.size, blob.type);
     } catch(e) {
-      // Si on ne peut pas télécharger, on garde l'URL telle quelle (externe)
+      console.warn('uploadImageToStorage — URL fetch failed, keeping external URL:', e.message);
       return fileOrUrl;
     }
   } else {
-    return fileOrUrl; // blob URL locale — ne peut pas être uploadée, retourner telle quelle
+    console.warn('uploadImageToStorage — unhandled input, returning as-is:', typeof fileOrUrl);
+    return fileOrUrl;
   }
 
   const mimeType = blob.type || 'image/jpeg';
   const ext = mimeType.includes('png') ? '.png' : mimeType.includes('svg') ? '.svg' : mimeType.includes('gif') ? '.gif' : '.jpg';
   const fname = 'logo_' + Date.now() + '_' + Math.random().toString(36).slice(2) + ext;
+  const uploadUrl = SUPA_URL + '/storage/v1/object/logos/' + fname;
 
-  const r = await fetch(SUPA_URL + '/storage/v1/object/logos/' + fname, {
+  console.log('uploadImageToStorage — uploading to:', uploadUrl, 'mime:', mimeType);
+
+  const r = await fetch(uploadUrl, {
     method: 'POST',
     headers: {
       'apikey': SUPA_KEY,
@@ -1368,12 +1372,17 @@ async function uploadImageToStorage(fileOrUrl) {
     body: blob,
   });
 
+  console.log('uploadImageToStorage — response status:', r.status);
+
   if (!r.ok) {
     const e = await r.json().catch(()=>{});
+    console.error('uploadImageToStorage — error body:', e);
     throw new Error('Storage upload failed: ' + (e?.message || r.status));
   }
 
-  return SUPA_URL + '/storage/v1/object/public/logos/' + fname;
+  const publicUrl = SUPA_URL + '/storage/v1/object/public/logos/' + fname;
+  console.log('uploadImageToStorage — success, public URL:', publicUrl);
+  return publicUrl;
 }
 
 
