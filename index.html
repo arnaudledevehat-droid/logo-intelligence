@@ -304,6 +304,59 @@
   .rtag.valeur { background: var(--accent-pale); color: var(--accent); }
   .rtag.graphique { background: var(--teal-pale); color: var(--teal); }
 
+  .btn-insights {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 12px; font-weight: 600;
+    padding: 7px 14px; border-radius: 4px;
+    background: var(--ink); color: var(--paper);
+    border: none; cursor: pointer; white-space: nowrap;
+    transition: opacity 0.15s; flex-shrink: 0;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-insights:hover { opacity: 0.82; }
+
+  /* Insights panel */
+  .insights-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(20,18,16,0.35); z-index: 200;
+  }
+  .insights-overlay.open { display: block; }
+  .insights-panel {
+    position: fixed; top: 0; right: 0;
+    width: 420px; height: 100%;
+    background: var(--paper); border-left: 1px solid var(--rule);
+    z-index: 201; display: flex; flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.25s cubic-bezier(.4,0,.2,1);
+    overflow: hidden;
+  }
+  .insights-panel.open { transform: translateX(0); }
+
+  .insights-header {
+    padding: 1.25rem 1.25rem 1rem;
+    border-bottom: 1px solid var(--rule);
+    display: flex; align-items: flex-start;
+    justify-content: space-between; flex-shrink: 0;
+  }
+  .insights-title { font-size: 16px; font-weight: 600; margin-bottom: 2px; }
+  .insights-sub { font-size: 11.5px; color: var(--ink-3); }
+
+  .insights-body { flex: 1; overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .ins-cat { display: flex; flex-direction: column; gap: 8px; }
+  .ins-cat-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--ink-3);
+    padding-bottom: 6px; border-bottom: 1px solid var(--rule);
+  }
+  .ins-row { display: flex; align-items: center; gap: 10px; }
+  .ins-name { font-size: 12px; color: var(--ink); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ins-bar-wrap { width: 120px; flex-shrink: 0; height: 6px; background: var(--paper-3); border-radius: 3px; overflow: hidden; }
+  .ins-bar { height: 100%; border-radius: 3px; background: var(--accent); transition: width 0.6s cubic-bezier(.4,0,.2,1); }
+  .ins-pct { font-size: 11px; font-weight: 600; font-family: 'Instrument Sans', sans-serif; color: var(--ink-2); width: 36px; text-align: right; flex-shrink: 0; }
+  .ins-count { font-size: 10px; color: var(--ink-3); width: 50px; text-align: right; flex-shrink: 0; }
+
+
   /* Grille logos */
   .logo-grid {
     display: grid;
@@ -1267,9 +1320,22 @@
   </main>
 </div>
 
-<!-- ── OVERLAY + PANEL ── -->
+<!-- ── OVERLAY + PANEL édition ── -->
 <div class="overlay" id="overlay" onclick="closePanel()"></div>
 <div class="panel" id="panel"></div>
+
+<!-- ── INSIGHTS PANEL ── -->
+<div class="insights-overlay" id="insights-overlay" onclick="closeInsights()"></div>
+<div class="insights-panel" id="insights-panel">
+  <div class="insights-header">
+    <div>
+      <div class="insights-title">Insights graphiques</div>
+      <div class="insights-sub" id="insights-sub">—</div>
+    </div>
+    <button class="panel-close" onclick="closeInsights()" style="position:static;margin:0">✕</button>
+  </div>
+  <div class="insights-body" id="insights-body"></div>
+</div>
 
 </div><!-- /view-explorer -->
 
@@ -1770,11 +1836,96 @@ function renderResultsBar() {
   ].join('');
 
   const isFiltered = state.selectedIndustrie.length || state.selectedValeurs.length || positionnement || state.selectedLetter;
+  const n = Math.min(state.results.length, 10);
   bar.innerHTML =
     '<div class="results-info"><div class="results-count">' + state.results.length + '</div>' +
     '<div class="results-sub">' + (isFiltered ? 'logos correspondants' : 'logos dans la base') + '</div></div>' +
-    '<div class="results-brief-tags">' + tags + '</div>';
+    '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">' +
+      '<div class="results-brief-tags">' + tags + '</div>' +
+      (state.results.length > 0 && isFiltered
+        ? '<button class="btn-insights" onclick="openInsights()">Insights graphiques · top ' + n + ' <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 10h8M2 6h5M2 2h8" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg></button>'
+        : '') +
+    '</div>';
   bar.classList.add('visible');
+}
+
+// ── Insights graphiques ──
+const GRAPHIC_CATEGORIES = {
+  'Forme':        ['Cercle','Carre / rectangle','Triangle','Polygones','Ligne / barre','Croix / X','Etoile','Ellipse / ovale','Formes courbes','Silhouettes naturelles','Gouttes','Formes fluides / abstraites'],
+  'Structure':    ['Compact','Horizontal','Vertical / empile','Centre','Asymetrique','En bloc','Decentre','Modulaire','Ascendant','Descendant','Diagonal','Rayonnant','Circulaire / rotatif','Spirale','Zigzag','Lineaire','Ondule / courbe','Point focal central','2D plate','3D simulee','Effet de volume'],
+  'Motifs':       ['Motifs duplicatifs','Motifs radiaux','Motifs concentriques','Motifs en grille','Motifs en miroir','Superposition / overlay'],
+  'Symétrie':     ['Verticale','Horizontale','Diagonale','Radiale','Centrale / bilaterale','Asymetrie equilibree'],
+  'Couleur':      ['Monochrome','Bichromie','Polychrome','Degrade','Chaude','Froide','Neutre','Pastel','Vibrante','Sombre','Metallique'],
+  'Typographie':  ['Serif','Sans-serif','Script','Display','Majuscules','Espacement large','Poids thin','Poids bold','Personnalisee'],
+  'Texte/Symbole':['Symbole seul','Texte seul','Texte + icone a gauche','Texte + icone au-dessus','Texte integre','Espace negatif','Monogramme'],
+  'Style':        ['Minimaliste','Illustratif','Mascotte','Pictogramme','Abstrait','Flat design','Brutaliste','Vintage','Futuriste','Luxueux'],
+  'Symbolisme':   ['Humains','Animaux','Objets','Nature','Geographiques','Technologiques','Mythologiques','Abstraits'],
+};
+
+function openInsights() {
+  const topN = state.results.slice(0, 10);
+  const n    = topN.length;
+  if (n === 0) return;
+
+  // Compter la fréquence de chaque attribut graphique
+  const counts = {};
+  topN.forEach(logo => {
+    (logo.graphic || []).forEach(attr => {
+      const key = attr.trim();
+      counts[key] = (counts[key] || 0) + 1;
+    });
+  });
+
+  // Grouper par catégorie
+  const grouped = {};
+  Object.entries(counts).forEach(([attr, count]) => {
+    let cat = 'Autre';
+    for (const [catName, attrs] of Object.entries(GRAPHIC_CATEGORIES)) {
+      if (attrs.some(a => a.toLowerCase() === attr.toLowerCase())) { cat = catName; break; }
+    }
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push({ attr, count, pct: Math.round(count / n * 100) });
+  });
+
+  // Trier chaque catégorie par fréquence
+  Object.values(grouped).forEach(arr => arr.sort((a, b) => b.pct - a.pct));
+
+  // Générer le HTML
+  const catOrder = ['Forme','Structure','Symétrie','Couleur','Typographie','Texte/Symbole','Style','Motifs','Symbolisme','Autre'];
+  let html = '';
+  catOrder.forEach(cat => {
+    if (!grouped[cat] || grouped[cat].length === 0) return;
+    const rows = grouped[cat].map(({attr, count, pct}) =>
+      '<div class="ins-row">' +
+        '<div class="ins-name">' + attr + '</div>' +
+        '<div class="ins-bar-wrap"><div class="ins-bar" style="width:0%" data-pct="' + pct + '"></div></div>' +
+        '<div class="ins-pct">' + pct + '%</div>' +
+        '<div class="ins-count">' + count + '/' + n + '</div>' +
+      '</div>'
+    ).join('');
+    html += '<div class="ins-cat"><div class="ins-cat-label">' + cat + '</div>' + rows + '</div>';
+  });
+
+  document.getElementById('insights-sub').textContent = 'Basé sur les ' + n + ' projet' + (n > 1 ? 's' : '') + ' les plus similaires';
+  document.getElementById('insights-body').innerHTML = html;
+
+  document.getElementById('insights-overlay').classList.add('open');
+  document.getElementById('insights-panel').classList.add('open');
+
+  // Animer les barres
+  setTimeout(() => {
+    document.querySelectorAll('.ins-bar').forEach(b => {
+      b.style.width = b.dataset.pct + '%';
+      // Couleur selon fréquence
+      const pct = parseInt(b.dataset.pct);
+      b.style.background = pct >= 70 ? 'var(--accent)' : pct >= 40 ? 'var(--teal)' : 'var(--ink-3)';
+    });
+  }, 80);
+}
+
+function closeInsights() {
+  document.getElementById('insights-overlay').classList.remove('open');
+  document.getElementById('insights-panel').classList.remove('open');
 }
 
 function renderGrid() {
