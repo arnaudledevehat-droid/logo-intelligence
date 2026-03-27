@@ -2613,30 +2613,43 @@ function addTag(type) {
 }
 
 async function saveProject() {
-  const btn = document.querySelector('.btn-save');
+  const btn = document.getElementById('btn-save-project');
+  if (!btn) return;
+  const originalText = btn.textContent;
   btn.textContent = 'Sauvegarde…';
   btn.disabled = true;
 
-  const name = document.getElementById('imp-res-name').textContent || 'Sans titre';
+  const name = document.getElementById('imp-res-name')?.textContent || 'Sans titre';
 
   let imageUrl = imp.imageUrl || null;
 
-  // Uploader l'image dans Supabase Storage si c'est un fichier ou une URL externe
-  try {
-    if (imp._manualImageFile) {
+  // Upload image avec timeout de 15s pour ne pas bloquer
+  if (imageUrl && !imageUrl.startsWith('blob:')) {
+    try {
+      btn.textContent = 'Upload image…';
+      const uploadPromise = uploadImageToStorage(imageUrl);
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000));
+      imageUrl = await Promise.race([uploadPromise, timeoutPromise]);
+    } catch(e) {
+      console.warn('Image upload skipped:', e.message);
+      // Garder l'URL externe telle quelle si l'upload échoue
+    }
+  } else if (imp._manualImageFile) {
+    try {
       btn.textContent = 'Upload image…';
       imageUrl = await uploadImageToStorage(imp._manualImageFile);
-    } else if (imageUrl && !imageUrl.startsWith('blob:')) {
-      btn.textContent = 'Upload image…';
-      imageUrl = await uploadImageToStorage(imageUrl);
+    } catch(e) {
+      console.warn('Manual image upload failed:', e.message);
+      imageUrl = null;
     }
-  } catch(e) {
-    console.warn('Image upload failed, keeping URL:', e.message);
   }
+
+  // Ne jamais sauvegarder une blob URL
+  if (imageUrl && imageUrl.startsWith('blob:')) imageUrl = null;
 
   const p = {
     name:      name,
-    imageUrl:  (imageUrl && !imageUrl.startsWith('blob:')) ? imageUrl : null,
+    imageUrl:  imageUrl,
     brief:     imp._pendingBrief   || [],
     graphic:   imp._pendingGraphic || [],
     desc:      imp._pendingDesc    || '',
@@ -2648,19 +2661,18 @@ async function saveProject() {
     const rows = await saveToSupabase(p);
     const saved = Array.isArray(rows) ? rows[0] : rows;
     const localP = {
-      id: saved?.id || Date.now(),
-      name: p.name, client: p.name,
-      agency: p.brief[0] || '—', year: new Date().getFullYear(),
-      symbol: '◈', bg: '#f0ede8', color: '#5a5650',
+      id:       saved?.id || Date.now(),
+      name:     p.name, client: p.name,
+      agency:   p.brief[0] || '—', year: new Date().getFullYear(),
+      symbol:   '◈', bg: '#f0ede8', color: '#5a5650',
       imageUrl: imageUrl, brief: p.brief, graphic: p.graphic,
-      desc: p.desc, stats: [],
+      desc:     p.desc, sourceUrl: p.sourceUrl, stats: [],
     };
     DB.unshift(localP);
     imp.projects.unshift(localP);
     updateHeaderCount();
     renderSourceList();
 
-    // Mode portfolio — marquer comme done et passer au suivant
     if (portfolio.running && portfolio.currentIdx >= 0) {
       portfolio.urls[portfolio.currentIdx].status = 'done';
       renderPortfolioList();
@@ -2670,8 +2682,7 @@ async function saveProject() {
     }
   } catch(e) {
     alert('Erreur sauvegarde : ' + e.message);
-    btn.textContent = 'Ajouter à la base →';
-    btn.disabled = false;
+    if (btn) { btn.textContent = originalText; btn.disabled = false; }
   }
 }
 
