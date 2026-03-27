@@ -1817,25 +1817,23 @@ function triggerEditImg() {
 
 function onEditImgChange(input) {
   const file = input.files[0];
-  if (!file) return;
+  if (!file || !editLogo) return;
   const blobUrl = URL.createObjectURL(file);
   editLogo._newImageFile = file;
   editLogo._newImageUrl  = null;
-  // Mettre à jour l'aperçu sans toucher au onclick de la zone
   const preview = document.getElementById('edit-img-preview');
   if (preview) {
     preview.src = blobUrl;
     preview.style.opacity = '1';
   } else {
     const zone = document.getElementById('edit-img-zone');
-    // Insérer l'img avant l'overlay
     const overlay = zone.querySelector('.panel-img-overlay');
+    // Supprimer le placeholder
+    [...zone.children].forEach(c => { if (!c.classList.contains('panel-img-overlay')) c.remove(); });
     const img = document.createElement('img');
     img.id = 'edit-img-preview';
     img.src = blobUrl;
     zone.insertBefore(img, overlay);
-    // Retirer le placeholder ⬡ si présent
-    zone.querySelectorAll('div:not(.panel-img-overlay)').forEach(d => d.remove());
   }
   document.getElementById('edit-img-url').value = '';
 }
@@ -1867,41 +1865,57 @@ async function saveEditPanel() {
   editLogo.agency = document.getElementById('edit-agency').value.trim() || editLogo.agency;
   editLogo.year   = parseInt(document.getElementById('edit-year').value) || editLogo.year;
 
-  // Upload image si nouveau fichier ou nouvelle URL externe
-  try {
-    if (editLogo._newImageFile) {
+  // Récupérer l'image — priorité au fichier uploadé, puis URL saisie
+  const newFile = editLogo._newImageFile;
+  const newUrl  = editLogo._newImageUrl;
+
+  if (newFile || newUrl) {
+    try {
       btn.textContent = 'Upload image…';
-      editLogo.imageUrl = await uploadImageToStorage(editLogo._newImageFile);
-    } else if (editLogo._newImageUrl && !editLogo._newImageUrl.startsWith('blob:')) {
-      btn.textContent = 'Upload image…';
-      editLogo.imageUrl = await uploadImageToStorage(editLogo._newImageUrl);
+      if (newFile) {
+        editLogo.imageUrl = await uploadImageToStorage(newFile);
+      } else if (newUrl && !newUrl.startsWith('blob:')) {
+        editLogo.imageUrl = await uploadImageToStorage(newUrl);
+      }
+    } catch(e) {
+      alert('Erreur upload image : ' + e.message);
+      btn.textContent = 'Enregistrer'; btn.disabled = false;
+      return;
     }
-  } catch(e) {
-    console.warn('Image upload failed:', e.message);
-    if (editLogo._newImageUrl) editLogo.imageUrl = editLogo._newImageUrl;
   }
 
   try {
     btn.textContent = 'Enregistrement…';
+    // Sécurité : ne jamais sauvegarder une blob URL en base
+    const finalImageUrl = (editLogo.imageUrl && !editLogo.imageUrl.startsWith('blob:'))
+      ? editLogo.imageUrl
+      : null;
     await supaFetch('/rest/v1/logos?id=eq.' + editLogo.id, {
       method: 'PATCH',
       headers: { 'Prefer': 'return=minimal' },
       body: JSON.stringify({
         name:      editLogo.name,
-        image_url: editLogo.imageUrl || null,
+        image_url: finalImageUrl,
         brief:     editLogo.brief,
         graphic:   editLogo.graphic,
       }),
     });
 
     const idx = DB.findIndex(l => l.id == editLogo.id);
-    if (idx > -1) DB[idx] = { ...DB[idx], ...editLogo };
+    if (idx > -1) {
+      DB[idx].name     = editLogo.name;
+      DB[idx].agency   = editLogo.agency;
+      DB[idx].year     = editLogo.year;
+      DB[idx].imageUrl = finalImageUrl;
+      DB[idx].brief    = editLogo.brief;
+      DB[idx].graphic  = editLogo.graphic;
+    }
 
     closePanel();
     showAllProjects();
     renderSourceList();
   } catch(e) {
-    alert('Erreur : ' + e.message);
+    alert('Erreur sauvegarde : ' + e.message);
     btn.textContent = 'Enregistrer'; btn.disabled = false;
   }
 }
@@ -2331,7 +2345,7 @@ async function saveProject() {
 
   const p = {
     name:      name,
-    imageUrl:  imageUrl,
+    imageUrl:  (imageUrl && !imageUrl.startsWith('blob:')) ? imageUrl : null,
     brief:     imp._pendingBrief   || [],
     graphic:   imp._pendingGraphic || [],
     desc:      imp._pendingDesc    || '',
