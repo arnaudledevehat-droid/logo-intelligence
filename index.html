@@ -2598,44 +2598,40 @@ async function startPortfolioImport() {
 
       const isBrandNewPage = item.url.includes('underconsideration.com/brandnew');
 
+      // Extraire og:image en premier (souvent le logo du projet sur Brand New)
+      const ogImageMatch = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)
+                        || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
+      const ogImage = ogImageMatch ? ogImageMatch[1] : null;
+
+      // Extraire twitter:image aussi
+      const twImageMatch = html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i)
+                        || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image["']/i);
+      const twImage = twImageMatch ? twImageMatch[1] : null;
+
       let imgUrls;
       if (isBrandNewPage) {
-        // Brand New : extraire uniquement les images dans le corps de l'article
-        // Les images du logo sont généralement dans <div class="entry"> ou <figure> ou ont des URLs avec des dimensions
-        const entryMatch = html.match(/<div[^>]*class="[^"]*entry[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<div[^>]*class="[^"]*comments/i)
-                        || html.match(/<div[^>]*id="entry[^"]*"[^>]*>([\s\S]*?)<\/div>/i)
-                        || html.match(/<article[^>]*>([\s\S]*?)<\/article>/i);
-        const entryHtml = entryMatch ? entryMatch[1] : html;
-
-        imgUrls = [...entryHtml.matchAll(/src=["']([^"']+\.(jpg|jpeg|png|gif|webp|svg)[^"']*)/gi)]
+        // Pour Brand New : og:image est la meilleure source, puis chercher dans le HTML
+        const allImgs = [...html.matchAll(/src=["']([^"']+\.(jpg|jpeg|png|gif|webp|svg)[^"']*)/gi)]
           .map(m => m[1])
           .filter(s => {
-            if (s.includes('data:') || s.includes('pixel') || s.length < 10) return false;
-            // Exclure images communes du template Brand New
-            if (s.includes('brandnew-logo') || s.includes('favicon') || s.includes('avatar') || s.includes('icon')) return false;
-            // Préférer images hébergées sur underconsideration ou grandes images externes
+            if (s.includes('data:') || s.includes('favicon') || s.includes('avatar') || s.includes('pixel') || s.length < 10) return false;
+            if (s.includes('brandnew-logo') || s.includes('uc-logo') || s.includes('subscribe')) return false;
             return true;
           })
           .map(s => s.startsWith('http') ? s : (function(){ try { return new URL(s, item.url).href; } catch(e) { return null; } })())
           .filter(Boolean);
 
-        // Si pas d'images dans l'article, chercher toutes les images avec une dimension ou dans un <figure>
-        if (imgUrls.length === 0) {
-          imgUrls = [...html.matchAll(/src=["']([^"']+\.(jpg|jpeg|png|gif|webp|svg)[^"']*)/gi)]
-            .map(m => m[1])
-            .filter(s => !s.includes('data:') && !s.includes('favicon') && !s.includes('avatar') && s.length > 10)
-            .map(s => s.startsWith('http') ? s : (function(){ try { return new URL(s, item.url).href; } catch(e) { return null; } })())
-            .filter(Boolean);
-        }
-
-        // Dédoublonner et limiter
-        imgUrls = [...new Set(imgUrls)].slice(0, 15);
+        // Mettre og:image et twitter:image en premier
+        const priority = [ogImage, twImage].filter(Boolean);
+        imgUrls = [...new Set([...priority, ...allImgs])].slice(0, 10);
       } else {
-        imgUrls = [...html.matchAll(/src=["']([^"']+\.(jpg|jpeg|png|gif|webp|svg)[^"']*)/gi)]
+        const allImgs = [...html.matchAll(/src=["']([^"']+\.(jpg|jpeg|png|gif|webp|svg)[^"']*)/gi)]
           .map(m => m[1])
           .filter(s => !s.includes('data:') && !s.includes('pixel') && s.length > 10)
           .map(s => s.startsWith('http') ? s : (function(){ try { return new URL(s, item.url).href; } catch(e) { return null; } })())
-          .filter(Boolean).slice(0, 30);
+          .filter(Boolean);
+        const priority = [ogImage, twImage].filter(Boolean);
+        imgUrls = [...new Set([...priority, ...allImgs])].slice(0, 30);
       }
 
       const pageText = html.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<style[\s\S]*?<\/style>/gi,'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0, 5000);
