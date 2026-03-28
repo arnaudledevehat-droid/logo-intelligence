@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { embedding, match_threshold = 0.3, match_count = 20 } = req.body;
@@ -12,11 +12,7 @@ export default async function handler(req, res) {
   try {
     const r = await fetch(SUPA_URL + '/rest/v1/rpc/match_logos', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPA_KEY,
-        'Authorization': 'Bearer ' + SUPA_KEY,
-      },
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY },
       body: JSON.stringify({ query_embedding: embedding, match_threshold, match_count }),
     });
 
@@ -30,4 +26,4 @@ export default async function handler(req, res) {
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }
-}
+};
