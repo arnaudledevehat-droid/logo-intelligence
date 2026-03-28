@@ -265,7 +265,7 @@
   .brief-summary.visible { display: block; }
 
   /* ── MAIN ── */
-  main { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+  main { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: visible; }
 
   /* État initial */
   .state-empty {
@@ -441,20 +441,24 @@
   /* Hover overlay — s'étend vers le bas si nécessaire */
   /* Popover au survol */
   .card-hover {
-    position: fixed;
+    position: absolute;
     width: 240px;
     background: rgba(14,12,10,0.97);
-    border: 1px solid rgba(247,244,239,0.12);
+    border: 1px solid rgba(247,244,239,0.15);
     border-radius: 6px;
     display: flex; flex-direction: column;
     padding: 14px 13px;
     opacity: 0; pointer-events: none;
     transition: opacity 0.15s ease;
-    z-index: 100;
+    z-index: 200;
     box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    top: -9999px; left: -9999px;
+    top: auto; left: auto;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
   }
-  .card-hover.visible { opacity: 1; }
+  .logo-card:hover .card-hover { opacity: 1; }
+  .logo-card { overflow: visible !important; }
 
   .card-hover-name {
     font-size: 12px; font-weight: 600; color: #f7f4ef;
@@ -2121,38 +2125,6 @@ function renderGrid() {
       '</div>';
 
     card.addEventListener('click', () => openPanel(logo));
-
-    card.addEventListener('mouseenter', () => {
-      const popover = card.querySelector('.card-hover');
-      if (!popover) return;
-      const rect = card.getBoundingClientRect();
-      const pw = 240;
-      const margin = 8;
-      const ph = 220; // hauteur estimée
-
-      // Position verticale : au-dessus si possible, sinon en dessous
-      let top = rect.top - ph - margin;
-      if (top < 8) top = rect.bottom + margin;
-
-      // Position horizontale : centré sur la card
-      let left = rect.left + (rect.width - pw) / 2;
-      if (left < 8) left = 8;
-      if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
-
-      popover.style.top  = top + 'px';
-      popover.style.left = left + 'px';
-      popover.classList.add('visible');
-    });
-
-    card.addEventListener('mouseleave', () => {
-      const popover = card.querySelector('.card-hover');
-      if (popover) {
-        popover.classList.remove('visible');
-        popover.style.top  = '-9999px';
-        popover.style.left = '-9999px';
-      }
-    });
-
     grid.appendChild(card);
   });
 
