@@ -2486,7 +2486,8 @@ async function scanPortfolio() {
           !p.endsWith('/brandnew/archives/');
       });
     } else {
-      const projectLinks = unique.filter(u => {
+      // Chercher d'abord les liens sous le basePath
+      let projectLinks = unique.filter(u => {
         try {
           const p = new URL(u).pathname.replace(/\/$/, '');
           if (basePath && !p.startsWith(basePath)) return false;
@@ -2494,6 +2495,30 @@ async function scanPortfolio() {
           return extra.length > 2 && extra.startsWith('/');
         } catch(e) { return false; }
       });
+
+      // Si pas assez de résultats (< 2), chercher les liens qui partagent le même parent
+      if (projectLinks.length < 2) {
+        const segments = basePath.split('/').filter(Boolean);
+        const SKIP_SLUGS = new Set(['sector','secteurs','expertises','expertise','annee','year','tag','category','page','type','industry','magazine','agence','contact','en','fr']);
+        for (let i = 1; i <= segments.length; i++) {
+          const parentPath = '/' + segments.slice(0, segments.length - i).join('/');
+          const candidates = unique.filter(u => {
+            try {
+              const p = new URL(u).pathname.replace(/\/$/, '');
+              if (p === basePath || p === parentPath || p === '') return false;
+              if (!p.startsWith(parentPath + '/')) return false;
+              // Exclure les pages de catégorie/navigation
+              const afterParent = p.slice(parentPath.length + 1);
+              const firstSlug = afterParent.split('/')[0];
+              if (SKIP_SLUGS.has(firstSlug)) return false;
+              // Garder uniquement si c'est un lien direct (un seul segment après le parent)
+              return afterParent.split('/').filter(Boolean).length === 1;
+            } catch(e) { return false; }
+          });
+          if (candidates.length >= 2) { projectLinks = candidates; break; }
+        }
+      }
+
       finalLinks = projectLinks.length > 0
         ? projectLinks
         : unique.filter(u => u !== url && u !== url.replace(/\/$/, '') && new URL(u).pathname !== '/');
