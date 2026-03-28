@@ -439,9 +439,9 @@
   .logo-card:hover .logo-symbol { transform: translate(-50%, -50%) scale(1.06); }
 
   /* Hover overlay — s'étend vers le bas si nécessaire */
-  /* Popover au survol — flotte au-dessus de la card */
+  /* Popover au survol */
   .card-hover {
-    position: fixed; /* fixed pour déborder librement de la grille */
+    position: fixed;
     width: 240px;
     background: rgba(14,12,10,0.97);
     border: 1px solid rgba(247,244,239,0.12);
@@ -452,8 +452,9 @@
     transition: opacity 0.15s ease;
     z-index: 100;
     box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    top: -9999px; left: -9999px;
   }
-  .logo-card:hover .card-hover { opacity: 1; }
+  .card-hover.visible { opacity: 1; }
 
   .card-hover-name {
     font-size: 12px; font-weight: 600; color: #f7f4ef;
@@ -2121,39 +2122,35 @@ function renderGrid() {
 
     card.addEventListener('click', () => openPanel(logo));
 
-    // Positionner le popover au survol
     card.addEventListener('mouseenter', () => {
       const popover = card.querySelector('.card-hover');
       if (!popover) return;
       const rect = card.getBoundingClientRect();
       const pw = 240;
       const margin = 8;
+      const ph = 220; // hauteur estimée
 
-      // Mesurer la vraie hauteur en rendant visible hors écran
-      popover.style.top  = '-9999px';
-      popover.style.left = '-9999px';
-      popover.style.opacity = '0';
-      popover.style.visibility = 'visible';
+      // Position verticale : au-dessus si possible, sinon en dessous
+      let top = rect.top - ph - margin;
+      if (top < 8) top = rect.bottom + margin;
 
-      requestAnimationFrame(() => {
-        const ph = popover.offsetHeight;
+      // Position horizontale : centré sur la card
+      let left = rect.left + (rect.width - pw) / 2;
+      if (left < 8) left = 8;
+      if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
 
-        // Position verticale
-        let top = rect.top - ph - margin;
-        if (top < 8) top = rect.bottom + margin;
-        // Garde dans l'écran en bas aussi
-        if (top + ph > window.innerHeight - 8) top = window.innerHeight - ph - 8;
+      popover.style.top  = top + 'px';
+      popover.style.left = left + 'px';
+      popover.classList.add('visible');
+    });
 
-        // Position horizontale
-        let left = rect.left + (rect.width - pw) / 2;
-        if (left < 8) left = 8;
-        if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
-
-        popover.style.top  = top + 'px';
-        popover.style.left = left + 'px';
-        popover.style.opacity = '';
-        popover.style.visibility = '';
-      });
+    card.addEventListener('mouseleave', () => {
+      const popover = card.querySelector('.card-hover');
+      if (popover) {
+        popover.classList.remove('visible');
+        popover.style.top  = '-9999px';
+        popover.style.left = '-9999px';
+      }
     });
 
     grid.appendChild(card);
