@@ -1422,7 +1422,10 @@
 
     <div class="imp-divider"></div>
     <div class="imp-section">
-      <div class="imp-section-label">Projets importés <span id="imp-count-label" style="font-weight:400;color:var(--ink-3)">(0)</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="imp-section-label">Projets importés <span id="imp-count-label" style="font-weight:400;color:var(--ink-3)">(0)</span></div>
+        <button class="imp-tag-add" onclick="removeDuplicates()" title="Supprimer les doublons de la base">🧹 Dédoublonner</button>
+      </div>
       <div class="imp-sources" id="imp-sources"><div class="imp-empty-list">Aucun projet encore importé</div></div>
     </div>
   </div>
@@ -3399,6 +3402,26 @@ async function saveProject() {
     sourceUrl: document.getElementById('proj-url')?.value || null,
   };
 
+  // Vérifier doublon par source_url
+  if (p.sourceUrl) {
+    const normalizedNew = p.sourceUrl.replace(/\/$/, '');
+    const isDuplicate = DB.some(l => l.sourceUrl && l.sourceUrl.replace(/\/$/, '') === normalizedNew);
+    if (isDuplicate) {
+      if (portfolio.reviewing && portfolio.reviewIdx >= 0) {
+        // En mode révision : ignorer silencieusement et passer au suivant
+        portfolio.urls[portfolio.reviewIdx].status = 'skipped';
+        renderPortfolioList();
+        if (btn) { btn.disabled = false; }
+        nextReview();
+        return;
+      } else {
+        alert('Ce projet est déjà dans la base (même URL).');
+        if (btn) { btn.textContent = originalText; btn.disabled = false; }
+        return;
+      }
+    }
+  }
+
   try {
     btn.textContent = 'Sauvegarde…';
     const rows = await saveToSupabase(p);
@@ -3447,6 +3470,32 @@ async function saveProject() {
     alert('Erreur sauvegarde : ' + e.message);
     if (btn) { btn.textContent = originalText; btn.disabled = false; }
   }
+}
+
+async function removeDuplicates() {
+  const seen = new Map();
+  const toDelete = [];
+  DB.forEach(logo => {
+    if (!logo.sourceUrl) return;
+    const key = logo.sourceUrl.replace(/\/$/, '');
+    if (seen.has(key)) { toDelete.push(logo.id); }
+    else { seen.set(key, logo.id); }
+  });
+  if (toDelete.length === 0) { alert('Aucun doublon détecté.'); return; }
+  if (!confirm(toDelete.length + ' doublon(s) détecté(s). Supprimer ?')) return;
+  let deleted = 0;
+  for (const id of toDelete) {
+    try {
+      await fetch(SUPA_URL + '/rest/v1/logos?id=eq.' + id, { method: 'DELETE', headers: SUPA_HEADERS });
+      deleted++;
+    } catch(e) {}
+  }
+  const toDeleteSet = new Set(toDelete);
+  DB = DB.filter(l => !toDeleteSet.has(l.id));
+  imp.projects = imp.projects.filter(l => !toDeleteSet.has(l.id));
+  updateHeaderCount();
+  renderSourceList();
+  alert(deleted + ' doublon(s) supprimé(s).');
 }
 
 function updateHeaderCount() {
