@@ -1,0 +1,8 @@
+{
+  "type": "module"
+}
+```
+
+Commit, attends le redéploiement, puis relance :
+```
+fetch('/api/migrate', {method:'POST'}).then(r=>r.text()).then(console.log)
