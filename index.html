@@ -2417,9 +2417,10 @@ function switchImportMode(mode, btn) {
 
 // ── State portfolio ──
 const portfolio = {
-  urls: [],       // [{url, name, selected, status: 'pending'|'done'|'skipped'}]
-  currentIdx: -1,
-  running: false,
+  urls: [],
+  analyzing: false,
+  reviewing: false,
+  reviewIdx: -1,
 };
 
 async function scanPortfolio() {
@@ -2562,66 +2563,214 @@ function toggleAllPortfolio(val) {
 }
 
 async function startPortfolioImport() {
-  const toImport = portfolio.urls.filter(p => p.selected && p.status === 'pending');
-  if (toImport.length === 0) { alert('Aucun projet sélectionné.'); return; }
-  portfolio.running = true;
-  portfolio.currentIdx = portfolio.urls.findIndex(p => p.selected && p.status === 'pending');
+  const toAnalyze = portfolio.urls.filter(p => p.selected && p.status === 'pending');
+  if (!toAnalyze.length) { alert('Aucun projet sélectionné.'); return; }
 
-  // Afficher la barre de progression
+  const apiKey = document.getElementById('api-key')?.value?.trim() || localStorage.getItem('li_api_key');
+  if (!apiKey || !apiKey.startsWith('sk-ant-')) { alert('Clé API Anthropic requise dans la section "Projet unique".'); return; }
+
+  portfolio.analyzing = true;
+  document.getElementById('btn-start-portfolio').disabled = true;
   document.getElementById('portfolio-progress').style.display = 'flex';
-  document.getElementById('btn-save-project').textContent = 'Ajouter et continuer →';
-  document.getElementById('btn-skip-project').textContent = 'Ignorer ce projet';
 
-  updatePortfolioProgress();
-  await importPortfolioProject(portfolio.currentIdx);
+  const total = toAnalyze.length;
+  let done = 0;
+
+  for (const item of toAnalyze) {
+    item.status = 'analyzing';
+    renderPortfolioList();
+    document.getElementById('portfolio-progress-label').textContent = 'Analyse ' + (done+1) + ' / ' + total;
+    document.getElementById('portfolio-progress-name').textContent = item.name;
+    document.getElementById('portfolio-progress-bar').style.width = (done / total * 100) + '%';
+
+    try {
+      let html = '';
+      const proxies = [
+        () => fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(item.url)).then(r => r.ok ? r.text() : Promise.reject()),
+        () => fetch('https://corsproxy.io/?' + encodeURIComponent(item.url)).then(r => r.ok ? r.text() : Promise.reject()),
+        () => fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(item.url)).then(r => r.ok ? r.text() : Promise.reject()),
+      ];
+      for (const proxy of proxies) {
+        try { const r = await proxy(); if (r && r.length > 200) { html = r; break; } } catch(e) { continue; }
+      }
+
+      if (!html || html.length < 100) throw new Error('Page inaccessible');
+
+      const imgUrls = [...html.matchAll(/src=["']([^"']+\.(jpg|jpeg|png|gif|webp|svg)[^"']*)/gi)]
+        .map(m => m[1])
+        .filter(s => !s.includes('data:') && !s.includes('pixel') && s.length > 10)
+        .map(s => s.startsWith('http') ? s : (function(){ try { return new URL(s, item.url).href; } catch(e) { return null; } })())
+        .filter(Boolean).slice(0, 30);
+
+      const pageText = html.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<style[\s\S]*?<\/style>/gi,'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0, 5000);
+
+      let aiResult = null;
+      let retries = 0;
+      while (retries < 3 && !aiResult) {
+        const resp = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 800,
+            messages: [{ role: 'user', content:
+              'Analyse ce projet de logo. Réponds UNIQUEMENT en JSON:\n{"nom":"...","agence":"...","annee":2020,"image_candidates":["url1","url2","url3","url4","url5"],"brief":{"industrie":"...","valeurs":["...","..."],"positionnement":"..."},"graphique":{"forme":["..."],"structure":["..."],"symetrie":["..."],"couleur":["..."],"typographie":["..."],"texte_symbole":["..."],"style":["..."],"symbolisme":["..."]},"description":"..."}\n\nURL: ' + item.url + '\nTexte: ' + pageText.slice(0,3000) + '\nImages disponibles:\n' + imgUrls.join('\n')
+            }]
+          }),
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          const raw = data.content?.find(b => b.type === 'text')?.text || '';
+          const clean = raw.replace(/```json|```/g,'').trim();
+          try { aiResult = JSON.parse(clean); } catch(e) { const m = clean.match(/\{[\s\S]*\}/); if(m) { try { aiResult = JSON.parse(m[0]); } catch(e2) {} } }
+        } else {
+          const err = await resp.json().catch(()=>({}));
+          if (resp.status === 529 || (err.error?.message||'').includes('overload')) {
+            retries++;
+            await new Promise(r => setTimeout(r, 8000 * retries));
+          } else { throw new Error('API error ' + resp.status); }
+        }
+      }
+
+      if (!aiResult) throw new Error('Analyse echouee');
+
+      const g = aiResult.graphique || {};
+      const graphic = [...(g.forme||[]),...(g.structure||[]),...(g.symetrie||[]),...(g.couleur||[]),...(g.typographie||[]),...(g.texte_symbole||[]),...(g.style||[]),...(g.symbolisme||[])].filter(Boolean);
+      const brief = [aiResult.brief?.industrie,...(aiResult.brief?.valeurs||[]),aiResult.brief?.positionnement].filter(Boolean);
+
+      item.result = {
+        name: aiResult.nom || item.name,
+        agency: aiResult.agence || '',
+        year: aiResult.annee || '',
+        candidates: (aiResult.image_candidates || []).filter(u => u && u !== 'null'),
+        selectedImage: null,
+        brief, graphic,
+        desc: aiResult.description || '',
+        sourceUrl: item.url,
+      };
+      item.status = 'ready';
+    } catch(e) {
+      item.status = 'error';
+      item.error = e.message;
+    }
+
+    done++;
+    renderPortfolioList();
+    await new Promise(r => setTimeout(r, 2000));
+  }
+
+  portfolio.analyzing = false;
+  document.getElementById('portfolio-progress-bar').style.width = '100%';
+  document.getElementById('portfolio-progress-label').textContent = 'Analyse terminee — ' + done + ' projets';
+  document.getElementById('portfolio-progress-name').textContent = '';
+
+  const ready = portfolio.urls.filter(p => p.status === 'ready');
+  if (ready.length > 0) {
+    const btn = document.getElementById('btn-start-portfolio');
+    btn.textContent = 'Reviser et importer (' + ready.length + ') →';
+    btn.disabled = false;
+    btn.onclick = startReview;
+  }
 }
 
-function updatePortfolioProgress() {
-  const total   = portfolio.urls.filter(p => p.selected).length;
-  const done    = portfolio.urls.filter(p => p.status === 'done' || p.status === 'skipped').length;
-  const current = portfolio.urls[portfolio.currentIdx];
-  document.getElementById('portfolio-progress-label').textContent = 'Projet ' + (done + 1) + ' / ' + total;
-  document.getElementById('portfolio-progress-name').textContent  = current?.name || '';
-  document.getElementById('portfolio-progress-bar').style.width   = (total > 0 ? (done / total * 100) : 0) + '%';
-  // Highlight item actuel
+function startReview() {
+  portfolio.reviewing = true;
+  portfolio.reviewIdx = portfolio.urls.findIndex(p => p.status === 'ready');
+  if (portfolio.reviewIdx === -1) { alert('Aucun projet a reviser.'); return; }
+  document.getElementById('btn-save-project').textContent = 'Importer →';
+  document.getElementById('btn-skip-project').textContent = 'Ignorer';
+  showReviewProject(portfolio.reviewIdx);
+}
+
+function showReviewProject(idx) {
+  const item = portfolio.urls[idx];
+  if (!item || item.status !== 'ready') { nextReview(); return; }
+
   document.querySelectorAll('.portfolio-item').forEach(el => el.classList.remove('current'));
-  const cur = document.getElementById('pitem-' + portfolio.currentIdx);
+  const cur = document.getElementById('pitem-' + idx);
   if (cur) { cur.classList.add('current'); cur.scrollIntoView({ block: 'nearest' }); }
+
+  const res = item.result;
+  imp._pendingBrief   = res.brief;
+  imp._pendingGraphic = res.graphic;
+  imp._pendingDesc    = res.desc;
+  imp.imageUrl        = res.selectedImage || (res.candidates[0] || null);
+  imp._imageFromUrl   = imp.imageUrl;
+
+  document.getElementById('imp-right-empty').style.display = 'none';
+  document.getElementById('imp-result').style.display = 'flex';
+  document.getElementById('imp-res-name').textContent = res.name;
+  document.getElementById('imp-res-meta').textContent = [res.agency, res.year].filter(Boolean).join(' · ');
+  document.getElementById('imp-res-status').className = 'imp-res-status done';
+  document.getElementById('imp-res-status').innerHTML = '<div class="imp-res-status-dot"></div>Pret a importer';
+  document.getElementById('proj-url').value = res.sourceUrl || '';
+
+  const wrap = document.getElementById('imp-res-img-wrap');
+  wrap.innerHTML = imp.imageUrl
+    ? '<img src="' + imp.imageUrl + '" style="width:100%;height:100%;object-fit:contain;padding:8px" onerror="this.parentNode.innerHTML=\'<div style=font-size:28px;color:var(--ink-3)>◯</div>\'">'
+    : '<div style="font-size:28px;color:var(--ink-3)">⬡</div>';
+
+  const pickerWrap = document.getElementById('img-picker-wrap');
+  const picker = document.getElementById('img-picker');
+  pickerWrap.style.display = 'flex';
+  document.getElementById('img-picker-label').textContent = 'Choisir l\'image du logo';
+
+  if (res.candidates.length > 0) {
+    picker.innerHTML = res.candidates.map((url, i) =>
+      '<div class="img-picker-thumb' + (i === 0 ? ' selected' : '') + '" onclick="selectReviewImage(' + idx + ',\'' + url.replace(/'/g, "\\'") + '\',this)">' +
+        '<img src="' + url + '" onerror="this.parentNode.style.display=\'none\'">' +
+        '<div class="pick-check">✓</div>' +
+      '</div>'
+    ).join('') + '<div class="img-picker-none" onclick="selectReviewImage(' + idx + ',null,this)">Aucune</div>';
+  } else {
+    picker.innerHTML = '<div style="font-size:11.5px;color:var(--ink-3)">Aucune image detectee.</div>';
+  }
+
+  document.getElementById('imp-res-brief').innerHTML   = res.brief.map(a => '<span class="imp-res-tag b">' + a + '</span>').join('') + '<button class="imp-tag-add" onclick="addTag(\'brief\')">+ Ajouter</button>';
+  document.getElementById('imp-res-graphic').innerHTML = res.graphic.map(a => '<span class="imp-res-tag g">' + a + '</span>').join('') + '<button class="imp-tag-add" onclick="addTag(\'graphic\')">+ Ajouter</button>';
+
+  if (res.desc) {
+    document.getElementById('imp-res-desc').textContent = res.desc;
+    document.getElementById('imp-res-desc-wrap').style.display = 'flex';
+  }
+
+  const remaining = portfolio.urls.filter(p => p.status === 'ready').length;
+  const saveBtn = document.getElementById('btn-save-project');
+  if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Importer → (' + remaining + ' restants)'; }
 }
 
-async function importPortfolioProject(idx) {
-  const p = portfolio.urls[idx];
-  if (!p) { finishPortfolioImport(); return; }
-  // Injecter l'URL dans le champ et lancer l'analyse
-  document.getElementById('proj-url').value = p.url;
-  await importFromUrl();
+function selectReviewImage(idx, url, el) {
+  document.querySelectorAll('.img-picker-thumb, .img-picker-none').forEach(t => t.classList.remove('selected'));
+  el.classList.add('selected');
+  if (portfolio.urls[idx]) portfolio.urls[idx].result.selectedImage = url;
+  imp.imageUrl = url;
+  imp._imageFromUrl = url;
+  const wrap = document.getElementById('imp-res-img-wrap');
+  wrap.innerHTML = url
+    ? '<img src="' + url + '" style="width:100%;height:100%;object-fit:contain;padding:8px" onerror="this.parentNode.innerHTML=\'<div style=font-size:28px;color:var(--ink-3)>◯</div>\'">'
+    : '<div style="font-size:28px;color:var(--ink-3)">⬡</div>';
+}
+
+function nextReview() {
+  const next = portfolio.urls.findIndex((p, i) => i > portfolio.reviewIdx && p.status === 'ready');
+  if (next === -1) { finishPortfolioImport(); return; }
+  portfolio.reviewIdx = next;
+  showReviewProject(next);
 }
 
 async function skipOrCancel() {
-  if (portfolio.running && portfolio.currentIdx >= 0) {
-    // Marquer comme ignoré
-    portfolio.urls[portfolio.currentIdx].status = 'skipped';
+  if (portfolio.reviewing && portfolio.reviewIdx >= 0) {
+    portfolio.urls[portfolio.reviewIdx].status = 'skipped';
     renderPortfolioList();
-    await nextPortfolioProject();
-  } else {
+    nextReview();
+  } else if (!portfolio.analyzing) {
     resetImporter();
   }
 }
 
-async function nextPortfolioProject() {
-  // Trouver le prochain projet sélectionné et pending
-  const next = portfolio.urls.findIndex((p, i) => i > portfolio.currentIdx && p.selected && p.status === 'pending');
-  if (next === -1) {
-    finishPortfolioImport();
-    return;
-  }
-  portfolio.currentIdx = next;
-  updatePortfolioProgress();
-  resetImporterForNext();
-  // Pause de 3s pour éviter de surcharger l'API Anthropic
-  await new Promise(r => setTimeout(r, 3000));
-  await importPortfolioProject(next);
-}
+function updatePortfolioProgress() {}
+
+async function importPortfolioProject(idx) {}
 
 function resetImporterForNext() {
   imp.imageUrl = null; imp._imageFromUrl = null; imp._manualImageFile = null;
@@ -2630,20 +2779,22 @@ function resetImporterForNext() {
   document.getElementById('imp-right-empty').style.display = 'flex';
   const fs = document.getElementById('imp-fetch-status');
   if (fs) fs.style.display = 'none';
-  // Réactiver le bouton save pour le projet suivant
   const btn = document.getElementById('btn-save-project');
-  if (btn) { btn.disabled = false; btn.textContent = 'Ajouter et continuer →'; }
+  if (btn) { btn.disabled = false; btn.textContent = 'Ajouter a la base →'; }
 }
 
 function finishPortfolioImport() {
-  portfolio.running = false;
-  portfolio.currentIdx = -1;
+  portfolio.reviewing = false;
+  portfolio.reviewIdx = -1;
   document.getElementById('portfolio-progress').style.display = 'none';
-  document.getElementById('btn-save-project').textContent = 'Ajouter à la base →';
+  document.getElementById('btn-save-project').textContent = 'Ajouter a la base →';
   document.getElementById('btn-skip-project').textContent = 'Ignorer';
+  const startBtn = document.getElementById('btn-start-portfolio');
+  if (startBtn) { startBtn.textContent = 'Démarrer l\'import →'; startBtn.onclick = startPortfolioImport; }
   resetImporterForNext();
-  document.getElementById('imp-right-empty-title').textContent = 'Import terminé !';
-  document.getElementById('imp-right-empty-sub').textContent = portfolio.urls.filter(p => p.status === 'done').length + ' projets importés avec succès.';
+  const done = portfolio.urls.filter(p => p.status === 'done').length;
+  document.getElementById('imp-right-empty-title').textContent = 'Import termine !';
+  document.getElementById('imp-right-empty-sub').textContent = done + ' projets importes avec succes.';
   document.getElementById('imp-right-empty').style.display = 'flex';
   renderPortfolioList();
 }
@@ -2978,7 +3129,7 @@ async function importFromUrl() {
   const saveBtn = document.getElementById('btn-save-project');
   if (saveBtn) {
     saveBtn.disabled = false;
-    saveBtn.textContent = portfolio.running ? 'Ajouter et continuer →' : 'Ajouter à la base →';
+    saveBtn.textContent = portfolio.reviewing ? 'Importer →' : 'Ajouter à la base →';
   }
 }
 
@@ -3110,10 +3261,10 @@ async function saveProject() {
     updateHeaderCount();
     renderSourceList();
 
-    if (portfolio.running && portfolio.currentIdx >= 0) {
-      portfolio.urls[portfolio.currentIdx].status = 'done';
+    if (portfolio.reviewing && portfolio.reviewIdx >= 0) {
+      portfolio.urls[portfolio.reviewIdx].status = 'done';
       renderPortfolioList();
-      await nextPortfolioProject();
+      nextReview();
     } else {
       resetImporter();
     }
@@ -3170,7 +3321,7 @@ function resetImporter() {
   if (btn) btn.disabled = true;
   document.getElementById('imp-result').style.display = 'none';
   document.getElementById('imp-right-empty').style.display = 'flex';
-  if (!portfolio.running) {
+  if (!portfolio.analyzing && !portfolio.reviewing) {
     document.getElementById('portfolio-progress').style.display = 'none';
     document.getElementById('btn-save-project').textContent = 'Ajouter à la base →';
     document.getElementById('btn-skip-project').textContent = 'Ignorer';
