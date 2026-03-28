@@ -35,7 +35,12 @@ export default async function handler(req, res) {
         const ur = await fetch(SUPA_URL + '/rest/v1/logos?id=eq.' + logo.id, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Prefer': 'return=minimal' },
-          body: JSON.stringify({ embedding: JSON.stringify(embedding) }),
+          body: JSON.stringify({ embedding: embedding }),
+```
+
+Commit, attends le redéploiement, puis relance dans la console :
+```
+fetch('/api/migrate', {method:'POST'}).then(r=>r.json()).then(console.log)
         });
 
         if (!ur.ok) throw new Error('Supabase patch error ' + ur.status);
