@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { texts, input_type = 'document' } = req.body;
@@ -9,10 +9,7 @@ export default async function handler(req, res) {
   try {
     const r = await fetch('https://api.voyageai.com/v1/embeddings', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + process.env.VOYAGE_API_KEY,
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + process.env.VOYAGE_API_KEY },
       body: JSON.stringify({ model: 'voyage-3-lite', input: texts, input_type }),
     });
 
@@ -27,4 +24,4 @@ export default async function handler(req, res) {
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }
-}
+};
