@@ -1399,7 +1399,7 @@
     <!-- Mode portfolio -->
     <div id="mode-portfolio" class="imp-section" style="display:none">
       <div class="imp-section-label">URL du portfolio</div>
-      <input type="text" id="portfolio-url" class="imp-input" placeholder="https://grapheine.com/portfolio/" oninput="document.getElementById('btn-scan').disabled = !this.value.trim()">
+      <input type="text" id="portfolio-url" class="imp-input" placeholder="https://grapheine.com/portfolio/ ou underconsideration.com/brandnew/archives/…" oninput="document.getElementById('btn-scan').disabled = !this.value.trim()">
       <button class="btn-scrape" id="btn-scan" onclick="scanPortfolio()" disabled style="width:100%;justify-content:center">
         <span id="btn-scan-label">Scanner le portfolio →</span>
       </button>
@@ -2448,6 +2448,9 @@ async function scanPortfolio() {
 
     if (!html || html.length < 300) throw new Error('Aucun proxy n\'a pu récupérer la page. Essaie avec une URL différente ou vérifie que le site est accessible.');
 
+    // Détecter Brand New (underconsideration.com/brandnew)
+    const isBrandNew = url.includes('underconsideration.com/brandnew');
+
     // Extraire base
     const baseUrl = new URL(url);
     const basePath = baseUrl.pathname.replace(/\/$/, '');
@@ -2467,24 +2470,33 @@ async function scanPortfolio() {
       })
       .filter(Boolean);
 
-    // Dédoublonner
     const unique = [...new Set(allLinks)];
 
-    // Filtrer : garder les liens qui ont plus de profondeur que l'URL de base
-    const projectLinks = unique.filter(u => {
-      try {
-        const p = new URL(u).pathname.replace(/\/$/, '');
-        // Doit commencer par le chemin de base et avoir au moins un segment de plus
-        if (basePath && !p.startsWith(basePath)) return false;
-        const extra = p.slice(basePath.length);
-        return extra.length > 2 && extra.startsWith('/');
-      } catch(e) { return false; }
-    });
+    let finalLinks;
 
-    // Si pas de liens dans le sous-chemin, prendre tous les liens internes sauf la page elle-même
-    const finalLinks = projectLinks.length > 0
-      ? projectLinks
-      : unique.filter(u => u !== url && u !== url.replace(/\/$/, '') && new URL(u).pathname !== '/');
+    if (isBrandNew) {
+      // Brand New : les articles ont des URLs comme /brandnew/archives/nom_article.php ou /brandnew/archives/nom_article
+      finalLinks = unique.filter(u => {
+        const p = new URL(u).pathname;
+        // Garder uniquement les articles dans /brandnew/archives/ qui ne sont pas des catégories
+        return p.includes('/brandnew/archives/') &&
+          !p.match(/\/archives\/(industry|category|type|complete|page)\//i) &&
+          !p.endsWith('/brandnew/archives') &&
+          !p.endsWith('/brandnew/archives/');
+      });
+    } else {
+      const projectLinks = unique.filter(u => {
+        try {
+          const p = new URL(u).pathname.replace(/\/$/, '');
+          if (basePath && !p.startsWith(basePath)) return false;
+          const extra = p.slice(basePath.length);
+          return extra.length > 2 && extra.startsWith('/');
+        } catch(e) { return false; }
+      });
+      finalLinks = projectLinks.length > 0
+        ? projectLinks
+        : unique.filter(u => u !== url && u !== url.replace(/\/$/, '') && new URL(u).pathname !== '/');
+    }
 
     // Filtrer ceux déjà en base
     const existingUrls = new Set(DB.map(l => l.sourceUrl).filter(Boolean).map(u => u.replace(/\/$/, '')));
@@ -2499,7 +2511,7 @@ async function scanPortfolio() {
 
     // Extraire un nom lisible
     portfolio.urls = filtered.map(u => {
-      const slug = new URL(u).pathname.replace(/\/$/, '').split('/').pop();
+      const slug = new URL(u).pathname.replace(/\/$/, '').split('/').pop().replace(/\.php$/, '');
       const name = slug.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
       return { url: u, name, selected: true, status: 'pending' };
     });
