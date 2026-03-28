@@ -40,7 +40,12 @@ export default async function handler(req, res) {
 
         if (!ur.ok) throw new Error('Supabase patch error ' + ur.status);
         updated++;
-        await new Promise(r => setTimeout(r, 200));
+        await new Promise(r => setTimeout(r, 1000));
+```
+
+Commit, attends le redéploiement Vercel (~30s), puis relance dans la console :
+```
+fetch('/api/migrate', {method:'POST'}).then(r=>r.json()).then(console.log)
       } catch (e) {
         errors.push({ id: logo.id, name: logo.name, error: e.message });
       }
