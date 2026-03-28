@@ -366,6 +366,22 @@
   .ins-pct { font-size: 11px; font-weight: 600; font-family: 'Instrument Sans', sans-serif; color: var(--ink-2); width: 36px; text-align: right; flex-shrink: 0; }
   .ins-count { font-size: 10px; color: var(--ink-3); width: 50px; text-align: right; flex-shrink: 0; }
 
+  .ins-conclusion {
+    background: var(--paper-2);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 4px 4px 0;
+    padding: 12px 14px;
+    margin-bottom: 4px;
+  }
+  .ins-conclusion-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .ins-conclusion-text {
+    font-size: 12.5px; line-height: 1.7; color: var(--ink);
+  }
+
 
   /* Grille logos */
   .logo-grid {
@@ -1920,7 +1936,7 @@ const GRAPHIC_CATEGORIES = {
   'Symbolisme':   ['Humains','Animaux','Objets','Nature','Geographiques','Technologiques','Mythologiques','Abstraits'],
 };
 
-function openInsights() {
+async function openInsights() {
   const topN = state.results.slice(0, 10);
   const n    = topN.length;
   if (n === 0) return;
@@ -1945,13 +1961,30 @@ function openInsights() {
     grouped[cat].push({ attr, count, pct: Math.round(count / n * 100) });
   });
 
-  // Trier chaque catégorie par fréquence
   Object.values(grouped).forEach(arr => arr.sort((a, b) => b.pct - a.pct));
 
-  // Générer le HTML
+  // Construire le résumé des fréquences pour Claude
   const catOrder = ['Forme','Structure','Symétrie','Couleur','Typographie','Texte/Symbole','Style','Motifs','Symbolisme','Autre'];
-  let html = '';
+  let statsText = '';
   catOrder.forEach(cat => {
+    if (!grouped[cat] || grouped[cat].length === 0) return;
+    const top = grouped[cat].slice(0, 3).map(({attr, pct}) => attr + ' (' + pct + '%)').join(', ');
+    statsText += cat + ': ' + top + '. ';
+  });
+
+  // Brief actuel
+  const positionnement = document.getElementById('sel-positionnement').value;
+  const briefDesc = [
+    ...state.selectedIndustrie.map(v => v.label),
+    ...state.selectedValeurs.map(v => v.label),
+    positionnement,
+    state.selectedLetter ? 'Lettre initiale : ' + state.selectedLetter : '',
+  ].filter(Boolean).join(', ');
+
+  // Afficher la structure immédiatement avec skeleton pour la conclusion
+  const catOrder2 = ['Forme','Structure','Symétrie','Couleur','Typographie','Texte/Symbole','Style','Motifs','Symbolisme','Autre'];
+  let html = '';
+  catOrder2.forEach(cat => {
     if (!grouped[cat] || grouped[cat].length === 0) return;
     const rows = grouped[cat].map(({attr, count, pct}) =>
       '<div class="ins-row">' +
@@ -1965,17 +1998,67 @@ function openInsights() {
   });
 
   document.getElementById('insights-sidebar-body').innerHTML =
-    '<div style="font-size:10px;color:var(--ink-3);margin-bottom:12px">Basé sur les ' + n + ' projet' + (n > 1 ? 's' : '') + ' les plus similaires au brief</div>' + html;
+    '<div class="ins-conclusion" id="ins-conclusion">' +
+      '<div class="ins-conclusion-label">Analyse</div>' +
+      '<div class="ins-conclusion-text" id="ins-conclusion-text" style="font-size:11.5px;color:var(--ink-3);font-style:italic">Analyse en cours…</div>' +
+    '</div>' +
+    '<div style="font-size:10px;color:var(--ink-3);margin-bottom:8px">Top ' + n + ' projets similaires</div>' +
+    html;
 
   // Animer les barres
   setTimeout(() => {
     document.querySelectorAll('.ins-bar').forEach(b => {
       b.style.width = b.dataset.pct + '%';
-      // Couleur selon fréquence
       const pct = parseInt(b.dataset.pct);
       b.style.background = pct >= 70 ? 'var(--accent)' : pct >= 40 ? 'var(--teal)' : 'var(--ink-3)';
     });
   }, 80);
+
+  // Générer la conclusion via Claude (si clé API dispo)
+  const apiKey = document.getElementById('api-key')?.value?.trim() || localStorage.getItem('li_api_key');
+  if (!apiKey || !apiKey.startsWith('sk-ant-')) {
+    document.getElementById('ins-conclusion-text').textContent = 'Ajoute ta clé API dans l\'onglet Importer pour activer l\'analyse automatique.';
+    document.getElementById('ins-conclusion-text').style.fontStyle = 'italic';
+    return;
+  }
+
+  try {
+    const prompt = 'Tu es expert en design d\'identité visuelle et branding. ' +
+      'Un designer travaille sur un brief avec ces caractéristiques : ' + briefDesc + '. ' +
+      'En analysant les ' + n + ' logos les plus similaires dans la base de données, voici les attributs graphiques les plus fréquents : ' + statsText +
+      'En 2-3 phrases maximum, rédige une conclusion professionnelle et actionnable sur les solutions graphiques privilégiées pour ce type de brief. ' +
+      'Sois précis, concret, parle de tendances et de choix de design. Ne commence pas par "Les logos" ou "En conclusion". ' +
+      'Utilise un ton professionnel de directeur artistique senior.';
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+
+    if (!resp.ok) throw new Error('API error ' + resp.status);
+    const data = await resp.json();
+    const text = data.content?.find(b => b.type === 'text')?.text || '';
+
+    const el = document.getElementById('ins-conclusion-text');
+    if (el) {
+      el.textContent = text;
+      el.style.fontStyle = 'normal';
+      el.style.color = 'var(--ink)';
+    }
+  } catch(e) {
+    const el = document.getElementById('ins-conclusion-text');
+    if (el) el.textContent = 'Analyse indisponible : ' + e.message;
+  }
 }
 
 function closeInsights() {
