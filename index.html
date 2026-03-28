@@ -439,9 +439,9 @@
   .logo-card:hover .logo-symbol { transform: translate(-50%, -50%) scale(1.06); }
 
   /* Hover overlay — s'étend vers le bas si nécessaire */
-  /* Popover au survol */
-  .card-hover {
-    position: absolute;
+  /* Popover global au survol */
+  #card-popover {
+    position: fixed;
     width: 240px;
     background: rgba(14,12,10,0.97);
     border: 1px solid rgba(247,244,239,0.15);
@@ -450,15 +450,18 @@
     padding: 14px 13px;
     opacity: 0; pointer-events: none;
     transition: opacity 0.15s ease;
-    z-index: 200;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    top: auto; left: auto;
-    bottom: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
+    z-index: 999;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+    gap: 0;
   }
-  .logo-card:hover .card-hover { opacity: 1; }
-  .logo-card { overflow: visible !important; }
+  #card-popover.visible { opacity: 1; }
+  #card-popover .card-hover-name { font-size: 12px; font-weight: 600; color: #f7f4ef; margin-bottom: 2px; line-height: 1.3; }
+  #card-popover .card-hover-meta { font-size: 10px; color: rgba(247,244,239,0.4); margin-bottom: 10px; letter-spacing: 0.02em; }
+  #card-popover .card-hover-section { font-size: 8px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(247,244,239,0.3); margin-bottom: 4px; margin-top: 8px; }
+  #card-popover .card-hover-tags { display: flex; flex-wrap: wrap; gap: 3px; }
+  #card-popover .card-hover-tag { font-size: 9.5px; padding: 2px 6px; border-radius: 2px; line-height: 1.4; }
+  #card-popover .card-hover-tag.b { background: rgba(29,107,92,0.4); color: #9fe1cb; }
+  #card-popover .card-hover-tag.g { background: rgba(26,63,140,0.4); color: #b5d4f4; }
 
   .card-hover-name {
     font-size: 12px; font-weight: 600; color: #f7f4ef;
@@ -1375,6 +1378,9 @@
 <div class="overlay" id="overlay" onclick="closePanel()"></div>
 <div class="panel" id="panel"></div>
 
+<!-- Popover global logo -->
+<div id="card-popover"></div>
+
 </div><!-- /view-explorer -->
 
 <div id="view-importer" class="view-root" style="display:none">
@@ -2089,6 +2095,10 @@ function renderGrid() {
   const hasFilters     = state.selectedIndustrie.length || state.selectedValeurs.length || positionnement || state.selectedLetter;
   const showDelete     = !hasFilters; // bouton suppr uniquement en vue "tous les projets"
 
+  // Popover global singleton
+  const popover = document.getElementById('card-popover');
+  let popoverTimeout = null;
+
   state.results.forEach((logo, i) => {
     const card = document.createElement('div');
     card.className = 'logo-card';
@@ -2112,17 +2122,40 @@ function renderGrid() {
     card.innerHTML =
       '<div class="logo-thumb" style="background:' + (logo.bg||'#f0ede8') + '">' +
         thumbContent +
-        '<div class="card-hover">' +
-          '<div class="card-hover-name">' + logo.name + '</div>' +
-          '<div class="card-hover-meta">' + (logo.agency||'') + (logo.year ? ' · ' + logo.year : '') + '</div>' +
-          (allBrief.length  ? '<div class="card-hover-section">Brief</div><div class="card-hover-tags">' + briefTags  + '</div>' : '') +
-          (allGraphic.length ? '<div class="card-hover-section">Graphique</div><div class="card-hover-tags">' + graphTags + '</div>' : '') +
-        '</div>' +
         (hasFilters ? '<div class="sim-pill">' + logo.score + '%</div>' : '') +
         '<div class="match-bar" style="width:' + logo.score + '%;background:' + barColor + '"></div>' +
         deleteBtn +
         '<button class="card-edit-btn" onclick="event.stopPropagation();openEditPanel(\'' + logo.id + '\')">Éditer</button>' +
       '</div>';
+
+    // Popover au survol
+    card.addEventListener('mouseenter', () => {
+      clearTimeout(popoverTimeout);
+      const rect = card.getBoundingClientRect();
+      const pw = 240, margin = 8;
+
+      popover.innerHTML =
+        '<div class="card-hover-name">' + logo.name + '</div>' +
+        '<div class="card-hover-meta">' + (logo.agency||'') + (logo.year ? ' · ' + logo.year : '') + '</div>' +
+        (allBrief.length   ? '<div class="card-hover-section">Brief</div><div class="card-hover-tags">' + briefTags  + '</div>' : '') +
+        (allGraphic.length ? '<div class="card-hover-section">Graphique</div><div class="card-hover-tags">' + graphTags + '</div>' : '');
+
+      // Positionner : au-dessus de la card par défaut
+      const ph = 200;
+      let top  = rect.top - ph - margin;
+      if (top < 8) top = rect.bottom + margin;
+      let left = rect.left + (rect.width - pw) / 2;
+      if (left < 8) left = 8;
+      if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
+
+      popover.style.top  = top + 'px';
+      popover.style.left = left + 'px';
+      popover.classList.add('visible');
+    });
+
+    card.addEventListener('mouseleave', () => {
+      popoverTimeout = setTimeout(() => popover.classList.remove('visible'), 80);
+    });
 
     card.addEventListener('click', () => openPanel(logo));
     grid.appendChild(card);
