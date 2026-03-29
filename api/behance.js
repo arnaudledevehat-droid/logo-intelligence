@@ -1,58 +1,53 @@
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { username, debug: debugMode } = req.body;
+  const { username } = req.body;
   if (!username) return res.status(400).json({ error: 'username required' });
 
+  const allLinks = new Set();
+
   try {
-    const r = await fetch(`https://www.behance.net/${username}`, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Cache-Control': 'no-cache',
-      },
-    });
+    // Behance charge 12 projets par page, on pagine via ?offset=
+    // Mais le HTML contient tous les projets visibles au premier chargement (12 max)
+    // Pour avoir tous les projets on doit paginer
 
-    if (!r.ok) return res.status(200).json({ error: 'HTML fetch failed: ' + r.status, links: [], total: 0 });
+    let offset = 0;
+    while (offset <= 240) {
+      const pageUrl = offset === 0
+        ? `https://www.behance.net/${username}`
+        : `https://www.behance.net/${username}?offset=${offset}`;
 
-    const html = await r.text();
-
-    const allLinks = new Set();
-
-    // Méthode 1 : URLs complètes Behance dans le JS inline
-    const fullUrlMatches = [...html.matchAll(/https:\\?\/\\?\/www\.behance\.net\\?\/gallery\\?\/(\d+)\\?\/([^"'\\\s,>]+)/g)];
-    fullUrlMatches.forEach(m => {
-      const url = `https://www.behance.net/gallery/${m[1]}/${m[2].replace(/\\+/g, '')}`;
-      allLinks.add(url);
-    });
-
-    // Méthode 2 : pattern "url":"...gallery..." dans JSON
-    const jsonUrlMatches = [...html.matchAll(/"url"\s*:\s*"(https:\/\/www\.behance\.net\/gallery\/\d+\/[^"]+)"/g)];
-    jsonUrlMatches.forEach(m => allLinks.add(m[1].replace(/\\\//g, '/').replace(/\/$/, '')));
-
-    // Méthode 3 : "slug" + "id" pattern pour reconstruire l'URL
-    const slugMatches = [...html.matchAll(/"id"\s*:\s*(\d+)\s*,\s*"(?:[^"]*)"[^}]*?"slug"\s*:\s*"([^"]+)"/g)];
-    slugMatches.forEach(m => allLinks.add(`https://www.behance.net/gallery/${m[1]}/${m[2]}`));
-
-    // Méthode 4 : chercher les IDs de projet et slugs séparément
-    const projectIds = [...html.matchAll(/"project_id"\s*:\s*(\d+)/g)].map(m => m[1]);
-    const projectSlugs = [...html.matchAll(/"slug"\s*:\s*"([a-z0-9-]+)"/g)].map(m => m[1]);
-
-    if (debugMode) {
-      return res.status(200).json({
-        html_length: html.length,
-        gallery_count_raw: (html.match(/\/gallery\/\d+\//g)||[]).length,
-        method1: fullUrlMatches.length,
-        method2: jsonUrlMatches.length,
-        method3: slugMatches.length,
-        project_ids_found: projectIds.length,
-        project_slugs_found: projectSlugs.length,
-        links_found: allLinks.size,
-        sample: [...allLinks].slice(0, 5),
-        // Extrait du HTML autour de "gallery"
-        html_sample: (html.match(/.{0,100}gallery\/\d+.{0,100}/g)||[]).slice(0, 3),
+      const r = await fetch(pageUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Cache-Control': 'no-cache',
+          'X-Requested-With': 'fetch',
+        },
       });
+
+      if (!r.ok) break;
+      const html = await r.text();
+
+      // Extraire href="/gallery/ID/slug" (liens relatifs dans le HTML)
+      const before = allLinks.size;
+      const matches = [...html.matchAll(/href="\/gallery\/(\d+)\/([^"?#]+)"/g)];
+      matches.forEach(m => {
+        allLinks.add(`https://www.behance.net/gallery/${m[1]}/${m[2]}`);
+      });
+
+      // Aussi chercher les URLs complètes encodées avec backslash
+      const fullMatches = [...html.matchAll(/https:\\\/\\\/www\.behance\.net\\\/gallery\\\/(\d+)\\\/([^"'\\\s,]+)/g)];
+      fullMatches.forEach(m => {
+        allLinks.add(`https://www.behance.net/gallery/${m[1]}/${m[2]}`);
+      });
+
+      // Si aucun nouveau lien sur cette page, arrêter
+      if (offset > 0 && allLinks.size === before) break;
+
+      offset += 12;
+      await new Promise(r => setTimeout(r, 400));
     }
 
     return res.status(200).json({ links: [...allLinks], total: allLinks.size });
