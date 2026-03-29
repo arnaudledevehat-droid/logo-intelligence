@@ -1178,8 +1178,8 @@
     <span class="brand-tag">Prototype</span>
   </div>
   <nav class="header-nav">
-    <button class="hnav active" onclick="switchView('explorer', this)">Explorer</button>
-    <button class="hnav" onclick="switchView('importer', this)">Importer un portfolio</button>
+    <button class="hnav active" id="hnav-explorer" onclick="switchView('explorer', this)">Explorer</button>
+    <button class="hnav" id="hnav-importer" onclick="switchView('importer', this)">+ Importer</button>
   </nav>
   <div class="header-count" id="header-count">0 logos importés</div>
 </header>
@@ -1520,9 +1520,12 @@
 
     <div class="imp-divider"></div>
     <div class="imp-section">
-      <div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <div class="imp-section-label">Projets importés <span id="imp-count-label" style="font-weight:400;color:var(--ink-3)">(0)</span></div>
-        <button class="imp-tag-add" onclick="removeDuplicates()" title="Supprimer les doublons de la base">🧹 Dédoublonner</button>
+        <div style="display:flex;gap:6px">
+          <button class="imp-tag-add" onclick="removeDuplicates()" title="Supprimer les doublons">🧹 Dédoublonner</button>
+          <button class="imp-tag-add" onclick="clearDatabase()" title="Vider toute la base" style="color:var(--accent)">⚠ Vider la DB</button>
+        </div>
       </div>
       <div class="imp-sources" id="imp-sources"><div class="imp-empty-list">Aucun projet encore importé</div></div>
     </div>
@@ -2044,7 +2047,7 @@ const GRAPHIC_CATEGORIES = {
   'Typographie':  ['Serif','Sans-serif','Script','Display','Majuscules','Espacement large','Poids thin','Poids bold','Personnalisee'],
   'Texte/Symbole':['Symbole seul','Texte seul','Texte + icone a gauche','Texte + icone au-dessus','Texte integre','Espace negatif','Monogramme'],
   'Style':        ['Minimaliste','Illustratif','Mascotte','Pictogramme','Abstrait','Flat design','Brutaliste','Vintage','Futuriste','Luxueux'],
-  'Symbolisme':   ['Humains','Animaux','Objets','Nature','Geographiques','Technologiques','Mythologiques','Abstraits'],
+  'Symbolisme':   ['Taureau','Lion','Aigle','Ours','Loup','Cheval','Dauphin','Serpent','Phénix','Cerf','Rhinocéros','Éléphant','Vague','Flamme','Feuille','Arbre','Montagne','Soleil','Étoile','Main','Flèche','Engrenage','Bouclier','Couronne','Éclair','Ancre','Globe','Racines','Pont','Chemin','Humains','Animaux','Objets','Nature','Géographiques','Technologiques','Mythologiques','Abstraits'],
 };
 
 async function openInsights() {
@@ -2095,14 +2098,20 @@ async function openInsights() {
 
   try {
     const prompt =
-      'Tu es directeur artistique senior. Analyse les corrélations entre un brief et les solutions graphiques observées.\n\n' +
+      'Tu es directeur artistique senior. Analyse les corrélations entre un brief et les solutions graphiques observées, en cherchant aussi les patterns symboliques et métaphoriques.\n\n' +
       'Brief : ' + briefDesc + '\n' +
-      'Attributs graphiques les plus fréquents sur les ' + n + ' projets similaires : ' + statsText + '\n\n' +
-      'Génère exactement 3 corrélations sous ce format strict (une par ligne) :\n' +
-      '[Valeur du brief] >> [Attribut graphique] (XX%)\n\n' +
-      'Exemple : Confiance >> Formes géométriques closes (73%)\n' +
-      'Exemple : Innovation >> Typographie sans-serif bold (60%)\n\n' +
-      'Utilise les vraies valeurs du brief et les vrais attributs avec leurs vrais pourcentages. 3 lignes, rien d\'autre.';
+      'Attributs graphiques observés sur les ' + n + ' projets similaires : ' + statsText + '\n\n' +
+      'Génère exactement 3 corrélations. Pour chaque corrélation :\n' +
+      '1. Identifie la valeur du brief qui explique la solution graphique\n' +
+      '2. Si plusieurs attributs forment une métaphore commune (ex: taureau + lion + aigle = puissance animale), regroupe-les en une seule corrélation avec le nom de la métaphore\n' +
+      '3. Si un seul symbole domine à plus de 60%, cite-le spécifiquement en plus de la catégorie\n\n' +
+      'Format strict (une ligne par corrélation) :\n' +
+      '[Valeur du brief] >> [Pattern graphique ou métaphore] (XX%)\n\n' +
+      'Exemples :\n' +
+      'Solidité >> Métaphore animale forte — taureau (80%)\n' +
+      'Confiance >> Formes géométriques closes (73%)\n' +
+      'Innovation >> Typographie sans-serif bold + diagonal (60%)\n\n' +
+      '3 lignes uniquement, rien d\'autre.';
 
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -2884,7 +2893,8 @@ async function startPortfolioImport() {
             model: 'claude-sonnet-4-20250514',
             max_tokens: 800,
             messages: [{ role: 'user', content:
-              'Analyse ce projet de logo. Réponds UNIQUEMENT en JSON:\n{"nom":"...","agence":"...","annee":2020,"image_candidates":["url1","url2","url3","url4","url5"],"brief":{"industrie":"...","valeurs":["...","..."],"positionnement":"..."},"graphique":{"forme":["..."],"structure":["..."],"symetrie":["..."],"couleur":["..."],"typographie":["..."],"texte_symbole":["..."],"style":["..."],"symbolisme":["..."]},"description":"..."}\n\nURL: ' + item.url + '\nTexte: ' + pageText.slice(0,3000) + '\nImages disponibles:\n' + imgUrls.join('\n')
+              'Analyse ce projet de logo. Réponds UNIQUEMENT en JSON:\n{"nom":"...","agence":"...","annee":2020,"image_candidates":["url1","url2","url3","url4","url5"],"brief":{"industrie":"...","valeurs":["...","..."],"positionnement":"..."},"graphique":{"forme":["..."],"structure":["..."],"symetrie":["..."],"couleur":["..."],"typographie":["..."],"texte_symbole":["..."],"style":["..."],"symbolisme":["..."]},"description":"..."}\n\nURL: ' + item.url + '\nTexte: ' + pageText.slice(0,3000) + '\nImages disponibles:\n' + imgUrls.join('\n') +
+              '\n\nPour "symbolisme" sois très précis : pas "Animaux" mais "Taureau", "Aigle", "Lion". Pas "Nature" mais "Vague", "Flamme", "Feuille", "Montagne". Capture chaque élément symbolique spécifique visible ou déductible du logo.'
             }]
           }),
         });
@@ -3195,7 +3205,7 @@ async function importFromUrl() {
       typographie: ['Serif','Sans-serif','Script','Display','Majuscules','Espacement large','Poids thin','Poids bold','Personnalisee'],
       texte_symbole: ['Symbole seul','Texte seul','Texte + icone a gauche','Texte + icone au-dessus','Texte integre','Espace negatif','Monogramme'],
       style: ['Minimaliste','Illustratif','Mascotte','Pictogramme','Abstrait','Flat design','Brutaliste','Vintage','Futuriste','Luxueux'],
-      symbolisme: ['Humains','Animaux','Objets','Nature','Geographiques','Technologiques','Mythologiques','Abstraits'],
+      symbolisme: ['Taureau','Lion','Aigle','Ours','Loup','Cheval','Dauphin','Serpent','Phénix','Cerf','Rhinocéros','Éléphant','Vague','Flamme','Feuille','Arbre','Montagne','Soleil','Étoile','Main','Flèche','Engrenage','Bouclier','Couronne','Éclair','Ancre','Globe','Racines','Pont','Chemin'],
     };
 
     const prompt =
@@ -3216,7 +3226,7 @@ async function importFromUrl() {
       '\nGRAPHIQUE - Typographie : ' + VOCAB_GRAPHIQUE.typographie.join(', ') +
       '\nGRAPHIQUE - Texte-Symbole : ' + VOCAB_GRAPHIQUE.texte_symbole.join(', ') +
       '\nGRAPHIQUE - Style : ' + VOCAB_GRAPHIQUE.style.join(', ') +
-      '\nGRAPHIQUE - Symbolisme : ' + VOCAB_GRAPHIQUE.symbolisme.join(', ') +
+      '\nGRAPHIQUE - Symbolisme (utilise ces valeurs OU sois encore plus précis si le symbole est identifiable : "Taureau", "Phénix", "Vague", etc.) : ' + VOCAB_GRAPHIQUE.symbolisme.join(', ') +
       '\n\nQUESTION IMPORTANTE : La premiere lettre du nom du client ou de la marque a-t-elle ete utilisee graphiquement dans le logo (comme element visuel principal ou secondaire) ?' +
       '\nExemples : un "C" stylise pour une marque commencant par C, un monogramme, une lettre qui forme une silhouette...' +
       '\nSi oui, indique cette lettre dans "lettre_initiale". Si non, mets null.' +
@@ -3568,6 +3578,28 @@ async function saveProject() {
   } catch(e) {
     alert('Erreur sauvegarde : ' + e.message);
     if (btn) { btn.textContent = originalText; btn.disabled = false; }
+  }
+}
+
+async function clearDatabase() {
+  if (!confirm('⚠ Supprimer TOUS les logos de la base ? Cette action est irréversible.')) return;
+  if (!confirm('Dernière confirmation — vider toute la base ?')) return;
+
+  try {
+    // Supabase : DELETE sans filtre = tout supprimer
+    const r = await fetch(SUPA_URL + '/rest/v1/logos?id=neq.00000000-0000-0000-0000-000000000000', {
+      method: 'DELETE',
+      headers: SUPA_HEADERS,
+    });
+    if (!r.ok) throw new Error('Erreur Supabase ' + r.status);
+    DB = [];
+    imp.projects = [];
+    updateHeaderCount();
+    renderSourceList();
+    showAllProjects();
+    alert('Base vidée avec succès.');
+  } catch(e) {
+    alert('Erreur : ' + e.message);
   }
 }
 
