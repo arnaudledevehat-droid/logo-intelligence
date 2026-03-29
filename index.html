@@ -184,7 +184,18 @@
     line-height: 1.2;
   }
 
-  .sidebar-body { padding: 1.25rem 1.75rem; flex: 1; display: flex; flex-direction: column; gap: 1.25rem; }
+  .sidebar-body { padding: 1.25rem 1.75rem; flex: 1; display: flex; flex-direction: column; gap: 1.25rem; overflow-y: auto; }
+
+  .brief-section-title {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--accent);
+    margin-bottom: -4px;
+  }
+  .brief-section-title--context { color: var(--ink-3); }
+  .brief-section-divider {
+    height: 1px; background: var(--rule);
+    margin: 0 -1.75rem;
+  }
 
   .filter-section { display: flex; flex-direction: column; gap: 0.5rem; }
 
@@ -1195,145 +1206,210 @@
 
     <div class="sidebar-body">
 
-      <!-- Industrie -->
-      <div class="filter-section">
-        <div class="filter-label">Industrie / secteur</div>
-        <div class="selected-tags" id="industrie-tags"></div>
-        <div class="select-wrap">
-          <select id="sel-industrie" class="filter-select" onchange="onMultiSelect('industrie', this)">
-            <option value="">+ Ajouter un secteur</option>
-            <optgroup label="Économie & Finance">
-              <option value="__fam__Économie & Finance">→ Économie & Finance (famille complète)</option>
-              <option>Finance & Banque</option>
-              <option>Assurance</option>
-              <option>Immobilier</option>
-              <option>Conseil & Management</option>
-            </optgroup>
-            <optgroup label="Commerce & Distribution">
-              <option value="__fam__Commerce & Distribution">→ Commerce & Distribution (famille complète)</option>
-              <option>Retail & Grande distribution</option>
-              <option>Luxe & Prestige</option>
-              <option>Mode & Textile</option>
-              <option>Alimentation & Boisson</option>
-              <option>Restauration</option>
-            </optgroup>
-            <optgroup label="Tech & Innovation">
-              <option value="__fam__Tech & Innovation">→ Tech & Innovation (famille complète)</option>
-              <option>Technologie & SaaS</option>
-              <option>Télécommunications</option>
-              <option>Intelligence artificielle</option>
-              <option>Jeux vidéo & Esport</option>
-            </optgroup>
-            <optgroup label="Santé & Sciences">
-              <option value="__fam__Santé & Sciences">→ Santé & Sciences (famille complète)</option>
-              <option>Santé & Médical</option>
-              <option>Pharmacie & Biotech</option>
-              <option>Bien-être & Beauté</option>
-            </optgroup>
-            <optgroup label="Industrie & Énergie">
-              <option value="__fam__Industrie & Énergie">→ Industrie & Énergie (famille complète)</option>
-              <option>Énergie & Utilities</option>
-              <option>Industrie & Manufacture</option>
-              <option>Construction & BTP</option>
-              <option>Mobilité & Transport</option>
-              <option>Aéronautique & Défense</option>
-            </optgroup>
-            <optgroup label="Culture & Médias">
-              <option value="__fam__Culture & Médias">→ Culture & Médias (famille complète)</option>
-              <option>Culture & Médias</option>
-              <option>Sport</option>
-              <option>Tourisme & Hôtellerie</option>
-              <option>Éducation & Formation</option>
-            </optgroup>
-            <optgroup label="Institution & Social">
-              <option value="__fam__Institution & Social">→ Institution & Social (famille complète)</option>
-              <option>Institutionnel & Public</option>
-              <option>ONG & Association</option>
-              <option>Agriculture & Terroir</option>
-            </optgroup>
-          </select>
-        </div>
-      </div>
+      <!-- ── MESSAGE ── -->
+      <div class="brief-section-title">Message</div>
 
-      <!-- Valeurs -->
+      <!-- Valeurs & intentions -->
       <div class="filter-section">
-        <div class="filter-label">Valeurs à transmettre</div>
+        <div class="filter-label">Valeurs & intentions</div>
         <div class="selected-tags" id="valeurs-tags"></div>
         <div class="select-wrap">
           <select id="sel-valeurs" class="filter-select" onchange="onMultiSelect('valeurs', this)">
-            <option value="">+ Ajouter une valeur</option>
+            <option value="">+ Ajouter</option>
             <optgroup label="Confiance & Solidité">
-              <option value="__fam__Confiance & Solidité">→ Confiance & Solidité (famille complète)</option>
-              <option>Confiance</option>
-              <option>Solidité</option>
-              <option>Fiabilité</option>
-              <option>Sécurité</option>
-              <option>Stabilité</option>
-              <option>Transparence</option>
+              <option value="__fam__Confiance & Solidité">→ Famille complète</option>
+              <option>Confiance</option><option>Solidité</option><option>Fiabilité</option>
+              <option>Sécurité</option><option>Stabilité</option><option>Transparence</option>
             </optgroup>
             <optgroup label="Excellence & Prestige">
-              <option value="__fam__Excellence & Prestige">→ Excellence & Prestige (famille complète)</option>
-              <option>Prestige</option>
-              <option>Excellence</option>
-              <option>Élégance</option>
-              <option>Raffinement</option>
-              <option>Exclusivité</option>
+              <option value="__fam__Excellence & Prestige">→ Famille complète</option>
+              <option>Prestige</option><option>Excellence</option><option>Élégance</option>
+              <option>Raffinement</option><option>Exclusivité</option>
             </optgroup>
             <optgroup label="Énergie & Mouvement">
-              <option value="__fam__Énergie & Mouvement">→ Énergie & Mouvement (famille complète)</option>
-              <option>Dynamisme</option>
-              <option>Innovation</option>
-              <option>Audace</option>
-              <option>Performance</option>
-              <option>Conquête</option>
+              <option value="__fam__Énergie & Mouvement">→ Famille complète</option>
+              <option>Dynamisme</option><option>Innovation</option><option>Audace</option>
+              <option>Performance</option><option>Conquête</option><option>Rapidité</option>
+            </optgroup>
+            <optgroup label="Puissance & Force">
+              <option value="__fam__Puissance & Force">→ Famille complète</option>
+              <option>Puissance</option><option>Force</option><option>Domination</option>
+              <option>Robustesse</option><option>Endurance</option>
             </optgroup>
             <optgroup label="Humanité & Proximité">
-              <option value="__fam__Humanité & Proximité">→ Humanité & Proximité (famille complète)</option>
-              <option>Humanité</option>
-              <option>Bienveillance</option>
-              <option>Accessibilité</option>
-              <option>Proximité</option>
-              <option>Authenticité</option>
+              <option value="__fam__Humanité & Proximité">→ Famille complète</option>
+              <option>Humanité</option><option>Bienveillance</option><option>Accessibilité</option>
+              <option>Proximité</option><option>Authenticité</option><option>Chaleur</option>
             </optgroup>
             <optgroup label="Héritage & Tradition">
-              <option value="__fam__Héritage & Tradition">→ Héritage & Tradition (famille complète)</option>
-              <option>Tradition</option>
-              <option>Héritage</option>
-              <option>Savoir-faire</option>
-              <option>Artisanat</option>
+              <option value="__fam__Héritage & Tradition">→ Famille complète</option>
+              <option>Tradition</option><option>Héritage</option><option>Savoir-faire</option>
+              <option>Artisanat</option><option>Pérennité</option>
             </optgroup>
-            <optgroup label="Engagement & Valeurs">
-              <option value="__fam__Engagement & Valeurs">→ Engagement & Valeurs (famille complète)</option>
-              <option>Durabilité</option>
-              <option>Responsabilité</option>
-              <option>Engagement</option>
-              <option>Nature</option>
+            <optgroup label="Engagement & Nature">
+              <option value="__fam__Engagement & Nature">→ Famille complète</option>
+              <option>Durabilité</option><option>Responsabilité</option><option>Engagement</option>
+              <option>Nature</option><option>Écologie</option>
             </optgroup>
             <optgroup label="Simplicité & Clarté">
-              <option value="__fam__Simplicité & Clarté">→ Simplicité & Clarté (famille complète)</option>
-              <option>Minimalisme</option>
-              <option>Clarté</option>
-              <option>Efficacité</option>
-              <option>Sobriété</option>
+              <option value="__fam__Simplicité & Clarté">→ Famille complète</option>
+              <option>Minimalisme</option><option>Clarté</option><option>Efficacité</option>
+              <option>Sobriété</option><option>Précision</option>
+            </optgroup>
+            <optgroup label="Liberté & Aventure">
+              <option value="__fam__Liberté & Aventure">→ Famille complète</option>
+              <option>Liberté</option><option>Aventure</option><option>Exploration</option>
+              <option>Indépendance</option><option>Dépassement de soi</option>
             </optgroup>
           </select>
         </div>
       </div>
 
-      <!-- Positionnement -->
+      <!-- Émotion visée -->
       <div class="filter-section">
-        <div class="filter-label">Positionnement</div>
+        <div class="filter-label">Émotion visée</div>
+        <div class="selected-tags" id="emotion-tags"></div>
         <div class="select-wrap">
-          <select id="sel-positionnement" class="filter-select" onchange="onSelectChange()">
-            <option value="">Tous les positionnements</option>
-            <option>Haut de gamme</option>
-            <option>Ultra-luxe</option>
-            <option>Premium accessible</option>
-            <option>Grand public</option>
-            <option>Institutionnel</option>
-            <option>Artisanal & Local</option>
-            <option>Engagé & Militant</option>
-            <option>Jeune & Disruptif</option>
+          <select id="sel-emotion" class="filter-select" onchange="onMultiSelect('emotion', this)">
+            <option value="">+ Ajouter</option>
+            <option>Confiance immédiate</option>
+            <option>Désir & Envie</option>
+            <option>Respect & Autorité</option>
+            <option>Joie & Énergie</option>
+            <option>Appartenance & Communauté</option>
+            <option>Admiration & Aspiration</option>
+            <option>Sérénité & Sécurité</option>
+            <option>Curiosité & Surprise</option>
+            <option>Nostalgie & Émotion</option>
+            <option>Peur & Urgence</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Promesse / objectif -->
+      <div class="filter-section">
+        <div class="filter-label">Promesse de marque</div>
+        <div class="selected-tags" id="promesse-tags"></div>
+        <div class="select-wrap">
+          <select id="sel-promesse" class="filter-select" onchange="onMultiSelect('promesse', this)">
+            <option value="">+ Ajouter</option>
+            <optgroup label="Supériorité">
+              <option>Le plus rapide</option>
+              <option>Le plus puissant</option>
+              <option>Le plus fiable</option>
+              <option>Le plus précis</option>
+              <option>Le meilleur rapport qualité-prix</option>
+            </optgroup>
+            <optgroup label="Différenciation">
+              <option>Le plus innovant</option>
+              <option>L'unique / l'original</option>
+              <option>Le plus humain</option>
+              <option>Le plus responsable</option>
+              <option>Le plus accessible</option>
+            </optgroup>
+            <optgroup label="Appartenance">
+              <option>Marque de spécialistes</option>
+              <option>Marque de communauté</option>
+              <option>Marque de territoire</option>
+              <option>Marque de génération</option>
+            </optgroup>
+          </select>
+        </div>
+      </div>
+
+      <!-- Industrie / secteur -->
+      <div class="filter-section">
+        <div class="filter-label">Secteur</div>
+        <div class="selected-tags" id="industrie-tags"></div>
+        <div class="select-wrap">
+          <select id="sel-industrie" class="filter-select" onchange="onMultiSelect('industrie', this)">
+            <option value="">+ Ajouter</option>
+            <optgroup label="Économie & Finance">
+              <option value="__fam__Économie & Finance">→ Famille complète</option>
+              <option>Finance & Banque</option><option>Assurance</option>
+              <option>Immobilier</option><option>Conseil & Management</option>
+            </optgroup>
+            <optgroup label="Commerce & Distribution">
+              <option value="__fam__Commerce & Distribution">→ Famille complète</option>
+              <option>Retail & Grande distribution</option><option>Luxe & Prestige</option>
+              <option>Mode & Textile</option><option>Alimentation & Boisson</option><option>Restauration</option>
+            </optgroup>
+            <optgroup label="Tech & Innovation">
+              <option value="__fam__Tech & Innovation">→ Famille complète</option>
+              <option>Technologie & SaaS</option><option>Télécommunications</option>
+              <option>Intelligence artificielle</option><option>Jeux vidéo & Esport</option>
+            </optgroup>
+            <optgroup label="Santé & Sciences">
+              <option value="__fam__Santé & Sciences">→ Famille complète</option>
+              <option>Santé & Médical</option><option>Pharmacie & Biotech</option><option>Bien-être & Beauté</option>
+            </optgroup>
+            <optgroup label="Industrie & Énergie">
+              <option value="__fam__Industrie & Énergie">→ Famille complète</option>
+              <option>Énergie & Utilities</option><option>Industrie & Manufacture</option>
+              <option>Construction & BTP</option><option>Mobilité & Transport</option><option>Aéronautique & Défense</option>
+            </optgroup>
+            <optgroup label="Culture & Sport">
+              <option value="__fam__Culture & Sport">→ Famille complète</option>
+              <option>Culture & Médias</option><option>Sport</option>
+              <option>Tourisme & Hôtellerie</option><option>Éducation & Formation</option>
+            </optgroup>
+            <optgroup label="Institution & Social">
+              <option value="__fam__Institution & Social">→ Famille complète</option>
+              <option>Institutionnel & Public</option><option>ONG & Association</option><option>Agriculture & Terroir</option>
+            </optgroup>
+          </select>
+        </div>
+      </div>
+
+      <!-- Séparateur CONTEXTE -->
+      <div class="brief-section-divider"></div>
+      <div class="brief-section-title brief-section-title--context">Contexte</div>
+
+      <!-- B2B / B2C -->
+      <div class="filter-section">
+        <div class="filter-label">Audience</div>
+        <div class="select-wrap">
+          <select id="sel-audience" class="filter-select" onchange="onSelectChange()">
+            <option value="">Toutes</option>
+            <option>B2C — Grand public</option>
+            <option>B2C — CSP+</option>
+            <option>B2C — Jeunes 18-30</option>
+            <option>B2B — Professionnels</option>
+            <option>B2B — Grands comptes</option>
+            <option>B2B2C — Double cible</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Territoire -->
+      <div class="filter-section">
+        <div class="filter-label">Territoire</div>
+        <div class="select-wrap">
+          <select id="sel-territoire" class="filter-select" onchange="onSelectChange()">
+            <option value="">Tous</option>
+            <option>Local & Régional</option>
+            <option>National</option>
+            <option>Européen</option>
+            <option>Anglo-saxon</option>
+            <option>Nordique & Scandinave</option>
+            <option>Méditerranéen</option>
+            <option>Asiatique</option>
+            <option>Latino-américain</option>
+            <option>Global & International</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Ancienneté -->
+      <div class="filter-section">
+        <div class="filter-label">Nature du projet</div>
+        <div class="select-wrap">
+          <select id="sel-anciennete" class="filter-select" onchange="onSelectChange()">
+            <option value="">Tous</option>
+            <option>Création ex nihilo</option>
+            <option>Refonte — marque récente</option>
+            <option>Refonte — marque historique</option>
+            <option>Évolution douce</option>
           </select>
         </div>
       </div>
@@ -1371,7 +1447,7 @@
         </div>
       </div>
 
-      <!-- Résumé actif + reset -->
+      <!-- Résumé + boutons -->
       <div class="brief-summary" id="brief-summary"></div>
 
       <div style="display:flex;gap:8px">
@@ -1495,14 +1571,36 @@
 
     <!-- Mode portfolio -->
     <div id="mode-portfolio" class="imp-section" style="display:none">
-      <div class="imp-section-label">URL du portfolio</div>
-      <input type="text" id="portfolio-url" class="imp-input" placeholder="https://grapheine.com/portfolio/ ou underconsideration.com/brandnew/archives/…" oninput="document.getElementById('btn-scan').disabled = !this.value.trim()">
-      <button class="btn-scrape" id="btn-scan" onclick="scanPortfolio()" disabled style="width:100%;justify-content:center">
-        <span id="btn-scan-label">Scanner le portfolio →</span>
-      </button>
+
+      <!-- Onglets Scanner / Coller URLs -->
+      <div style="display:flex;gap:2px;background:var(--paper-3);padding:3px;border-radius:5px;margin-bottom:8px">
+        <button class="imp-mode-tab active" id="scan-tab" onclick="switchScanMode('scan', this)" style="flex:1;font-size:11px;padding:5px 8px">Scanner une URL</button>
+        <button class="imp-mode-tab" id="paste-tab" onclick="switchScanMode('paste', this)" style="flex:1;font-size:11px;padding:5px 8px">Coller des URLs</button>
+      </div>
+
+      <!-- Mode scanner -->
+      <div id="scan-mode">
+        <div class="imp-section-label">URL du portfolio</div>
+        <input type="text" id="portfolio-url" class="imp-input" placeholder="https://grapheine.com/portfolio/ ou underconsideration.com/brandnew/archives/…" oninput="document.getElementById('btn-scan').disabled = !this.value.trim()">
+        <button class="btn-scrape" id="btn-scan" onclick="scanPortfolio()" disabled style="width:100%;justify-content:center">
+          <span id="btn-scan-label">Scanner le portfolio →</span>
+        </button>
+      </div>
+
+      <!-- Mode coller URLs -->
+      <div id="paste-mode" style="display:none">
+        <div class="imp-section-label" style="margin-bottom:4px">Une URL par ligne</div>
+        <div style="font-size:11px;color:var(--ink-3);margin-bottom:6px">Colle les URLs des projets individuels (Behance, cghnyc, etc.)</div>
+        <textarea id="paste-urls" class="imp-input" rows="6" placeholder="https://www.behance.net/gallery/12345/Project-Name&#10;https://www.behance.net/gallery/67890/Other-Project&#10;..." style="font-size:11px;line-height:1.6;resize:vertical;font-family:monospace"></textarea>
+        <button class="btn-scrape" onclick="loadPastedUrls()" style="width:100%;justify-content:center;margin-top:6px">
+          Charger ces URLs →
+        </button>
+      </div>
+
       <div class="imp-fetch-status" id="portfolio-fetch-status" style="display:none"></div>
+
       <!-- Liste des projets détectés -->
-      <div id="portfolio-list" style="display:none;margin-top:10px;display:none;flex-direction:column;gap:6px">
+      <div id="portfolio-list" style="display:none;margin-top:10px;flex-direction:column;gap:6px">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <div class="imp-section-label" id="portfolio-list-label">Projets détectés</div>
           <div style="display:flex;gap:6px">
@@ -1703,6 +1801,8 @@ async function deleteFromSupabase(id) {
 const state = {
   selectedIndustrie: [],  // [{label, values}]
   selectedValeurs:   [],  // [{label, values}]
+  selectedEmotion:   [],  // [{label, values}]
+  selectedPromesse:  [],  // [{label, values}]
   selectedLetter: null,
   results: [],
   activeCard: null,
@@ -1749,18 +1849,22 @@ const FAMILLE_MAP = {
     'Tech & Innovation':       ['Technologie & SaaS','Télécommunications','Intelligence artificielle','Jeux vidéo & Esport'],
     'Santé & Sciences':        ['Santé & Médical','Pharmacie & Biotech','Bien-être & Beauté'],
     'Industrie & Énergie':     ['Énergie & Utilities','Industrie & Manufacture','Construction & BTP','Mobilité & Transport','Aéronautique & Défense'],
-    'Culture & Médias':        ['Culture & Médias','Sport','Tourisme & Hôtellerie','Éducation & Formation'],
+    'Culture & Sport':         ['Culture & Médias','Sport','Tourisme & Hôtellerie','Éducation & Formation'],
     'Institution & Social':    ['Institutionnel & Public','ONG & Association','Agriculture & Terroir'],
   },
   valeurs: {
     'Confiance & Solidité':  ['Confiance','Solidité','Fiabilité','Sécurité','Stabilité','Transparence'],
     'Excellence & Prestige': ['Prestige','Excellence','Élégance','Raffinement','Exclusivité'],
-    'Énergie & Mouvement':   ['Dynamisme','Innovation','Audace','Performance','Conquête'],
-    'Humanité & Proximité':  ['Humanité','Bienveillance','Accessibilité','Proximité','Authenticité'],
-    'Héritage & Tradition':  ['Tradition','Héritage','Savoir-faire','Artisanat'],
-    'Engagement & Valeurs':  ['Durabilité','Responsabilité','Engagement','Nature'],
-    'Simplicité & Clarté':   ['Minimalisme','Clarté','Efficacité','Sobriété'],
+    'Énergie & Mouvement':   ['Dynamisme','Innovation','Audace','Performance','Conquête','Rapidité'],
+    'Puissance & Force':     ['Puissance','Force','Domination','Robustesse','Endurance'],
+    'Humanité & Proximité':  ['Humanité','Bienveillance','Accessibilité','Proximité','Authenticité','Chaleur'],
+    'Héritage & Tradition':  ['Tradition','Héritage','Savoir-faire','Artisanat','Pérennité'],
+    'Engagement & Nature':   ['Durabilité','Responsabilité','Engagement','Nature','Écologie'],
+    'Simplicité & Clarté':   ['Minimalisme','Clarté','Efficacité','Sobriété','Précision'],
+    'Liberté & Aventure':    ['Liberté','Aventure','Exploration','Indépendance','Dépassement de soi'],
   },
+  emotion: {},   // pas de familles pour l'émotion
+  promesse: {},  // pas de familles pour la promesse
 };
 
 // ── Contrôles de recherche ──
@@ -1775,93 +1879,100 @@ function onMultiSelect(group, select) {
   if (val.startsWith('__fam__')) {
     const famName = val.replace('__fam__', '');
     const members = FAMILLE_MAP[group]?.[famName] || [];
-    // Ajouter la famille comme tag + tous ses membres dans le matching
     toAdd = [{ label: famName + ' ✦', values: members }];
   } else {
     toAdd = [{ label: val, values: [val] }];
   }
 
-  if (group === 'industrie') {
+  const stateKey = {
+    industrie: 'selectedIndustrie',
+    valeurs:   'selectedValeurs',
+    emotion:   'selectedEmotion',
+    promesse:  'selectedPromesse',
+  }[group];
+
+  const renderKey = {
+    industrie: renderIndustrieTags,
+    valeurs:   renderValeurTags,
+    emotion:   renderEmotionTags,
+    promesse:  renderPromesseTags,
+  }[group];
+
+  if (stateKey) {
     toAdd.forEach(item => {
-      if (!state.selectedIndustrie.find(s => s.label === item.label))
-        state.selectedIndustrie.push(item);
+      if (!state[stateKey].find(s => s.label === item.label))
+        state[stateKey].push(item);
     });
-    renderIndustrieTags();
-  } else if (group === 'valeurs') {
-    toAdd.forEach(item => {
-      if (!state.selectedValeurs.find(s => s.label === item.label))
-        state.selectedValeurs.push(item);
-    });
-    renderValeurTags();
+    renderKey && renderKey();
   }
   updateSummary();
 }
 
-function removeIndustrie(label) {
-  state.selectedIndustrie = state.selectedIndustrie.filter(v => v.label !== label);
-  renderIndustrieTags();
+function removeTag(group, label) {
+  const stateKey = { industrie: 'selectedIndustrie', valeurs: 'selectedValeurs', emotion: 'selectedEmotion', promesse: 'selectedPromesse' }[group];
+  const renderKey = { industrie: renderIndustrieTags, valeurs: renderValeurTags, emotion: renderEmotionTags, promesse: renderPromesseTags }[group];
+  if (stateKey) { state[stateKey] = state[stateKey].filter(v => v.label !== label); renderKey && renderKey(); }
   updateSummary();
 }
 
-function removeValeur(label) {
-  state.selectedValeurs = state.selectedValeurs.filter(v => v.label !== label);
-  renderValeurTags();
-  updateSummary();
-}
+function removeIndustrie(label) { removeTag('industrie', label); }
+function removeValeur(label)    { removeTag('valeurs', label); }
+function removeEmotion(label)   { removeTag('emotion', label); }
+function removePromesse(label)  { removeTag('promesse', label); }
 
-function renderIndustrieTags() {
-  const el = document.getElementById('industrie-tags');
-  el.innerHTML = state.selectedIndustrie.map(v =>
-    '<span class="sel-tag">' + v.label + '<span class="sel-tag-x" onclick="removeIndustrie(\'' + v.label.replace(/'/g,"\\'") + '\')">×</span></span>'
+function renderTagGroup(elId, items, removeFn) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.innerHTML = items.map(v =>
+    '<span class="sel-tag">' + v.label + '<span class="sel-tag-x" onclick="' + removeFn + '(\'' + v.label.replace(/'/g,"\\'") + '\')">×</span></span>'
   ).join('');
 }
-
-function renderValeurTags() {
-  const el = document.getElementById('valeurs-tags');
-  el.innerHTML = state.selectedValeurs.map(v =>
-    '<span class="sel-tag">' + v.label + '<span class="sel-tag-x" onclick="removeValeur(\'' + v.label.replace(/'/g,"\\'") + '\')">×</span></span>'
-  ).join('');
-}
+function renderIndustrieTags() { renderTagGroup('industrie-tags', state.selectedIndustrie, 'removeIndustrie'); }
+function renderValeurTags()    { renderTagGroup('valeurs-tags',   state.selectedValeurs,   'removeValeur'); }
+function renderEmotionTags()   { renderTagGroup('emotion-tags',   state.selectedEmotion,   'removeEmotion'); }
+function renderPromesseTags()  { renderTagGroup('promesse-tags',  state.selectedPromesse,  'removePromesse'); }
 
 function toggleLetter(btn) {
   const letter = btn.textContent;
   if (state.selectedLetter === letter) {
-    state.selectedLetter = null;
-    btn.classList.remove('on');
+    state.selectedLetter = null; btn.classList.remove('on');
   } else {
     document.querySelectorAll('.letter-btn').forEach(b => b.classList.remove('on'));
-    state.selectedLetter = letter;
-    btn.classList.add('on');
+    state.selectedLetter = letter; btn.classList.add('on');
   }
   updateSummary();
 }
 
 function updateSummary() {
-  const positionnement = document.getElementById('sel-positionnement').value;
+  const audience   = document.getElementById('sel-audience')?.value || '';
+  const territoire = document.getElementById('sel-territoire')?.value || '';
+  const anciennete = document.getElementById('sel-anciennete')?.value || '';
   const parts = [
     ...state.selectedIndustrie.map(v => v.label),
     ...state.selectedValeurs.map(v => v.label),
-    positionnement,
-    state.selectedLetter ? 'Commence par ' + state.selectedLetter : ''
+    ...state.selectedEmotion.map(v => v.label),
+    ...state.selectedPromesse.map(v => v.label),
+    audience, territoire, anciennete,
+    state.selectedLetter ? 'Lettre ' + state.selectedLetter : ''
   ].filter(Boolean);
   const el = document.getElementById('brief-summary');
   if (parts.length === 0) { el.classList.remove('visible'); }
   else { el.classList.add('visible'); el.textContent = parts.join(' · '); }
-
-  // Activer/désactiver le bouton rechercher
   const btn = document.getElementById('btn-search');
   if (btn) btn.disabled = parts.length === 0;
 }
 
 function resetSearch() {
-  document.getElementById('sel-industrie').value = '';
-  document.getElementById('sel-valeurs').value = '';
-  document.getElementById('sel-positionnement').value = '';
+  ['sel-industrie','sel-valeurs','sel-emotion','sel-promesse',
+   'sel-audience','sel-territoire','sel-anciennete'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
   state.selectedIndustrie = [];
   state.selectedValeurs   = [];
+  state.selectedEmotion   = [];
+  state.selectedPromesse  = [];
   state.selectedLetter    = null;
-  renderIndustrieTags();
-  renderValeurTags();
+  renderIndustrieTags(); renderValeurTags(); renderEmotionTags(); renderPromesseTags();
   document.querySelectorAll('.letter-btn').forEach(b => b.classList.remove('on'));
   document.getElementById('brief-summary').classList.remove('visible');
   showAllProjects();
@@ -1925,8 +2036,10 @@ function computeScore(logo) {
 
 // ── Lancer la recherche ──
 async function runSearch() {
-  const positionnement = document.getElementById('sel-positionnement').value;
-  const hasFilters = state.selectedIndustrie.length || state.selectedValeurs.length || positionnement || state.selectedLetter;
+  const audience   = document.getElementById('sel-audience')?.value || '';
+  const territoire = document.getElementById('sel-territoire')?.value || '';
+  const anciennete = document.getElementById('sel-anciennete')?.value || '';
+  const hasFilters = state.selectedIndustrie.length || state.selectedValeurs.length || state.selectedEmotion.length || state.selectedPromesse.length || audience || territoire || anciennete || state.selectedLetter;
 
   document.getElementById('state-empty').style.display = 'none';
   document.getElementById('logo-grid').classList.remove('visible');
@@ -1942,11 +2055,13 @@ async function runSearch() {
     return;
   }
 
-  // Construire le texte de recherche sémantique
+  // Construire le texte de recherche sémantique — MESSAGE en priorité, CONTEXTE en nuance
   const queryParts = [
     ...state.selectedIndustrie.flatMap(v => v.values),
     ...state.selectedValeurs.flatMap(v => v.values),
-    positionnement || '',
+    ...state.selectedEmotion.flatMap(v => v.values),
+    ...state.selectedPromesse.flatMap(v => v.values),
+    audience, territoire, anciennete,
   ].filter(Boolean);
   const queryText = queryParts.join(', ');
 
@@ -2011,8 +2126,10 @@ async function runSearch() {
 }
 
 function renderResultsBar() {
-  const positionnement = document.getElementById('sel-positionnement').value;
-  const isFiltered = state.selectedIndustrie.length || state.selectedValeurs.length || positionnement || state.selectedLetter;
+  const audience   = document.getElementById('sel-audience')?.value || '';
+  const territoire = document.getElementById('sel-territoire')?.value || '';
+  const anciennete = document.getElementById('sel-anciennete')?.value || '';
+  const isFiltered = state.selectedIndustrie.length || state.selectedValeurs.length || state.selectedEmotion.length || state.selectedPromesse.length || audience || territoire || anciennete || state.selectedLetter;
 
   const banner = document.getElementById('analysis-banner');
   document.getElementById('analysis-count').textContent = state.results.length;
@@ -2021,7 +2138,11 @@ function renderResultsBar() {
   const tags = [
     ...state.selectedIndustrie.map(v => '<span class="rtag brief">' + v.label + '</span>'),
     ...state.selectedValeurs.map(v => '<span class="rtag valeur">' + v.label + '</span>'),
-    positionnement ? '<span class="rtag brief">' + positionnement + '</span>' : '',
+    ...state.selectedEmotion.map(v => '<span class="rtag valeur">' + v.label + '</span>'),
+    ...state.selectedPromesse.map(v => '<span class="rtag valeur">' + v.label + '</span>'),
+    audience   ? '<span class="rtag graphique">' + audience   + '</span>' : '',
+    territoire ? '<span class="rtag graphique">' + territoire + '</span>' : '',
+    anciennete ? '<span class="rtag graphique">' + anciennete + '</span>' : '',
     state.selectedLetter ? '<span class="rtag graphique">Lettre ' + state.selectedLetter + '</span>' : '',
   ].filter(Boolean).join('');
   document.getElementById('analysis-tags').innerHTML = tags;
@@ -2074,16 +2195,15 @@ async function openInsights() {
     .slice(0, 8);
 
   // Brief actuel
-  const positionnement = document.getElementById('sel-positionnement').value;
-  const briefTerms = [
-    ...state.selectedIndustrie.flatMap(v => v.values),
-    ...state.selectedValeurs.flatMap(v => v.values),
-    positionnement,
-  ].filter(Boolean);
+  const audience   = document.getElementById('sel-audience')?.value || '';
+  const territoire = document.getElementById('sel-territoire')?.value || '';
+  const anciennete = document.getElementById('sel-anciennete')?.value || '';
   const briefLabels = [
     ...state.selectedIndustrie.map(v => v.label),
     ...state.selectedValeurs.map(v => v.label),
-    positionnement,
+    ...state.selectedEmotion.map(v => v.label),
+    ...state.selectedPromesse.map(v => v.label),
+    audience, territoire, anciennete,
   ].filter(Boolean);
   const briefDesc = briefLabels.join(', ');
   const statsText = topAttrs.map(a => a.attr + ' (' + a.pct + '%)').join(', ');
@@ -2161,8 +2281,10 @@ function renderGrid() {
   const grid = document.getElementById('logo-grid');
   grid.innerHTML = '';
 
-  const positionnement = document.getElementById('sel-positionnement').value;
-  const hasFilters     = state.selectedIndustrie.length || state.selectedValeurs.length || positionnement || state.selectedLetter;
+  const audience   = document.getElementById('sel-audience')?.value || '';
+  const territoire = document.getElementById('sel-territoire')?.value || '';
+  const anciennete = document.getElementById('sel-anciennete')?.value || '';
+  const hasFilters     = state.selectedIndustrie.length || state.selectedValeurs.length || state.selectedEmotion.length || state.selectedPromesse.length || audience || territoire || anciennete || state.selectedLetter;
   const showDelete     = !hasFilters; // bouton suppr uniquement en vue "tous les projets"
 
   state.results.forEach((logo, i) => {
@@ -2533,6 +2655,46 @@ const portfolio = {
   reviewing: false,
   reviewIdx: -1,
 };
+
+function switchScanMode(mode, btn) {
+  document.querySelectorAll('#scan-tab, #paste-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('scan-mode').style.display = mode === 'scan' ? 'block' : 'none';
+  document.getElementById('paste-mode').style.display = mode === 'paste' ? 'block' : 'none';
+}
+
+function loadPastedUrls() {
+  const raw = document.getElementById('paste-urls').value.trim();
+  if (!raw) return;
+
+  const existingUrls = new Set(DB.map(l => l.sourceUrl).filter(Boolean).map(u => u.replace(/\/$/, '')));
+
+  const urls = raw.split('\n')
+    .map(l => l.trim())
+    .filter(l => l.startsWith('http'))
+    .map(l => l.replace(/\/$/, ''))
+    .filter(l => {
+      try { new URL(l); return true; } catch(e) { return false; }
+    });
+
+  const unique = [...new Set(urls)];
+  const filtered = unique.filter(u => !existingUrls.has(u));
+
+  if (filtered.length === 0) {
+    setPortfolioStatus('error', unique.length > 0 ? 'Toutes ces URLs sont déjà dans la base.' : 'Aucune URL valide détectée.');
+    return;
+  }
+
+  portfolio.urls = filtered.map(u => {
+    const parts = u.split('/').filter(Boolean);
+    const slug = parts[parts.length - 1] || parts[parts.length - 2] || '';
+    const name = slug.replace(/-\d+$/, '').replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    return { url: u, name: name || u, selected: true, status: 'pending' };
+  });
+
+  renderPortfolioList();
+  setPortfolioStatus('ok', filtered.length + ' URL' + (filtered.length > 1 ? 's' : '') + ' chargée' + (filtered.length > 1 ? 's' : ''));
+}
 
 async function scanPortfolio() {
   const url = document.getElementById('portfolio-url').value.trim();
