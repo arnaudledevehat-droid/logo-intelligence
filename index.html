@@ -1770,6 +1770,7 @@ async function loadLogosFromSupabase() {
       });
     });
     updateHeaderCount();
+    buildDynamicAttrs();
     showAllProjects();
     renderSourceList();
   } catch(e) {
@@ -2159,17 +2160,59 @@ function renderResultsBar() {
 }
 
 // ── Insights graphiques ──
-const GRAPHIC_CATEGORIES = {
-  'Forme':        ['Cercle','Carre / rectangle','Triangle','Polygones','Ligne / barre','Croix / X','Etoile','Ellipse / ovale','Formes courbes','Silhouettes naturelles','Gouttes','Formes fluides / abstraites'],
-  'Structure':    ['Compact','Horizontal','Vertical / empile','Centre','Asymetrique','En bloc','Decentre','Modulaire','Ascendant','Descendant','Diagonal','Rayonnant','Circulaire / rotatif','Spirale','Zigzag','Lineaire','Ondule / courbe','Point focal central','2D plate','3D simulee','Effet de volume'],
-  'Motifs':       ['Motifs duplicatifs','Motifs radiaux','Motifs concentriques','Motifs en grille','Motifs en miroir','Superposition / overlay'],
-  'Symétrie':     ['Verticale','Horizontale','Diagonale','Radiale','Centrale / bilaterale','Asymetrie equilibree'],
-  'Couleur':      ['Monochrome','Bichromie','Polychrome','Degrade','Chaude','Froide','Neutre','Pastel','Vibrante','Sombre','Metallique'],
-  'Typographie':  ['Serif','Sans-serif','Script','Display','Majuscules','Espacement large','Poids thin','Poids bold','Personnalisee'],
-  'Texte/Symbole':['Symbole seul','Texte seul','Texte + icone a gauche','Texte + icone au-dessus','Texte integre','Espace negatif','Monogramme'],
-  'Style':        ['Minimaliste','Illustratif','Mascotte','Pictogramme','Abstrait','Flat design','Brutaliste','Vintage','Futuriste','Luxueux'],
-  'Symbolisme':   ['Taureau','Lion','Aigle','Ours','Loup','Cheval','Dauphin','Serpent','Phénix','Cerf','Rhinocéros','Éléphant','Vague','Flamme','Feuille','Arbre','Montagne','Soleil','Étoile','Main','Flèche','Engrenage','Bouclier','Couronne','Éclair','Ancre','Globe','Racines','Pont','Chemin','Humains','Animaux','Objets','Nature','Géographiques','Technologiques','Mythologiques','Abstraits'],
+// ── Index dynamique des attributs graphiques ──
+// Se construit depuis la DB au chargement et se met à jour à chaque import
+let DYNAMIC_ATTRS = {
+  byAttr: {},    // { "Cercle": { count: 12, category: "Forme" } }
+  byCategory: {} // { "Forme": ["Cercle", "Triangle", ...] }
 };
+
+// Catégories de référence — sert au classement, pas à la restriction
+const GRAPHIC_CATEGORIES = {
+  'Forme':         ['cercle','carre','rectangle','triangle','polygone','ligne','barre','croix','etoile','ellipse','ovale','courbe','silhouette','goutte','fluide','abstrait'],
+  'Structure':     ['compact','horizontal','vertical','empile','centre','asymetrique','bloc','decentre','modulaire','ascendant','descendant','diagonal','rayonnant','circulaire','spirale','zigzag','lineaire','ondule','point focal','volume'],
+  'Symétrie':      ['verticale','horizontale','diagonale','radiale','bilaterale','asymetrie'],
+  'Couleur':       ['monochrome','bichromie','polychrome','degrade','chaude','froide','neutre','pastel','vibrante','sombre','metallique','noir','blanc','bleu','rouge','vert','jaune','orange','violet','rose','or','argent'],
+  'Typographie':   ['serif','sans-serif','script','display','majuscule','espacement','thin','bold','personnalise','typographie'],
+  'Texte/Symbole': ['symbole','texte','icone','integre','negatif','monogramme','lettrage'],
+  'Style':         ['minimaliste','illustratif','mascotte','pictogramme','flat','brutaliste','vintage','futuriste','luxueux','geometrique','organique'],
+  'Motifs':        ['duplicatif','radial','concentrique','grille','miroir','superposition','overlay','pattern','motif','repetition'],
+  'Symbolisme':    ['taureau','lion','aigle','ours','loup','cheval','dauphin','serpent','phenix','cerf','rhinoceros','elephant','vague','flamme','feuille','arbre','montagne','soleil','etoile','main','fleche','engrenage','bouclier','couronne','eclair','ancre','globe','racine','pont','chemin','animal','nature','humain','objet','mythologique'],
+};
+
+function guessCategory(attr) {
+  const a = attr.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  for (const [cat, keywords] of Object.entries(GRAPHIC_CATEGORIES)) {
+    if (keywords.some(k => a.includes(k))) return cat;
+  }
+  return 'Autre';
+}
+
+function buildDynamicAttrs() {
+  const byAttr = {};
+  const byCategory = {};
+
+  DB.forEach(logo => {
+    (logo.graphic || []).forEach(attr => {
+      const key = attr.trim();
+      if (!key) return;
+      if (!byAttr[key]) {
+        const cat = guessCategory(key);
+        byAttr[key] = { count: 0, category: cat };
+        if (!byCategory[cat]) byCategory[cat] = [];
+        if (!byCategory[cat].includes(key)) byCategory[cat].push(key);
+      }
+      byAttr[key].count++;
+    });
+  });
+
+  // Trier chaque catégorie par fréquence décroissante
+  Object.keys(byCategory).forEach(cat => {
+    byCategory[cat].sort((a, b) => (byAttr[b]?.count || 0) - (byAttr[a]?.count || 0));
+  });
+
+  DYNAMIC_ATTRS = { byAttr, byCategory };
+}
 
 async function openInsights() {
   const topN = state.results.slice(0, 10);
@@ -2179,7 +2222,7 @@ async function openInsights() {
   const analysisPoints = document.getElementById('analysis-points');
   if (!analysisPoints) return;
 
-  // Compter fréquences attributs graphiques
+  // Compter fréquences depuis les résultats top N — dynamique
   const counts = {};
   topN.forEach(logo => {
     (logo.graphic || []).forEach(attr => {
@@ -2190,9 +2233,9 @@ async function openInsights() {
 
   // Top attributs triés par fréquence
   const topAttrs = Object.entries(counts)
-    .map(([attr, count]) => ({ attr, count, pct: Math.round(count / n * 100) }))
+    .map(([attr, count]) => ({ attr, count, pct: Math.round(count / n * 100), category: guessCategory(attr) }))
     .sort((a, b) => b.pct - a.pct)
-    .slice(0, 8);
+    .slice(0, 12);
 
   // Brief actuel
   const audience   = document.getElementById('sel-audience')?.value || '';
@@ -3786,6 +3829,7 @@ async function saveProject() {
     DB.unshift(localP);
     imp.projects.unshift(localP);
     updateHeaderCount();
+    buildDynamicAttrs();
     renderSourceList();
 
     if (portfolio.reviewing && portfolio.reviewIdx >= 0) {
