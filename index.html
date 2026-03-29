@@ -2542,6 +2542,72 @@ async function scanPortfolio() {
   setPortfolioStatus('loading', 'Récupération du portfolio…');
 
   try {
+    const isBrandNew = url.includes('underconsideration.com/brandnew');
+    const isBehance  = url.includes('behance.net');
+
+    // ── Behance : pagination automatique ──
+    if (isBehance) {
+      setPortfolioStatus('loading', 'Récupération des projets Behance (pagination)…');
+
+      // Extraire le username depuis l'URL
+      const behanceUser = new URL(url).pathname.replace(/^\//, '').split('?')[0].split('/')[0];
+      const allGalleryLinks = new Set();
+
+      async function fetchProxy(pageUrl) {
+        const proxies = [
+          () => fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(pageUrl)).then(r => r.ok ? r.text() : Promise.reject()),
+          () => fetch('https://corsproxy.io/?' + encodeURIComponent(pageUrl)).then(r => r.ok ? r.text() : Promise.reject()),
+          () => fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(pageUrl)).then(r => r.ok ? r.text() : Promise.reject()),
+        ];
+        for (const p of proxies) {
+          try { const r = await p(); if (r && r.length > 500) return r; } catch(e) { continue; }
+        }
+        return null;
+      }
+
+      // Paginer par offset de 12 en 12 jusqu'à 5 pages max (60 projets)
+      for (let offset = 0; offset <= 48; offset += 12) {
+        const pageUrl = 'https://www.behance.net/' + behanceUser + (offset > 0 ? '?offset=' + offset : '');
+        setPortfolioStatus('loading', 'Behance page ' + (offset/12 + 1) + '/5…');
+        const html = await fetchProxy(pageUrl);
+        if (!html) break;
+
+        const links = [...html.matchAll(/href=["']([^"']*\/gallery\/\d+\/[^"']*?)["']/gi)]
+          .map(m => {
+            try {
+              const u = new URL(m[1], 'https://www.behance.net');
+              return u.origin + u.pathname.replace(/\/$/, '');
+            } catch(e) { return null; }
+          })
+          .filter(Boolean);
+
+        const before = allGalleryLinks.size;
+        links.forEach(l => allGalleryLinks.add(l));
+        // Si aucun nouveau lien sur cette page, on arrête
+        if (offset > 0 && allGalleryLinks.size === before) break;
+
+        await new Promise(r => setTimeout(r, 500));
+      }
+
+      const existingUrls = new Set(DB.map(l => l.sourceUrl).filter(Boolean).map(u => u.replace(/\/$/, '')));
+      const filtered = [...allGalleryLinks].filter(u => !existingUrls.has(u));
+
+      if (filtered.length === 0) throw new Error('Aucun projet Behance détecté ou tous déjà importés.');
+
+      portfolio.urls = filtered.map(u => {
+        const slug = u.split('/').pop();
+        const name = slug.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        return { url: u, name, selected: true, status: 'pending' };
+      });
+
+      renderPortfolioList();
+      setPortfolioStatus('ok', filtered.length + ' projet' + (filtered.length > 1 ? 's' : '') + ' Behance détecté' + (filtered.length > 1 ? 's' : ''));
+      document.getElementById('btn-scan').disabled = false;
+      document.getElementById('btn-scan-label').textContent = 'Scanner le portfolio →';
+      return;
+    }
+
+    // ── Autres sites ──
     let html = '';
     const proxies = [
       () => fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url)).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); }),
@@ -2558,18 +2624,14 @@ async function scanPortfolio() {
       } catch(e) { continue; }
     }
 
-    if (!html || html.length < 300) throw new Error('Aucun proxy n\'a pu récupérer la page. Essaie avec une URL différente ou vérifie que le site est accessible.');
+    if (!html || html.length < 300) throw new Error('Aucun proxy n\'a pu récupérer la page.');
 
-    // Détecter le type de site
-    const isBrandNew = url.includes('underconsideration.com/brandnew');
-    const isBehance  = url.includes('behance.net');
+    // Si JS-rendered → suggérer Behance
     const isJsRendered = html.length < 2000 || (html.match(/<a /gi)||[]).length < 3;
-
-    // Si JS-rendered et pas Brand New ni Behance → suggérer Behance
-    if (isJsRendered && !isBrandNew && !isBehance) {
+    if (isJsRendered && !isBrandNew) {
       throw new Error(
         'Ce site charge son contenu en JavaScript — impossible de détecter les liens automatiquement.\n\n' +
-        'Astuce : beaucoup d\'agences publient aussi sur Behance (behance.net). ' +
+        'Astuce : beaucoup d\'agences publient sur Behance (behance.net). ' +
         'Essaie de chercher l\'agence sur Behance et colle l\'URL de leur profil ici.'
       );
     }
