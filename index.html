@@ -107,30 +107,52 @@
 
   /* ── SIDEBAR INSIGHTS (droite) ── */
   .insights-sidebar {
-    width: 280px;
-    flex-shrink: 0;
-    background: var(--paper);
-    border-left: 1px solid var(--rule);
-    display: flex;
-    flex-direction: column;
-    position: sticky;
-    top: 60px;
+    width: 280px; flex-shrink: 0;
+    background: var(--paper); border-left: 1px solid var(--rule);
+    display: flex; flex-direction: column;
+    position: sticky; top: 60px;
     height: calc(100vh - 60px);
-    overflow-y: auto;
+    overflow: hidden;
   }
-  .insights-sidebar-head {
-    padding: 1.75rem 1.5rem 1rem;
+  .ins-hover-zone {
+    padding: 1rem 1.25rem;
     border-bottom: 1px solid var(--rule);
     flex-shrink: 0;
   }
-  .insights-sidebar-body {
-    padding: 1.25rem 1.5rem;
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
+  .ins-hover-img-name { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; margin-top: 6px; }
+  .ins-hover-thumb {
+    width: 44px; height: 44px; border-radius: 4px;
+    background: var(--paper-2); border: 1px solid var(--rule);
+    flex-shrink: 0; overflow: hidden;
   }
+  .ins-hover-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ins-hover-name { font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.3; }
+  .ins-hover-meta { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+  .ins-hover-tags { display: flex; flex-wrap: wrap; gap: 3px; }
+  .ins-hover-tag { font-size: 10px; padding: 2px 7px; border-radius: 2px; line-height: 1.5; }
+  .ins-hover-tag.b { background: var(--teal-pale); color: var(--teal); }
+  .ins-hover-tag.g { background: var(--blue-pale); color: var(--blue); }
+
+  .ins-analysis-zone {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--rule);
+    flex-shrink: 0;
+    background: var(--paper-2);
+  }
+  .ins-analysis-text { font-size: 12px; line-height: 1.7; color: var(--ink); }
+  .ins-analysis-point {
+    display: flex; gap: 8px; align-items: flex-start;
+    font-size: 12px; line-height: 1.6; color: var(--ink);
+    padding: 3px 0;
+  }
+  .ins-analysis-point::before { content: '—'; color: var(--accent); flex-shrink: 0; font-weight: 600; }
+
+  .ins-freq-zone {
+    flex: 1; overflow-y: auto;
+    padding: 1rem 1.25rem 1rem;
+    display: flex; flex-direction: column; gap: 1.25rem;
+  }
+
   .insights-empty {
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
@@ -139,6 +161,7 @@
   }
   .insights-empty-icon { font-size: 28px; opacity: 0.3; }
   .insights-empty-text { font-size: 12px; line-height: 1.6; }
+  .insights-sidebar-body { display: flex; flex-direction: column; gap: 1.25rem; }
 
   .sidebar-head {
     padding: 1.75rem 1.75rem 1rem;
@@ -1360,16 +1383,45 @@
 
   <!-- ── SIDEBAR INSIGHTS (droite) ── -->
   <aside class="insights-sidebar" id="insights-sidebar">
-    <div class="insights-sidebar-head">
-      <div class="sidebar-label">Solutions graphiques</div>
-      <div class="sidebar-title">Insights</div>
-    </div>
-    <div id="insights-sidebar-body" class="insights-sidebar-body">
-      <div class="insights-empty">
-        <div class="insights-empty-icon">◈</div>
-        <div class="insights-empty-text">Lance une recherche pour voir les attributs graphiques les plus utilisés sur les projets similaires.</div>
+
+    <!-- Zone 1 : infos logo survolé -->
+    <div class="ins-hover-zone" id="ins-hover-zone">
+      <div class="ins-hover-empty" id="ins-hover-empty">
+        <div class="sidebar-label">Survol</div>
+        <div style="font-size:12px;color:var(--ink-3);margin-top:6px;line-height:1.6">Survolez un logo pour voir ses attributs ici.</div>
+      </div>
+      <div class="ins-hover-content" id="ins-hover-content" style="display:none">
+        <div class="sidebar-label" style="margin-bottom:8px">Survol</div>
+        <div class="ins-hover-img-name">
+          <div class="ins-hover-thumb" id="ins-hover-thumb"></div>
+          <div>
+            <div class="ins-hover-name" id="ins-hover-name"></div>
+            <div class="ins-hover-meta" id="ins-hover-meta"></div>
+          </div>
+        </div>
+        <div class="ins-hover-tags" id="ins-hover-brief"></div>
+        <div class="ins-hover-tags" id="ins-hover-graphic" style="margin-top:6px"></div>
       </div>
     </div>
+
+    <!-- Zone 2 : analyse Claude -->
+    <div class="ins-analysis-zone" id="ins-analysis-zone" style="display:none">
+      <div class="sidebar-label" style="margin-bottom:8px">Analyse</div>
+      <div class="ins-analysis-text" id="ins-analysis-text"></div>
+    </div>
+
+    <!-- Zone 3 : fréquences -->
+    <div class="ins-freq-zone" id="ins-freq-zone" style="display:none">
+      <div class="sidebar-label" style="margin-bottom:8px">Fréquences · top <span id="ins-freq-n">10</span></div>
+      <div id="insights-sidebar-body" class="insights-sidebar-body" style="padding:0"></div>
+    </div>
+
+    <!-- État vide global -->
+    <div class="insights-empty" id="ins-global-empty" style="display:none">
+      <div class="insights-empty-icon">◈</div>
+      <div class="insights-empty-text">Lance une recherche pour voir les insights graphiques.</div>
+    </div>
+
   </aside>
 
 </div><!-- /.app -->
@@ -2019,13 +2071,23 @@ async function openInsights() {
     html += '<div class="ins-cat"><div class="ins-cat-label">' + cat + '</div>' + rows + '</div>';
   });
 
-  document.getElementById('insights-sidebar-body').innerHTML =
-    '<div class="ins-conclusion" id="ins-conclusion">' +
-      '<div class="ins-conclusion-label">Analyse</div>' +
-      '<div class="ins-conclusion-text" id="ins-conclusion-text" style="font-size:11.5px;color:var(--ink-3);font-style:italic">Analyse en cours…</div>' +
-    '</div>' +
-    '<div style="font-size:10px;color:var(--ink-3);margin-bottom:8px">Top ' + n + ' projets similaires</div>' +
-    html;
+  // Peupler les zones
+  document.getElementById('ins-freq-zone').style.display = 'flex';
+  document.getElementById('ins-freq-zone').style.flexDirection = 'column';
+  document.getElementById('ins-freq-n').textContent = n;
+  document.getElementById('insights-sidebar-body').innerHTML = html;
+
+  // Zone analyse
+  const analysisZone = document.getElementById('ins-analysis-zone');
+  const analysisText = document.getElementById('ins-analysis-text');
+  analysisZone.style.display = 'block';
+
+  const apiKey = document.getElementById('api-key')?.value?.trim() || localStorage.getItem('li_api_key');
+  if (!apiKey || !apiKey.startsWith('sk-ant-')) {
+    analysisText.innerHTML = '<span style="color:var(--ink-3);font-style:italic;font-size:11.5px">Ajoute ta clé API pour activer l\'analyse.</span>';
+  } else {
+    analysisText.innerHTML = '<span style="color:var(--ink-3);font-style:italic;font-size:11.5px">Analyse en cours…</span>';
+  }
 
   // Animer les barres
   setTimeout(() => {
@@ -2036,21 +2098,16 @@ async function openInsights() {
     });
   }, 80);
 
-  // Générer la conclusion via Claude (si clé API dispo)
-  const apiKey = document.getElementById('api-key')?.value?.trim() || localStorage.getItem('li_api_key');
-  if (!apiKey || !apiKey.startsWith('sk-ant-')) {
-    document.getElementById('ins-conclusion-text').textContent = 'Ajoute ta clé API dans l\'onglet Importer pour activer l\'analyse automatique.';
-    document.getElementById('ins-conclusion-text').style.fontStyle = 'italic';
-    return;
-  }
+  if (!apiKey || !apiKey.startsWith('sk-ant-')) return;
 
   try {
-    const prompt = 'Tu es expert en design d\'identité visuelle et branding. ' +
-      'Un designer travaille sur un brief avec ces caractéristiques : ' + briefDesc + '. ' +
-      'En analysant les ' + n + ' logos les plus similaires dans la base de données, voici les attributs graphiques les plus fréquents : ' + statsText +
-      'En 2-3 phrases maximum, rédige une conclusion professionnelle et actionnable sur les solutions graphiques privilégiées pour ce type de brief. ' +
-      'Sois précis, concret, parle de tendances et de choix de design. Ne commence pas par "Les logos" ou "En conclusion". ' +
-      'Utilise un ton professionnel de directeur artistique senior.';
+    const prompt = 'Tu es directeur artistique senior spécialisé en identité visuelle. ' +
+      'Brief analysé : ' + briefDesc + '. ' +
+      'Attributs graphiques les plus fréquents sur les ' + n + ' projets similaires : ' + statsText +
+      '\n\nRédige 3 insights courts sous forme de points (commence chaque point par un verbe d\'action). ' +
+      'Chaque point = 1 ligne max, très concis, très concret, chiffré si possible. ' +
+      'Format attendu : une liste de 3 points séparés par des sauts de ligne, sans tiret ni puce, juste le texte. ' +
+      'Exemple de ton : "Privilégier les formes géométriques closes (73%)" / "Opter pour le monochrome bleu marine" / "Éviter la typographie serif"';
 
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -2062,24 +2119,23 @@ async function openInsights() {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 300,
+        max_tokens: 200,
         messages: [{ role: 'user', content: prompt }],
       }),
     });
 
     if (!resp.ok) throw new Error('API error ' + resp.status);
     const data = await resp.json();
-    const text = data.content?.find(b => b.type === 'text')?.text || '';
+    const text = (data.content?.find(b => b.type === 'text')?.text || '').trim();
 
-    const el = document.getElementById('ins-conclusion-text');
-    if (el) {
-      el.textContent = text;
-      el.style.fontStyle = 'normal';
-      el.style.color = 'var(--ink)';
-    }
+    // Afficher en points
+    const points = text.split('\n').map(p => p.trim()).filter(Boolean).slice(0, 3);
+    analysisText.innerHTML = points.map(p =>
+      '<div class="ins-analysis-point">' + p + '</div>'
+    ).join('');
+
   } catch(e) {
-    const el = document.getElementById('ins-conclusion-text');
-    if (el) el.textContent = 'Analyse indisponible : ' + e.message;
+    analysisText.innerHTML = '<span style="color:var(--ink-3);font-size:11.5px">Analyse indisponible : ' + e.message + '</span>';
   }
 }
 
@@ -2094,10 +2150,6 @@ function renderGrid() {
   const positionnement = document.getElementById('sel-positionnement').value;
   const hasFilters     = state.selectedIndustrie.length || state.selectedValeurs.length || positionnement || state.selectedLetter;
   const showDelete     = !hasFilters; // bouton suppr uniquement en vue "tous les projets"
-
-  // Popover global singleton
-  const popover = document.getElementById('card-popover');
-  let popoverTimeout = null;
 
   state.results.forEach((logo, i) => {
     const card = document.createElement('div');
@@ -2128,33 +2180,29 @@ function renderGrid() {
         '<button class="card-edit-btn" onclick="event.stopPropagation();openEditPanel(\'' + logo.id + '\')">Éditer</button>' +
       '</div>';
 
-    // Popover au survol
+    // Mettre à jour la zone de survol dans la sidebar droite
     card.addEventListener('mouseenter', () => {
-      clearTimeout(popoverTimeout);
-      const rect = card.getBoundingClientRect();
-      const pw = 240, margin = 8;
+      document.getElementById('ins-hover-empty').style.display = 'none';
+      const content = document.getElementById('ins-hover-content');
+      content.style.display = 'block';
 
-      popover.innerHTML =
-        '<div class="card-hover-name">' + logo.name + '</div>' +
-        '<div class="card-hover-meta">' + (logo.agency||'') + (logo.year ? ' · ' + logo.year : '') + '</div>' +
-        (allBrief.length   ? '<div class="card-hover-section">Brief</div><div class="card-hover-tags">' + briefTags  + '</div>' : '') +
-        (allGraphic.length ? '<div class="card-hover-section">Graphique</div><div class="card-hover-tags">' + graphTags + '</div>' : '');
+      // Thumb
+      const thumb = document.getElementById('ins-hover-thumb');
+      thumb.innerHTML = logo.imageUrl
+        ? '<img src="' + logo.imageUrl + '" onerror="this.remove()">'
+        : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--ink-3)">◈</div>';
 
-      // Positionner : au-dessus de la card par défaut
-      const ph = 200;
-      let top  = rect.top - ph - margin;
-      if (top < 8) top = rect.bottom + margin;
-      let left = rect.left + (rect.width - pw) / 2;
-      if (left < 8) left = 8;
-      if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
+      document.getElementById('ins-hover-name').textContent = logo.name;
+      document.getElementById('ins-hover-meta').textContent = [logo.agency, logo.year].filter(Boolean).join(' · ');
 
-      popover.style.top  = top + 'px';
-      popover.style.left = left + 'px';
-      popover.classList.add('visible');
+      document.getElementById('ins-hover-brief').innerHTML =
+        allBrief.map(a => '<span class="ins-hover-tag b">' + a + '</span>').join('');
+      document.getElementById('ins-hover-graphic').innerHTML =
+        allGraphic.map(a => '<span class="ins-hover-tag g">' + a + '</span>').join('');
     });
 
     card.addEventListener('mouseleave', () => {
-      popoverTimeout = setTimeout(() => popover.classList.remove('visible'), 80);
+      // Garder affiché le dernier logo survolé
     });
 
     card.addEventListener('click', () => openPanel(logo));
