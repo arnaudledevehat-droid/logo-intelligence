@@ -326,43 +326,58 @@
   }
 
   /* Barre résultats */
-  .results-bar {
-    padding: 1rem 2rem;
-    background: var(--paper);
-    border-bottom: 1px solid var(--rule);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
+  /* Bandeau analyse en haut */
+  .analysis-banner {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0.9rem 2rem;
     display: none;
+    flex-shrink: 0;
+    gap: 1.5rem;
+    align-items: flex-start;
+    border-bottom: 2px solid var(--accent);
   }
-  .results-bar.visible { display: flex; }
+  .analysis-banner.visible { display: flex; }
 
-  .results-info { display: flex; align-items: baseline; gap: 10px; }
-
-  .results-count {
+  .analysis-banner-brief {
+    display: flex; flex-direction: column; gap: 4px;
+    flex-shrink: 0; min-width: 120px;
+  }
+  .analysis-banner-count {
     font-family: 'Instrument Sans', sans-serif;
-    font-size: 22px;
-    letter-spacing: -0.02em;
+    font-size: 28px; letter-spacing: -0.03em;
+    line-height: 1; color: var(--paper);
   }
+  .analysis-banner-sub {
+    font-size: 10.5px; color: rgba(247,244,239,0.45);
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .analysis-banner-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+  .analysis-banner-divider { width: 1px; background: rgba(247,244,239,0.15); align-self: stretch; flex-shrink: 0; }
 
-  .results-sub {
-    font-size: 12.5px;
-    color: var(--ink-3);
+  .analysis-banner-insights { flex: 1; display: flex; flex-direction: column; gap: 5px; justify-content: center; }
+  .analysis-banner-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .analysis-banner-point {
+    display: flex; gap: 8px; align-items: baseline;
+    font-size: 12.5px; line-height: 1.5; color: rgba(247,244,239,0.9);
+  }
+  .analysis-banner-point::before { content: '—'; color: var(--accent); flex-shrink: 0; }
+  .analysis-banner-loading {
+    font-size: 12px; color: rgba(247,244,239,0.4); font-style: italic;
   }
 
   .results-brief-tags { display: flex; gap: 6px; flex-wrap: wrap; }
-
   .rtag {
-    font-size: 11px;
-    font-family: 'Instrument Sans', sans-serif;
-    padding: 3px 9px;
-    border-radius: 2px;
-    letter-spacing: 0.02em;
+    font-size: 10px; font-family: 'Instrument Sans', sans-serif;
+    padding: 2px 8px; border-radius: 2px; letter-spacing: 0.02em;
   }
-  .rtag.brief { background: var(--blue-pale); color: var(--blue); }
-  .rtag.valeur { background: var(--accent-pale); color: var(--accent); }
-  .rtag.graphique { background: var(--teal-pale); color: var(--teal); }
+  .rtag.brief { background: rgba(29,107,92,0.35); color: #9fe1cb; }
+  .rtag.valeur { background: rgba(200,80,26,0.35); color: #f4b49a; }
+  .rtag.graphique { background: rgba(26,63,140,0.35); color: #b5d4f4; }
 
   .btn-insights {
     font-family: 'Instrument Sans', sans-serif;
@@ -1364,7 +1379,18 @@
     </div>
 
     <!-- Skeleton loading -->
-    <div class="results-bar" id="results-bar"></div>
+    <div class="analysis-banner" id="analysis-banner">
+      <div class="analysis-banner-brief">
+        <div class="analysis-banner-count" id="analysis-count">0</div>
+        <div class="analysis-banner-sub" id="analysis-sub">logos</div>
+        <div class="analysis-banner-tags" id="analysis-tags"></div>
+      </div>
+      <div class="analysis-banner-divider"></div>
+      <div class="analysis-banner-insights">
+        <div class="analysis-banner-label">Analyse graphique</div>
+        <div id="analysis-points"><div class="analysis-banner-loading">Lance une recherche pour générer l'analyse…</div></div>
+      </div>
+    </div>
     <div class="skeleton-grid" id="skeleton-grid">
       <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-body"><div class="skeleton-line" style="width:60%"></div><div class="skeleton-line" style="width:40%"></div></div></div>
       <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-body"><div class="skeleton-line" style="width:70%"></div><div class="skeleton-line" style="width:50%"></div></div></div>
@@ -1687,12 +1713,12 @@ function showAllProjects() {
     document.getElementById('state-empty-title').textContent = 'Aucun projet importé';
     document.getElementById('state-empty-sub').textContent = 'Importe des projets via l\'onglet "Importer" pour les voir apparaître ici.';
     document.getElementById('logo-grid').classList.remove('visible');
-    document.getElementById('results-bar').classList.remove('visible');
+    document.getElementById('analysis-banner').classList.remove('visible');
     return;
   }
   document.getElementById('state-empty').style.display = 'none';
+  document.getElementById('analysis-banner').classList.remove('visible');
   state.results = DB.map(l => ({ ...l, score: 100 }));
-  renderResultsBar();
   renderGrid();
 }
 
@@ -1898,7 +1924,7 @@ async function runSearch() {
   document.getElementById('state-empty').style.display = 'none';
   document.getElementById('logo-grid').classList.remove('visible');
   document.getElementById('skeleton-grid').classList.add('visible');
-  document.getElementById('results-bar').classList.remove('visible');
+  document.getElementById('analysis-banner').classList.remove('visible');
 
   // Si pas de filtres — afficher tout
   if (!hasFilters) {
@@ -1978,23 +2004,30 @@ async function runSearch() {
 }
 
 function renderResultsBar() {
-  const bar = document.getElementById('results-bar');
   const positionnement = document.getElementById('sel-positionnement').value;
+  const isFiltered = state.selectedIndustrie.length || state.selectedValeurs.length || positionnement || state.selectedLetter;
+
+  const banner = document.getElementById('analysis-banner');
+  document.getElementById('analysis-count').textContent = state.results.length;
+  document.getElementById('analysis-sub').textContent = isFiltered ? 'logos similaires' : 'logos dans la base';
+
   const tags = [
     ...state.selectedIndustrie.map(v => '<span class="rtag brief">' + v.label + '</span>'),
     ...state.selectedValeurs.map(v => '<span class="rtag valeur">' + v.label + '</span>'),
     positionnement ? '<span class="rtag brief">' + positionnement + '</span>' : '',
-    state.selectedLetter ? '<span class="rtag graphique">Commence par ' + state.selectedLetter + '</span>' : '',
-  ].join('');
+    state.selectedLetter ? '<span class="rtag graphique">Lettre ' + state.selectedLetter + '</span>' : '',
+  ].filter(Boolean).join('');
+  document.getElementById('analysis-tags').innerHTML = tags;
 
-  const isFiltered = state.selectedIndustrie.length || state.selectedValeurs.length || positionnement || state.selectedLetter;
-  bar.innerHTML =
-    '<div class="results-info"><div class="results-count">' + state.results.length + '</div>' +
-    '<div class="results-sub">' + (isFiltered ? 'logos correspondants' : 'logos dans la base') + '</div></div>' +
-    '<div class="results-brief-tags">' + tags + '</div>';
-  bar.classList.add('visible');
-  // Mettre à jour les insights automatiquement
-  openInsights();
+  banner.classList.add('visible');
+
+  // Insights uniquement si filtres actifs
+  if (isFiltered) {
+    openInsights();
+  } else {
+    document.getElementById('analysis-points').innerHTML =
+      '<div class="analysis-banner-loading">Sélectionne des critères de brief pour générer l\'analyse.</div>';
+  }
 }
 
 // ── Insights graphiques ──
@@ -2077,16 +2110,16 @@ async function openInsights() {
   document.getElementById('ins-freq-n').textContent = n;
   document.getElementById('insights-sidebar-body').innerHTML = html;
 
-  // Zone analyse
+  // Zone analyse — afficher loading dans le bandeau
   const analysisZone = document.getElementById('ins-analysis-zone');
-  const analysisText = document.getElementById('ins-analysis-text');
-  analysisZone.style.display = 'block';
+  const analysisPoints = document.getElementById('analysis-points');
+  if (analysisZone) analysisZone.style.display = 'none'; // plus utilisé
+  if (analysisPoints) analysisPoints.innerHTML = '<div class="analysis-banner-loading">Analyse en cours…</div>';
 
   const apiKey = document.getElementById('api-key')?.value?.trim() || localStorage.getItem('li_api_key');
   if (!apiKey || !apiKey.startsWith('sk-ant-')) {
-    analysisText.innerHTML = '<span style="color:var(--ink-3);font-style:italic;font-size:11.5px">Ajoute ta clé API pour activer l\'analyse.</span>';
-  } else {
-    analysisText.innerHTML = '<span style="color:var(--ink-3);font-style:italic;font-size:11.5px">Analyse en cours…</span>';
+    if (analysisPoints) analysisPoints.innerHTML = '<div class="analysis-banner-loading">Ajoute ta clé API pour activer l\'analyse.</div>';
+    return;
   }
 
   // Animer les barres
@@ -2130,12 +2163,14 @@ async function openInsights() {
 
     // Afficher en points
     const points = text.split('\n').map(p => p.trim()).filter(Boolean).slice(0, 3);
-    analysisText.innerHTML = points.map(p =>
-      '<div class="ins-analysis-point">' + p + '</div>'
-    ).join('');
+    if (analysisPoints) {
+      analysisPoints.innerHTML = points.map(p =>
+        '<div class="analysis-banner-point">' + p + '</div>'
+      ).join('');
+    }
 
   } catch(e) {
-    analysisText.innerHTML = '<span style="color:var(--ink-3);font-size:11.5px">Analyse indisponible : ' + e.message + '</span>';
+    if (analysisPoints) analysisPoints.innerHTML = '<div class="analysis-banner-loading">Analyse indisponible : ' + e.message + '</div>';
   }
 }
 
