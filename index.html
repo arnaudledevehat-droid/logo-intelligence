@@ -25,19 +25,17 @@
     --blue-pale: rgba(91,157,232,0.12);
   }
 
-  .header-nav { display: flex; gap: 2px; background: rgba(255,255,255,0.07); padding: 3px; border-radius: 6px; }
+  .header-nav { display: flex; gap: 2px; background: rgba(255,255,255,0.08); padding: 3px; border-radius: 6px; }
   .hnav {
     font-family: 'Instrument Sans', sans-serif;
     font-size: 12.5px; font-weight: 500;
-    color: rgba(247,244,239,0.5);
+    color: rgba(255,255,255,0.45);
     background: none; border: none;
-    padding: 6px 14px; border-radius: 4px;
+    padding: 6px 16px; border-radius: 4px;
     cursor: pointer; transition: all 0.15s; letter-spacing: 0.01em;
   }
-  .hnav:hover { color: rgba(247,244,239,0.85); }
-  .hnav.active { background: rgba(255,255,255,0.12); color: #f7f4ef; }
-
-
+  .hnav:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.06); }
+  .hnav.active { background: rgba(255,255,255,0.15); color: #ffffff; }
 
   body {
     font-family: 'Instrument Sans', sans-serif;
@@ -49,7 +47,8 @@
 
   /* ── HEADER ── */
   header {
-    background: var(--ink);
+    background: #0e0c0a;
+    border-bottom: 1px solid #2a2724;
     padding: 0 2.5rem;
     height: 60px;
     display: flex;
@@ -1658,17 +1657,18 @@ async function loadLogosFromSupabase() {
     DB.length = 0;
     (rows || []).forEach(row => {
       DB.push({
-        id:       row.id,
-        name:     row.name,
-        client:   row.name,
-        agency:   (row.brief || [])[0] || '—',
-        year:     new Date(row.created_at).getFullYear(),
-        symbol:   '◈', bg: '#f0ede8', color: '#5a5650',
-        imageUrl: row.image_url,
-        brief:    Array.isArray(row.brief)   ? row.brief   : [],
-        graphic:  Array.isArray(row.graphic) ? row.graphic : [],
-        desc:     row.description || '',
-        stats:    [],
+        id:        row.id,
+        name:      row.name,
+        client:    row.name,
+        agency:    (row.brief || [])[0] || '—',
+        year:      new Date(row.created_at).getFullYear(),
+        symbol:    '◈', bg: '#1a1816', color: '#a09b94',
+        imageUrl:  row.image_url,
+        brief:     Array.isArray(row.brief)   ? row.brief   : [],
+        graphic:   Array.isArray(row.graphic) ? row.graphic : [],
+        desc:      row.description || '',
+        sourceUrl: row.source_url || null,
+        stats:     [],
       });
     });
     updateHeaderCount();
@@ -3636,12 +3636,14 @@ function updateHeaderCount() {
 
 function renderSourceList() {
   const list = document.getElementById('imp-sources');
-  document.getElementById('imp-count-label').textContent = '(' + imp.projects.length + ')';
-  if (!imp.projects.length) {
-    list.innerHTML = '<div class="imp-empty-list">Aucun projet encore importé</div>';
+  // Afficher tous les projets de la DB, pas seulement ceux importés dans la session
+  const allProjects = DB;
+  document.getElementById('imp-count-label').textContent = '(' + allProjects.length + ')';
+  if (!allProjects.length) {
+    list.innerHTML = '<div class="imp-empty-list">Aucun projet dans la base</div>';
     return;
   }
-  list.innerHTML = imp.projects.map(p =>
+  list.innerHTML = allProjects.map(p =>
     '<div class="imp-source-row" id="src-' + p.id + '">' +
     '<div class="imp-source-thumb">' + (p.imageUrl ? '<img src="' + p.imageUrl + '" alt="' + p.name + '">' : '<span style="font-size:18px;color:var(--ink-3)">◈</span>') + '</div>' +
     '<div class="imp-source-info"><div class="imp-source-name">' + p.name + '</div><div class="imp-source-meta">' + (p.brief||[]).slice(0,2).join(' · ') + '</div></div>' +
