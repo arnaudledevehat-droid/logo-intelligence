@@ -7,21 +7,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #141210;
-    --ink-2: #5a5650;
-    --ink-3: #a09b94;
-    --paper: #f7f4ef;
-    --paper-2: #eeebe4;
-    --paper-3: #e4e0d8;
-    --rule: #d8d3ca;
+    --ink: #f0ede8;
+    --ink-2: #a09b94;
+    --ink-3: #5a5650;
+    --paper: #18161400;
+    --paper: #1a1816;
+    --paper-2: #221f1c;
+    --paper-3: #2a2724;
+    --rule: #2e2b28;
     --accent: #c8501a;
-    --accent-pale: #faf0eb;
-    --teal: #1a6b5c;
-    --teal-pale: #eaf4f1;
-    --gold: #a07010;
-    --gold-pale: #faf5e0;
-    --blue: #1a3f8c;
-    --blue-pale: #edf1fb;
+    --accent-pale: rgba(200,80,26,0.15);
+    --teal: #2db897;
+    --teal-pale: rgba(45,184,151,0.12);
+    --gold: #d4a030;
+    --gold-pale: rgba(212,160,48,0.12);
+    --blue: #5b9de8;
+    --blue-pale: rgba(91,157,232,0.12);
   }
 
   .header-nav { display: flex; gap: 2px; background: rgba(255,255,255,0.07); padding: 3px; border-radius: 6px; }
@@ -328,56 +329,75 @@
   /* Barre résultats */
   /* Bandeau analyse en haut */
   .analysis-banner {
-    background: var(--ink);
-    color: var(--paper);
-    padding: 0.9rem 2rem;
+    background: var(--paper-2);
+    border-bottom: 1px solid var(--rule);
+    padding: 1rem 2rem;
     display: none;
     flex-shrink: 0;
     gap: 1.5rem;
     align-items: flex-start;
-    border-bottom: 2px solid var(--accent);
   }
   .analysis-banner.visible { display: flex; }
 
   .analysis-banner-brief {
     display: flex; flex-direction: column; gap: 4px;
-    flex-shrink: 0; min-width: 120px;
+    flex-shrink: 0; min-width: 100px;
   }
   .analysis-banner-count {
     font-family: 'Instrument Sans', sans-serif;
-    font-size: 28px; letter-spacing: -0.03em;
-    line-height: 1; color: var(--paper);
+    font-size: 30px; letter-spacing: -0.03em;
+    line-height: 1; color: var(--ink);
   }
   .analysis-banner-sub {
-    font-size: 10.5px; color: rgba(247,244,239,0.45);
-    letter-spacing: 0.04em; text-transform: uppercase;
+    font-size: 10px; color: var(--ink-3);
+    letter-spacing: 0.06em; text-transform: uppercase;
   }
-  .analysis-banner-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
-  .analysis-banner-divider { width: 1px; background: rgba(247,244,239,0.15); align-self: stretch; flex-shrink: 0; }
+  .analysis-banner-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
 
-  .analysis-banner-insights { flex: 1; display: flex; flex-direction: column; gap: 5px; justify-content: center; }
+  .analysis-banner-divider {
+    width: 1px; background: var(--rule);
+    align-self: stretch; flex-shrink: 0;
+  }
+
+  .analysis-banner-insights { flex: 1; display: flex; flex-direction: column; gap: 7px; }
   .analysis-banner-label {
     font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
-    text-transform: uppercase; color: var(--accent);
-    margin-bottom: 4px;
+    text-transform: uppercase; color: var(--ink-3); margin-bottom: 2px;
   }
-  .analysis-banner-point {
-    display: flex; gap: 8px; align-items: baseline;
-    font-size: 12.5px; line-height: 1.5; color: rgba(247,244,239,0.9);
-  }
-  .analysis-banner-point::before { content: '—'; color: var(--accent); flex-shrink: 0; }
   .analysis-banner-loading {
-    font-size: 12px; color: rgba(247,244,239,0.4); font-style: italic;
+    font-size: 12px; color: var(--ink-3); font-style: italic;
   }
 
-  .results-brief-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  /* Points de corrélation brief → graphique */
+  .corr-point {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    font-size: 12px; line-height: 1.4;
+  }
+  .corr-brief {
+    background: var(--teal-pale); color: var(--teal);
+    padding: 2px 8px; border-radius: 2px;
+    font-size: 11px; font-weight: 600; white-space: nowrap;
+  }
+  .corr-arrow {
+    color: var(--ink-3); font-size: 13px; flex-shrink: 0;
+  }
+  .corr-graphic {
+    background: var(--blue-pale); color: var(--blue);
+    padding: 2px 8px; border-radius: 2px;
+    font-size: 11px; font-weight: 600; white-space: nowrap;
+  }
+  .corr-pct {
+    color: var(--ink-3); font-size: 11px; flex-shrink: 0;
+  }
+
+  .results-brief-tags { display: flex; gap: 5px; flex-wrap: wrap; }
   .rtag {
     font-size: 10px; font-family: 'Instrument Sans', sans-serif;
     padding: 2px 8px; border-radius: 2px; letter-spacing: 0.02em;
   }
-  .rtag.brief { background: rgba(29,107,92,0.35); color: #9fe1cb; }
-  .rtag.valeur { background: rgba(200,80,26,0.35); color: #f4b49a; }
-  .rtag.graphique { background: rgba(26,63,140,0.35); color: #b5d4f4; }
+  .rtag.brief { background: var(--teal-pale); color: var(--teal); }
+  .rtag.valeur { background: var(--accent-pale); color: var(--accent); }
+  .rtag.graphique { background: var(--blue-pale); color: var(--blue); }
 
   .btn-insights {
     font-family: 'Instrument Sans', sans-serif;
@@ -1430,23 +1450,7 @@
       </div>
     </div>
 
-    <!-- Zone 2 : analyse Claude -->
-    <div class="ins-analysis-zone" id="ins-analysis-zone" style="display:none">
-      <div class="sidebar-label" style="margin-bottom:8px">Analyse</div>
-      <div class="ins-analysis-text" id="ins-analysis-text"></div>
-    </div>
-
-    <!-- Zone 3 : fréquences -->
-    <div class="ins-freq-zone" id="ins-freq-zone" style="display:none">
-      <div class="sidebar-label" style="margin-bottom:8px">Fréquences · top <span id="ins-freq-n">10</span></div>
-      <div id="insights-sidebar-body" class="insights-sidebar-body" style="padding:0"></div>
-    </div>
-
-    <!-- État vide global -->
-    <div class="insights-empty" id="ins-global-empty" style="display:none">
-      <div class="insights-empty-icon">◈</div>
-      <div class="insights-empty-text">Lance une recherche pour voir les insights graphiques.</div>
-    </div>
+    <!-- Zone 2 : analyse (supprimée — dans le bandeau) -->
 
   </aside>
 
@@ -2048,7 +2052,10 @@ async function openInsights() {
   const n    = topN.length;
   if (n === 0) return;
 
-  // Compter la fréquence de chaque attribut graphique
+  const analysisPoints = document.getElementById('analysis-points');
+  if (!analysisPoints) return;
+
+  // Compter fréquences attributs graphiques
   const counts = {};
   topN.forEach(logo => {
     (logo.graphic || []).forEach(attr => {
@@ -2057,90 +2064,45 @@ async function openInsights() {
     });
   });
 
-  // Grouper par catégorie
-  const grouped = {};
-  Object.entries(counts).forEach(([attr, count]) => {
-    let cat = 'Autre';
-    for (const [catName, attrs] of Object.entries(GRAPHIC_CATEGORIES)) {
-      if (attrs.some(a => a.toLowerCase() === attr.toLowerCase())) { cat = catName; break; }
-    }
-    if (!grouped[cat]) grouped[cat] = [];
-    grouped[cat].push({ attr, count, pct: Math.round(count / n * 100) });
-  });
-
-  Object.values(grouped).forEach(arr => arr.sort((a, b) => b.pct - a.pct));
-
-  // Construire le résumé des fréquences pour Claude
-  const catOrder = ['Forme','Structure','Symétrie','Couleur','Typographie','Texte/Symbole','Style','Motifs','Symbolisme','Autre'];
-  let statsText = '';
-  catOrder.forEach(cat => {
-    if (!grouped[cat] || grouped[cat].length === 0) return;
-    const top = grouped[cat].slice(0, 3).map(({attr, pct}) => attr + ' (' + pct + '%)').join(', ');
-    statsText += cat + ': ' + top + '. ';
-  });
+  // Top attributs triés par fréquence
+  const topAttrs = Object.entries(counts)
+    .map(([attr, count]) => ({ attr, count, pct: Math.round(count / n * 100) }))
+    .sort((a, b) => b.pct - a.pct)
+    .slice(0, 8);
 
   // Brief actuel
   const positionnement = document.getElementById('sel-positionnement').value;
-  const briefDesc = [
+  const briefTerms = [
+    ...state.selectedIndustrie.flatMap(v => v.values),
+    ...state.selectedValeurs.flatMap(v => v.values),
+    positionnement,
+  ].filter(Boolean);
+  const briefLabels = [
     ...state.selectedIndustrie.map(v => v.label),
     ...state.selectedValeurs.map(v => v.label),
     positionnement,
-    state.selectedLetter ? 'Lettre initiale : ' + state.selectedLetter : '',
-  ].filter(Boolean).join(', ');
+  ].filter(Boolean);
+  const briefDesc = briefLabels.join(', ');
+  const statsText = topAttrs.map(a => a.attr + ' (' + a.pct + '%)').join(', ');
 
-  // Afficher la structure immédiatement avec skeleton pour la conclusion
-  const catOrder2 = ['Forme','Structure','Symétrie','Couleur','Typographie','Texte/Symbole','Style','Motifs','Symbolisme','Autre'];
-  let html = '';
-  catOrder2.forEach(cat => {
-    if (!grouped[cat] || grouped[cat].length === 0) return;
-    const rows = grouped[cat].map(({attr, count, pct}) =>
-      '<div class="ins-row">' +
-        '<div class="ins-name">' + attr + '</div>' +
-        '<div class="ins-bar-wrap"><div class="ins-bar" style="width:0%" data-pct="' + pct + '"></div></div>' +
-        '<div class="ins-pct">' + pct + '%</div>' +
-        '<div class="ins-count">' + count + '/' + n + '</div>' +
-      '</div>'
-    ).join('');
-    html += '<div class="ins-cat"><div class="ins-cat-label">' + cat + '</div>' + rows + '</div>';
-  });
-
-  // Peupler les zones
-  document.getElementById('ins-freq-zone').style.display = 'flex';
-  document.getElementById('ins-freq-zone').style.flexDirection = 'column';
-  document.getElementById('ins-freq-n').textContent = n;
-  document.getElementById('insights-sidebar-body').innerHTML = html;
-
-  // Zone analyse — afficher loading dans le bandeau
-  const analysisZone = document.getElementById('ins-analysis-zone');
-  const analysisPoints = document.getElementById('analysis-points');
-  if (analysisZone) analysisZone.style.display = 'none'; // plus utilisé
-  if (analysisPoints) analysisPoints.innerHTML = '<div class="analysis-banner-loading">Analyse en cours…</div>';
+  analysisPoints.innerHTML = '<div class="analysis-banner-loading">Analyse en cours…</div>';
 
   const apiKey = document.getElementById('api-key')?.value?.trim() || localStorage.getItem('li_api_key');
   if (!apiKey || !apiKey.startsWith('sk-ant-')) {
-    if (analysisPoints) analysisPoints.innerHTML = '<div class="analysis-banner-loading">Ajoute ta clé API pour activer l\'analyse.</div>';
+    analysisPoints.innerHTML = '<div class="analysis-banner-loading">Ajoute ta clé API (onglet Importer) pour activer l\'analyse.</div>';
     return;
   }
 
-  // Animer les barres
-  setTimeout(() => {
-    document.querySelectorAll('.ins-bar').forEach(b => {
-      b.style.width = b.dataset.pct + '%';
-      const pct = parseInt(b.dataset.pct);
-      b.style.background = pct >= 70 ? 'var(--accent)' : pct >= 40 ? 'var(--teal)' : 'var(--ink-3)';
-    });
-  }, 80);
-
-  if (!apiKey || !apiKey.startsWith('sk-ant-')) return;
-
   try {
-    const prompt = 'Tu es directeur artistique senior spécialisé en identité visuelle. ' +
-      'Brief analysé : ' + briefDesc + '. ' +
-      'Attributs graphiques les plus fréquents sur les ' + n + ' projets similaires : ' + statsText +
-      '\n\nRédige 3 insights courts sous forme de points (commence chaque point par un verbe d\'action). ' +
-      'Chaque point = 1 ligne max, très concis, très concret, chiffré si possible. ' +
-      'Format attendu : une liste de 3 points séparés par des sauts de ligne, sans tiret ni puce, juste le texte. ' +
-      'Exemple de ton : "Privilégier les formes géométriques closes (73%)" / "Opter pour le monochrome bleu marine" / "Éviter la typographie serif"';
+    const prompt =
+      'Tu es directeur artistique senior. Analyse les corrélations entre un brief et les solutions graphiques observées.\n\n' +
+      'Brief : ' + briefDesc + '\n' +
+      'Attributs graphiques les plus fréquents sur les ' + n + ' projets similaires : ' + statsText + '\n\n' +
+      'Génère exactement 3 corrélations sous ce format strict (une par ligne) :\n' +
+      '[Valeur du brief] >> [Attribut graphique] (XX%)\n\n' +
+      'Exemple : Confiance >> Formes géométriques closes (73%)\n' +
+      'Exemple : Innovation >> Typographie sans-serif bold (60%)\n\n' +
+      'Utilise les vraies valeurs du brief et les vrais attributs avec leurs vrais pourcentages. 3 lignes, rien d\'autre.';
 
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -2152,7 +2114,7 @@ async function openInsights() {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 200,
+        max_tokens: 150,
         messages: [{ role: 'user', content: prompt }],
       }),
     });
@@ -2161,16 +2123,24 @@ async function openInsights() {
     const data = await resp.json();
     const text = (data.content?.find(b => b.type === 'text')?.text || '').trim();
 
-    // Afficher en points
-    const points = text.split('\n').map(p => p.trim()).filter(Boolean).slice(0, 3);
-    if (analysisPoints) {
-      analysisPoints.innerHTML = points.map(p =>
-        '<div class="analysis-banner-point">' + p + '</div>'
-      ).join('');
-    }
+    // Parser les corrélations "Brief >> Graphique (XX%)"
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 3);
+    analysisPoints.innerHTML = lines.map(line => {
+      const parts = line.split('>>');
+      if (parts.length === 2) {
+        const brief = parts[0].trim();
+        const graphic = parts[1].trim();
+        return '<div class="corr-point">' +
+          '<span class="corr-brief">' + brief + '</span>' +
+          '<span class="corr-arrow">›</span>' +
+          '<span class="corr-graphic">' + graphic + '</span>' +
+        '</div>';
+      }
+      return '<div class="analysis-banner-loading">' + line + '</div>';
+    }).join('');
 
   } catch(e) {
-    if (analysisPoints) analysisPoints.innerHTML = '<div class="analysis-banner-loading">Analyse indisponible : ' + e.message + '</div>';
+    analysisPoints.innerHTML = '<div class="analysis-banner-loading">Analyse indisponible : ' + e.message + '</div>';
   }
 }
 
