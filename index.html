@@ -2560,8 +2560,19 @@ async function scanPortfolio() {
 
     if (!html || html.length < 300) throw new Error('Aucun proxy n\'a pu récupérer la page. Essaie avec une URL différente ou vérifie que le site est accessible.');
 
-    // Détecter Brand New (underconsideration.com/brandnew)
+    // Détecter le type de site
     const isBrandNew = url.includes('underconsideration.com/brandnew');
+    const isBehance  = url.includes('behance.net');
+    const isJsRendered = html.length < 2000 || (html.match(/<a /gi)||[]).length < 3;
+
+    // Si JS-rendered et pas Brand New ni Behance → suggérer Behance
+    if (isJsRendered && !isBrandNew && !isBehance) {
+      throw new Error(
+        'Ce site charge son contenu en JavaScript — impossible de détecter les liens automatiquement.\n\n' +
+        'Astuce : beaucoup d\'agences publient aussi sur Behance (behance.net). ' +
+        'Essaie de chercher l\'agence sur Behance et colle l\'URL de leur profil ici.'
+      );
+    }
 
     // Extraire base
     const baseUrl = new URL(url);
@@ -2587,15 +2598,27 @@ async function scanPortfolio() {
     let finalLinks;
 
     if (isBrandNew) {
-      // Brand New : les articles ont des URLs comme /brandnew/archives/nom_article.php ou /brandnew/archives/nom_article
+      // Brand New : articles dans /brandnew/archives/
       finalLinks = unique.filter(u => {
         const p = new URL(u).pathname;
-        // Garder uniquement les articles dans /brandnew/archives/ qui ne sont pas des catégories
         return p.includes('/brandnew/archives/') &&
           !p.match(/\/archives\/(industry|category|type|complete|page)\//i) &&
           !p.endsWith('/brandnew/archives') &&
           !p.endsWith('/brandnew/archives/');
       });
+    } else if (isBehance) {
+      // Behance : projets sous /gallery/ ou /featured/
+      finalLinks = unique.filter(u => {
+        const p = new URL(u).pathname;
+        return p.match(/\/gallery\/\d+\//);
+      });
+      // Si pas de /gallery/, chercher les profils projets
+      if (finalLinks.length === 0) {
+        finalLinks = unique.filter(u => {
+          const p = new URL(u).pathname;
+          return p.includes('/gallery/') || p.includes('/projects/');
+        });
+      }
     } else {
       // Chercher d'abord les liens sous le basePath
       let projectLinks = unique.filter(u => {
