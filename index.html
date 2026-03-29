@@ -2545,58 +2545,31 @@ async function scanPortfolio() {
     const isBrandNew = url.includes('underconsideration.com/brandnew');
     const isBehance  = url.includes('behance.net');
 
-    // ── Behance : pagination automatique ──
+    // ── Behance : via Vercel Function serveur ──
     if (isBehance) {
-      setPortfolioStatus('loading', 'Récupération des projets Behance (pagination)…');
+      setPortfolioStatus('loading', 'Récupération des projets Behance…');
 
-      // Extraire le username depuis l'URL
       const behanceUser = new URL(url).pathname.replace(/^\//, '').split('?')[0].split('/')[0];
-      const allGalleryLinks = new Set();
 
-      async function fetchProxy(pageUrl) {
-        const proxies = [
-          () => fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(pageUrl)).then(r => r.ok ? r.text() : Promise.reject()),
-          () => fetch('https://corsproxy.io/?' + encodeURIComponent(pageUrl)).then(r => r.ok ? r.text() : Promise.reject()),
-          () => fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(pageUrl)).then(r => r.ok ? r.text() : Promise.reject()),
-        ];
-        for (const p of proxies) {
-          try { const r = await p(); if (r && r.length > 500) return r; } catch(e) { continue; }
-        }
-        return null;
-      }
+      const r = await fetch('/api/behance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: behanceUser }),
+      });
 
-      // Paginer par offset de 12 en 12 jusqu'à 5 pages max (60 projets)
-      for (let offset = 0; offset <= 48; offset += 12) {
-        const pageUrl = 'https://www.behance.net/' + behanceUser + (offset > 0 ? '?offset=' + offset : '');
-        setPortfolioStatus('loading', 'Behance page ' + (offset/12 + 1) + '/5…');
-        const html = await fetchProxy(pageUrl);
-        if (!html) break;
+      if (!r.ok) throw new Error('Erreur serveur Behance : ' + r.status);
+      const data = await r.json();
+      if (data.error) throw new Error(data.error);
 
-        const links = [...html.matchAll(/href=["']([^"']*\/gallery\/\d+\/[^"']*?)["']/gi)]
-          .map(m => {
-            try {
-              const u = new URL(m[1], 'https://www.behance.net');
-              return u.origin + u.pathname.replace(/\/$/, '');
-            } catch(e) { return null; }
-          })
-          .filter(Boolean);
-
-        const before = allGalleryLinks.size;
-        links.forEach(l => allGalleryLinks.add(l));
-        // Si aucun nouveau lien sur cette page, on arrête
-        if (offset > 0 && allGalleryLinks.size === before) break;
-
-        await new Promise(r => setTimeout(r, 500));
-      }
-
+      const allLinks = data.links || [];
       const existingUrls = new Set(DB.map(l => l.sourceUrl).filter(Boolean).map(u => u.replace(/\/$/, '')));
-      const filtered = [...allGalleryLinks].filter(u => !existingUrls.has(u));
+      const filtered = allLinks.filter(u => !existingUrls.has(u));
 
       if (filtered.length === 0) throw new Error('Aucun projet Behance détecté ou tous déjà importés.');
 
       portfolio.urls = filtered.map(u => {
-        const slug = u.split('/').pop();
-        const name = slug.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        const slug = u.split('/').filter(Boolean).pop();
+        const name = (slug || '').replace(/-\d+$/, '').replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
         return { url: u, name, selected: true, status: 'pending' };
       });
 
