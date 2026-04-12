@@ -1206,12 +1206,99 @@
 
     <div class="sidebar-body">
 
-      <!-- ── MESSAGE ── -->
+      <!-- ── NIVEAU 1 : STRATÉGIE ── -->
+      <div class="brief-section-title">Stratégie</div>
+
+      <!-- Personnalité de marque (Aaker) -->
+      <div class="filter-section">
+        <div class="filter-label">Personnalité de marque</div>
+        <div class="selected-tags" id="personnalite-tags"></div>
+        <div class="select-wrap">
+          <select id="sel-personnalite" class="filter-select" onchange="onMultiSelect('personnalite', this)">
+            <option value="">+ Ajouter</option>
+            <option value="__fam__Sincérité">→ Sincérité (famille)</option>
+            <option>Sincère</option><option>Honnête</option><option>Authentique</option><option>Bienveillant</option><option>Chaleureux</option>
+            <option value="__fam__Excitation">→ Excitation (famille)</option>
+            <option>Audacieux</option><option>Imaginatif</option><option>Dynamique</option><option>Innovant</option><option>Provocateur</option>
+            <option value="__fam__Compétence">→ Compétence (famille)</option>
+            <option>Fiable</option><option>Intelligent</option><option>Précis</option><option>Expert</option><option>Leader</option>
+            <option value="__fam__Sophistication">→ Sophistication (famille)</option>
+            <option>Élégant</option><option>Raffiné</option><option>Exclusif</option><option>Prestigieux</option><option>Intemporel</option>
+            <option value="__fam__Robustesse">→ Robustesse (famille)</option>
+            <option>Solide</option><option>Puissant</option><option>Robuste</option><option>Brut</option><option>Endurant</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Positionnement -->
+      <div class="filter-section">
+        <div class="filter-label">Positionnement</div>
+        <div class="select-wrap">
+          <select id="sel-positionnement" class="filter-select" onchange="onSelectChange()">
+            <option value="">Tous</option>
+            <option>Ultra-luxe</option>
+            <option>Premium</option>
+            <option>Milieu de gamme</option>
+            <option>Grand public</option>
+            <option>Disruptif & Challenger</option>
+            <option>Institutionnel</option>
+            <option>Engagé & Militant</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ── NIVEAU 2 : MESSAGE ── -->
+      <div class="brief-section-divider"></div>
       <div class="brief-section-title">Message</div>
 
-      <!-- Valeurs & intentions -->
+      <!-- Secteur -->
       <div class="filter-section">
-        <div class="filter-label">Valeurs & intentions</div>
+        <div class="filter-label">Secteur</div>
+        <div class="selected-tags" id="industrie-tags"></div>
+        <div class="select-wrap">
+          <select id="sel-industrie" class="filter-select" onchange="onMultiSelect('industrie', this)">
+            <option value="">+ Ajouter</option>
+            <optgroup label="Économie & Finance">
+              <option value="__fam__Économie & Finance">→ Famille complète</option>
+              <option>Finance & Banque</option><option>Assurance</option>
+              <option>Immobilier</option><option>Conseil & Management</option><option>Droit & Juridique</option>
+            </optgroup>
+            <optgroup label="Commerce & Distribution">
+              <option value="__fam__Commerce & Distribution">→ Famille complète</option>
+              <option>Retail & Grande distribution</option><option>Luxe & Prestige</option>
+              <option>Mode & Textile</option><option>Alimentation & Boisson</option><option>Restauration</option>
+            </optgroup>
+            <optgroup label="Tech & Innovation">
+              <option value="__fam__Tech & Innovation">→ Famille complète</option>
+              <option>Technologie & SaaS</option><option>Télécommunications</option>
+              <option>Intelligence artificielle</option><option>Jeux vidéo & Esport</option>
+            </optgroup>
+            <optgroup label="Santé & Sciences">
+              <option value="__fam__Santé & Sciences">→ Famille complète</option>
+              <option>Santé & Médical</option><option>Pharmacie & Biotech</option><option>Bien-être & Beauté</option>
+            </optgroup>
+            <optgroup label="Industrie & Énergie">
+              <option value="__fam__Industrie & Énergie">→ Famille complète</option>
+              <option>Énergie & Utilities</option><option>Industrie & Manufacture</option>
+              <option>Construction & BTP</option><option>Mobilité & Transport</option><option>Aéronautique & Défense</option>
+            </optgroup>
+            <optgroup label="Culture & Sport">
+              <option value="__fam__Culture & Sport">→ Famille complète</option>
+              <option>Culture & Médias</option><option>Sport</option>
+              <option>Tourisme & Hôtellerie</option><option>Éducation & Formation</option>
+            </optgroup>
+            <optgroup label="Institution & Social">
+              <option value="__fam__Institution & Social">→ Famille complète</option>
+              <option>Institutionnel & Public</option><option>ONG & Association</option>
+              <option>Agriculture & Terroir</option><option>Architecture & Design</option>
+            </optgroup>
+          </select>
+        </div>
+      </div>
+
+      <!-- Valeurs -->
+      <div class="filter-section">
+        <div class="filter-label">Valeurs dominantes</div>
         <div class="selected-tags" id="valeurs-tags"></div>
         <div class="select-wrap">
           <select id="sel-valeurs" class="filter-select" onchange="onMultiSelect('valeurs', this)">
@@ -1233,8 +1320,7 @@
             </optgroup>
             <optgroup label="Puissance & Force">
               <option value="__fam__Puissance & Force">→ Famille complète</option>
-              <option>Puissance</option><option>Force</option><option>Domination</option>
-              <option>Robustesse</option><option>Endurance</option>
+              <option>Puissance</option><option>Force</option><option>Robustesse</option><option>Endurance</option>
             </optgroup>
             <optgroup label="Humanité & Proximité">
               <option value="__fam__Humanité & Proximité">→ Famille complète</option>
@@ -1265,115 +1351,40 @@
         </div>
       </div>
 
-      <!-- Émotion visée -->
+      <!-- Objectif de perception -->
       <div class="filter-section">
-        <div class="filter-label">Émotion visée</div>
-        <div class="selected-tags" id="emotion-tags"></div>
+        <div class="filter-label">Objectif de perception</div>
+        <div class="selected-tags" id="perception-tags"></div>
         <div class="select-wrap">
-          <select id="sel-emotion" class="filter-select" onchange="onMultiSelect('emotion', this)">
+          <select id="sel-perception" class="filter-select" onchange="onMultiSelect('perception', this)">
             <option value="">+ Ajouter</option>
-            <option>Confiance immédiate</option>
-            <option>Désir & Envie</option>
-            <option>Respect & Autorité</option>
-            <option>Joie & Énergie</option>
-            <option>Appartenance & Communauté</option>
-            <option>Admiration & Aspiration</option>
-            <option>Sérénité & Sécurité</option>
-            <option>Curiosité & Surprise</option>
-            <option>Nostalgie & Émotion</option>
-            <option>Peur & Urgence</option>
+            <option>Inspirer confiance</option>
+            <option>Générer du désir</option>
+            <option>Imposer l'autorité</option>
+            <option>Créer l'appartenance</option>
+            <option>Exprimer l'énergie</option>
+            <option>Affirmer l'expertise</option>
+            <option>Signaler la différence</option>
+            <option>Rassurer & Sécuriser</option>
+            <option>Séduire & Aspirer</option>
+            <option>Engager & Mobiliser</option>
           </select>
         </div>
       </div>
 
-      <!-- Promesse / objectif -->
-      <div class="filter-section">
-        <div class="filter-label">Promesse de marque</div>
-        <div class="selected-tags" id="promesse-tags"></div>
-        <div class="select-wrap">
-          <select id="sel-promesse" class="filter-select" onchange="onMultiSelect('promesse', this)">
-            <option value="">+ Ajouter</option>
-            <optgroup label="Supériorité">
-              <option>Le plus rapide</option>
-              <option>Le plus puissant</option>
-              <option>Le plus fiable</option>
-              <option>Le plus précis</option>
-              <option>Le meilleur rapport qualité-prix</option>
-            </optgroup>
-            <optgroup label="Différenciation">
-              <option>Le plus innovant</option>
-              <option>L'unique / l'original</option>
-              <option>Le plus humain</option>
-              <option>Le plus responsable</option>
-              <option>Le plus accessible</option>
-            </optgroup>
-            <optgroup label="Appartenance">
-              <option>Marque de spécialistes</option>
-              <option>Marque de communauté</option>
-              <option>Marque de territoire</option>
-              <option>Marque de génération</option>
-            </optgroup>
-          </select>
-        </div>
-      </div>
-
-      <!-- Industrie / secteur -->
-      <div class="filter-section">
-        <div class="filter-label">Secteur</div>
-        <div class="selected-tags" id="industrie-tags"></div>
-        <div class="select-wrap">
-          <select id="sel-industrie" class="filter-select" onchange="onMultiSelect('industrie', this)">
-            <option value="">+ Ajouter</option>
-            <optgroup label="Économie & Finance">
-              <option value="__fam__Économie & Finance">→ Famille complète</option>
-              <option>Finance & Banque</option><option>Assurance</option>
-              <option>Immobilier</option><option>Conseil & Management</option>
-            </optgroup>
-            <optgroup label="Commerce & Distribution">
-              <option value="__fam__Commerce & Distribution">→ Famille complète</option>
-              <option>Retail & Grande distribution</option><option>Luxe & Prestige</option>
-              <option>Mode & Textile</option><option>Alimentation & Boisson</option><option>Restauration</option>
-            </optgroup>
-            <optgroup label="Tech & Innovation">
-              <option value="__fam__Tech & Innovation">→ Famille complète</option>
-              <option>Technologie & SaaS</option><option>Télécommunications</option>
-              <option>Intelligence artificielle</option><option>Jeux vidéo & Esport</option>
-            </optgroup>
-            <optgroup label="Santé & Sciences">
-              <option value="__fam__Santé & Sciences">→ Famille complète</option>
-              <option>Santé & Médical</option><option>Pharmacie & Biotech</option><option>Bien-être & Beauté</option>
-            </optgroup>
-            <optgroup label="Industrie & Énergie">
-              <option value="__fam__Industrie & Énergie">→ Famille complète</option>
-              <option>Énergie & Utilities</option><option>Industrie & Manufacture</option>
-              <option>Construction & BTP</option><option>Mobilité & Transport</option><option>Aéronautique & Défense</option>
-            </optgroup>
-            <optgroup label="Culture & Sport">
-              <option value="__fam__Culture & Sport">→ Famille complète</option>
-              <option>Culture & Médias</option><option>Sport</option>
-              <option>Tourisme & Hôtellerie</option><option>Éducation & Formation</option>
-            </optgroup>
-            <optgroup label="Institution & Social">
-              <option value="__fam__Institution & Social">→ Famille complète</option>
-              <option>Institutionnel & Public</option><option>ONG & Association</option><option>Agriculture & Terroir</option>
-            </optgroup>
-          </select>
-        </div>
-      </div>
-
-      <!-- Séparateur CONTEXTE -->
+      <!-- ── NIVEAU 3 : CONTEXTE ── -->
       <div class="brief-section-divider"></div>
       <div class="brief-section-title brief-section-title--context">Contexte</div>
 
-      <!-- B2B / B2C -->
+      <!-- Audience -->
       <div class="filter-section">
         <div class="filter-label">Audience</div>
         <div class="select-wrap">
           <select id="sel-audience" class="filter-select" onchange="onSelectChange()">
             <option value="">Toutes</option>
-            <option>B2C — Grand public</option>
-            <option>B2C — CSP+</option>
-            <option>B2C — Jeunes 18-30</option>
+            <option>Grand public</option>
+            <option>CSP+</option>
+            <option>18-30 ans</option>
             <option>B2B — Professionnels</option>
             <option>B2B — Grands comptes</option>
             <option>B2B2C — Double cible</option>
@@ -1381,35 +1392,30 @@
         </div>
       </div>
 
-      <!-- Territoire -->
+      <!-- Maturité -->
       <div class="filter-section">
-        <div class="filter-label">Territoire</div>
-        <div class="select-wrap">
-          <select id="sel-territoire" class="filter-select" onchange="onSelectChange()">
-            <option value="">Tous</option>
-            <option>Local & Régional</option>
-            <option>National</option>
-            <option>Européen</option>
-            <option>Anglo-saxon</option>
-            <option>Nordique & Scandinave</option>
-            <option>Méditerranéen</option>
-            <option>Asiatique</option>
-            <option>Latino-américain</option>
-            <option>Global & International</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Ancienneté -->
-      <div class="filter-section">
-        <div class="filter-label">Nature du projet</div>
+        <div class="filter-label">Maturité du projet</div>
         <div class="select-wrap">
           <select id="sel-anciennete" class="filter-select" onchange="onSelectChange()">
-            <option value="">Tous</option>
+            <option value="">Toutes</option>
             <option>Création ex nihilo</option>
             <option>Refonte — marque récente</option>
             <option>Refonte — marque historique</option>
             <option>Évolution douce</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Ambition géographique -->
+      <div class="filter-section">
+        <div class="filter-label">Ambition géographique</div>
+        <div class="select-wrap">
+          <select id="sel-territoire" class="filter-select" onchange="onSelectChange()">
+            <option value="">Toutes</option>
+            <option>Local & Régional</option>
+            <option>National</option>
+            <option>Européen</option>
+            <option>Global & International</option>
           </select>
         </div>
       </div>
@@ -1777,10 +1783,10 @@ async function deleteFromSupabase(id) {
 
 // ── État de l'application ──
 const state = {
-  selectedIndustrie: [],  // [{label, values}]
-  selectedValeurs:   [],  // [{label, values}]
-  selectedEmotion:   [],  // [{label, values}]
-  selectedPromesse:  [],  // [{label, values}]
+  selectedIndustrie:    [],
+  selectedValeurs:      [],
+  selectedPersonnalite: [],
+  selectedPerception:   [],
   selectedLetter: null,
   results: [],
   activeCard: null,
@@ -1822,27 +1828,33 @@ loadLogosFromSupabase();
 // ── Map des familles ──
 const FAMILLE_MAP = {
   industrie: {
-    'Économie & Finance':      ['Finance & Banque','Assurance','Immobilier','Conseil & Management'],
+    'Économie & Finance':      ['Finance & Banque','Assurance','Immobilier','Conseil & Management','Droit & Juridique'],
     'Commerce & Distribution': ['Retail & Grande distribution','Luxe & Prestige','Mode & Textile','Alimentation & Boisson','Restauration'],
     'Tech & Innovation':       ['Technologie & SaaS','Télécommunications','Intelligence artificielle','Jeux vidéo & Esport'],
     'Santé & Sciences':        ['Santé & Médical','Pharmacie & Biotech','Bien-être & Beauté'],
     'Industrie & Énergie':     ['Énergie & Utilities','Industrie & Manufacture','Construction & BTP','Mobilité & Transport','Aéronautique & Défense'],
     'Culture & Sport':         ['Culture & Médias','Sport','Tourisme & Hôtellerie','Éducation & Formation'],
-    'Institution & Social':    ['Institutionnel & Public','ONG & Association','Agriculture & Terroir'],
+    'Institution & Social':    ['Institutionnel & Public','ONG & Association','Agriculture & Terroir','Architecture & Design'],
   },
   valeurs: {
     'Confiance & Solidité':  ['Confiance','Solidité','Fiabilité','Sécurité','Stabilité','Transparence'],
     'Excellence & Prestige': ['Prestige','Excellence','Élégance','Raffinement','Exclusivité'],
     'Énergie & Mouvement':   ['Dynamisme','Innovation','Audace','Performance','Conquête','Rapidité'],
-    'Puissance & Force':     ['Puissance','Force','Domination','Robustesse','Endurance'],
+    'Puissance & Force':     ['Puissance','Force','Robustesse','Endurance'],
     'Humanité & Proximité':  ['Humanité','Bienveillance','Accessibilité','Proximité','Authenticité','Chaleur'],
     'Héritage & Tradition':  ['Tradition','Héritage','Savoir-faire','Artisanat','Pérennité'],
     'Engagement & Nature':   ['Durabilité','Responsabilité','Engagement','Nature','Écologie'],
     'Simplicité & Clarté':   ['Minimalisme','Clarté','Efficacité','Sobriété','Précision'],
     'Liberté & Aventure':    ['Liberté','Aventure','Exploration','Indépendance','Dépassement de soi'],
   },
-  emotion: {},   // pas de familles pour l'émotion
-  promesse: {},  // pas de familles pour la promesse
+  personnalite: {
+    'Sincérité':      ['Sincère','Honnête','Authentique','Bienveillant','Chaleureux'],
+    'Excitation':     ['Audacieux','Imaginatif','Dynamique','Innovant','Provocateur'],
+    'Compétence':     ['Fiable','Intelligent','Précis','Expert','Leader'],
+    'Sophistication': ['Élégant','Raffiné','Exclusif','Prestigieux','Intemporel'],
+    'Robustesse':     ['Solide','Puissant','Robuste','Brut','Endurant'],
+  },
+  perception: {},
 };
 
 // ── Contrôles de recherche ──
@@ -1863,17 +1875,17 @@ function onMultiSelect(group, select) {
   }
 
   const stateKey = {
-    industrie: 'selectedIndustrie',
-    valeurs:   'selectedValeurs',
-    emotion:   'selectedEmotion',
-    promesse:  'selectedPromesse',
+    industrie:    'selectedIndustrie',
+    valeurs:      'selectedValeurs',
+    personnalite: 'selectedPersonnalite',
+    perception:   'selectedPerception',
   }[group];
 
   const renderKey = {
-    industrie: renderIndustrieTags,
-    valeurs:   renderValeurTags,
-    emotion:   renderEmotionTags,
-    promesse:  renderPromesseTags,
+    industrie:    renderIndustrieTags,
+    valeurs:      renderValeurTags,
+    personnalite: renderPersonnaliteTags,
+    perception:   renderPerceptionTags,
   }[group];
 
   if (stateKey) {
@@ -1887,16 +1899,16 @@ function onMultiSelect(group, select) {
 }
 
 function removeTag(group, label) {
-  const stateKey = { industrie: 'selectedIndustrie', valeurs: 'selectedValeurs', emotion: 'selectedEmotion', promesse: 'selectedPromesse' }[group];
-  const renderKey = { industrie: renderIndustrieTags, valeurs: renderValeurTags, emotion: renderEmotionTags, promesse: renderPromesseTags }[group];
+  const stateKey = { industrie: 'selectedIndustrie', valeurs: 'selectedValeurs', personnalite: 'selectedPersonnalite', perception: 'selectedPerception' }[group];
+  const renderKey = { industrie: renderIndustrieTags, valeurs: renderValeurTags, personnalite: renderPersonnaliteTags, perception: renderPerceptionTags }[group];
   if (stateKey) { state[stateKey] = state[stateKey].filter(v => v.label !== label); renderKey && renderKey(); }
   updateSummary();
 }
 
-function removeIndustrie(label) { removeTag('industrie', label); }
-function removeValeur(label)    { removeTag('valeurs', label); }
-function removeEmotion(label)   { removeTag('emotion', label); }
-function removePromesse(label)  { removeTag('promesse', label); }
+function removeIndustrie(label)    { removeTag('industrie', label); }
+function removeValeur(label)       { removeTag('valeurs', label); }
+function removePersonnalite(label) { removeTag('personnalite', label); }
+function removePerception(label)   { removeTag('perception', label); }
 
 function renderTagGroup(elId, items, removeFn) {
   const el = document.getElementById(elId);
@@ -1905,10 +1917,10 @@ function renderTagGroup(elId, items, removeFn) {
     '<span class="sel-tag">' + v.label + '<span class="sel-tag-x" onclick="' + removeFn + '(\'' + v.label.replace(/'/g,"\\'") + '\')">×</span></span>'
   ).join('');
 }
-function renderIndustrieTags() { renderTagGroup('industrie-tags', state.selectedIndustrie, 'removeIndustrie'); }
-function renderValeurTags()    { renderTagGroup('valeurs-tags',   state.selectedValeurs,   'removeValeur'); }
-function renderEmotionTags()   { renderTagGroup('emotion-tags',   state.selectedEmotion,   'removeEmotion'); }
-function renderPromesseTags()  { renderTagGroup('promesse-tags',  state.selectedPromesse,  'removePromesse'); }
+function renderIndustrieTags()    { renderTagGroup('industrie-tags',    state.selectedIndustrie,    'removeIndustrie'); }
+function renderValeurTags()       { renderTagGroup('valeurs-tags',       state.selectedValeurs,       'removeValeur'); }
+function renderPersonnaliteTags() { renderTagGroup('personnalite-tags', state.selectedPersonnalite, 'removePersonnalite'); }
+function renderPerceptionTags()   { renderTagGroup('perception-tags',   state.selectedPerception,   'removePerception'); }
 
 function toggleLetter(btn) {
   const letter = btn.textContent;
@@ -1925,11 +1937,13 @@ function updateSummary() {
   const audience   = document.getElementById('sel-audience')?.value || '';
   const territoire = document.getElementById('sel-territoire')?.value || '';
   const anciennete = document.getElementById('sel-anciennete')?.value || '';
+  const positionnement = document.getElementById('sel-positionnement')?.value || '';
   const parts = [
+    ...state.selectedPersonnalite.map(v => v.label),
+    positionnement,
     ...state.selectedIndustrie.map(v => v.label),
     ...state.selectedValeurs.map(v => v.label),
-    ...state.selectedEmotion.map(v => v.label),
-    ...state.selectedPromesse.map(v => v.label),
+    ...state.selectedPerception.map(v => v.label),
     audience, territoire, anciennete,
     state.selectedLetter ? 'Lettre ' + state.selectedLetter : ''
   ].filter(Boolean);
@@ -1941,16 +1955,16 @@ function updateSummary() {
 }
 
 function resetSearch() {
-  ['sel-industrie','sel-valeurs','sel-emotion','sel-promesse',
-   'sel-audience','sel-territoire','sel-anciennete'].forEach(id => {
+  ['sel-industrie','sel-valeurs','sel-personnalite','sel-perception',
+   'sel-positionnement','sel-audience','sel-territoire','sel-anciennete'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
-  state.selectedIndustrie = [];
-  state.selectedValeurs   = [];
-  state.selectedEmotion   = [];
-  state.selectedPromesse  = [];
-  state.selectedLetter    = null;
-  renderIndustrieTags(); renderValeurTags(); renderEmotionTags(); renderPromesseTags();
+  state.selectedIndustrie    = [];
+  state.selectedValeurs      = [];
+  state.selectedPersonnalite = [];
+  state.selectedPerception   = [];
+  state.selectedLetter       = null;
+  renderIndustrieTags(); renderValeurTags(); renderPersonnaliteTags(); renderPerceptionTags();
   document.querySelectorAll('.letter-btn').forEach(b => b.classList.remove('on'));
   document.getElementById('brief-summary').classList.remove('visible');
   showAllProjects();
@@ -2017,7 +2031,8 @@ async function runSearch() {
   const audience   = document.getElementById('sel-audience')?.value || '';
   const territoire = document.getElementById('sel-territoire')?.value || '';
   const anciennete = document.getElementById('sel-anciennete')?.value || '';
-  const hasFilters = state.selectedIndustrie.length || state.selectedValeurs.length || state.selectedEmotion.length || state.selectedPromesse.length || audience || territoire || anciennete || state.selectedLetter;
+  const positionnement = document.getElementById('sel-positionnement')?.value || '';
+  const hasFilters = state.selectedPersonnalite.length || state.selectedIndustrie.length || state.selectedValeurs.length || state.selectedPerception.length || positionnement || audience || territoire || anciennete || state.selectedLetter;
 
   document.getElementById('state-empty').style.display = 'none';
   document.getElementById('logo-grid').classList.remove('visible');
@@ -2035,10 +2050,11 @@ async function runSearch() {
 
   // Construire le texte de recherche sémantique — MESSAGE en priorité, CONTEXTE en nuance
   const queryParts = [
+    ...state.selectedPersonnalite.flatMap(v => v.values),
+    positionnement,
     ...state.selectedIndustrie.flatMap(v => v.values),
     ...state.selectedValeurs.flatMap(v => v.values),
-    ...state.selectedEmotion.flatMap(v => v.values),
-    ...state.selectedPromesse.flatMap(v => v.values),
+    ...state.selectedPerception.flatMap(v => v.values),
     audience, territoire, anciennete,
   ].filter(Boolean);
   const queryText = queryParts.join(', ');
@@ -2107,17 +2123,19 @@ function renderResultsBar() {
   const audience   = document.getElementById('sel-audience')?.value || '';
   const territoire = document.getElementById('sel-territoire')?.value || '';
   const anciennete = document.getElementById('sel-anciennete')?.value || '';
-  const isFiltered = state.selectedIndustrie.length || state.selectedValeurs.length || state.selectedEmotion.length || state.selectedPromesse.length || audience || territoire || anciennete || state.selectedLetter;
+  const positionnement = document.getElementById('sel-positionnement')?.value || '';
+  const isFiltered = state.selectedPersonnalite.length || state.selectedIndustrie.length || state.selectedValeurs.length || state.selectedPerception.length || positionnement || audience || territoire || anciennete || state.selectedLetter;
 
   const banner = document.getElementById('analysis-banner');
   document.getElementById('analysis-count').textContent = state.results.length;
   document.getElementById('analysis-sub').textContent = isFiltered ? 'logos similaires' : 'logos dans la base';
 
   const tags = [
+    ...state.selectedPersonnalite.map(v => '<span class="rtag valeur">' + v.label + '</span>'),
+    positionnement ? '<span class="rtag brief">' + positionnement + '</span>' : '',
     ...state.selectedIndustrie.map(v => '<span class="rtag brief">' + v.label + '</span>'),
     ...state.selectedValeurs.map(v => '<span class="rtag valeur">' + v.label + '</span>'),
-    ...state.selectedEmotion.map(v => '<span class="rtag valeur">' + v.label + '</span>'),
-    ...state.selectedPromesse.map(v => '<span class="rtag valeur">' + v.label + '</span>'),
+    ...state.selectedPerception.map(v => '<span class="rtag valeur">' + v.label + '</span>'),
     audience   ? '<span class="rtag graphique">' + audience   + '</span>' : '',
     territoire ? '<span class="rtag graphique">' + territoire + '</span>' : '',
     anciennete ? '<span class="rtag graphique">' + anciennete + '</span>' : '',
@@ -2172,19 +2190,35 @@ const DIMENSION_LABELS = {
 
 // Catégories de brief — couleurs froides (bleu/violet)
 const BRIEF_DIM_LABELS = {
-  'Secteur':   { label: 'Secteur',   color: '#2563eb', bg: 'rgba(37,99,235,0.12)'   },
-  'Valeur':    { label: 'Valeur',    color: '#7c3aed', bg: 'rgba(124,58,237,0.12)'  },
-  'Émotion':   { label: 'Émotion',   color: '#0891b2', bg: 'rgba(8,145,178,0.12)'   },
-  'Promesse':  { label: 'Promesse',  color: '#4f46e5', bg: 'rgba(79,70,229,0.12)'   },
-  'Lettre':    { label: 'Lettre',    color: 'var(--ink-3)', bg: 'var(--paper-2)'    },
+  'Personnalité':  { label: 'Personnalité',  color: '#4f46e5', bg: 'rgba(79,70,229,0.12)'  },
+  'Positionnement':{ label: 'Positionnement',color: '#7c3aed', bg: 'rgba(124,58,237,0.12)' },
+  'Secteur':       { label: 'Secteur',       color: '#2563eb', bg: 'rgba(37,99,235,0.12)'  },
+  'Valeur':        { label: 'Valeur',        color: '#0284c7', bg: 'rgba(2,132,199,0.12)'  },
+  'Perception':    { label: 'Perception',    color: '#0891b2', bg: 'rgba(8,145,178,0.12)'  },
+  'Maturité':      { label: 'Maturité',      color: '#6d28d9', bg: 'rgba(109,40,217,0.12)' },
+  'Audience':      { label: 'Audience',      color: '#1d4ed8', bg: 'rgba(29,78,216,0.12)'  },
+  'Lettre':        { label: 'Lettre',        color: 'var(--ink-3)', bg: 'var(--paper-2)'   },
 };
 
 function guessBriefDimension(tag) {
   const t = tag.toLowerCase();
   if (t.startsWith('lettre')) return 'Lettre';
-  if (['confiance immédiate','désir','envie','respect','autorité','joie','énergie','sérénité','sécurité','curiosité','surprise','nostalgie','admiration','aspiration','appartenance','communauté'].some(k => t.includes(k))) return 'Émotion';
-  if (['le plus','l\'unique','marque de','le meilleur'].some(k => t.includes(k))) return 'Promesse';
-  if (['finance','banque','sport','santé','tech','luxe','mode','retail','culture','média','énergie','industrie','institutionnel','ong','agriculture','restauration','immobilier','assurance','pharma','bien-être','beauté','tourisme','hôtellerie','éducation','jeux','esport','aéronautique','défense','construction','btp','mobilité','transport','télécommunications','intelligence artificielle','conseil','management'].some(k => t.includes(k))) return 'Secteur';
+  // Personnalité (Aaker)
+  if (['sincère','honnête','authentique','bienveillant','chaleureux','sincérité',
+       'audacieux','imaginatif','dynamique','innovant','provocateur','excitation',
+       'fiable','intelligent','précis','expert','leader','compétence',
+       'élégant','raffiné','exclusif','prestigieux','intemporel','sophistication',
+       'solide','puissant','robuste','brut','endurant','robustesse'].some(k => t.includes(k))) return 'Personnalité';
+  // Positionnement
+  if (['ultra-luxe','premium','milieu de gamme','grand public','disruptif','challenger','institutionnel','engagé','militant'].some(k => t.includes(k))) return 'Positionnement';
+  // Objectif de perception
+  if (['inspirer','générer','imposer','créer l\'appartenance','exprimer','affirmer','signaler','rassurer','séduire','engager','mobiliser'].some(k => t.includes(k))) return 'Perception';
+  // Maturité
+  if (['création ex nihilo','refonte','évolution douce','marque récente','marque historique'].some(k => t.includes(k))) return 'Maturité';
+  // Audience
+  if (['grand public','csp+','18-30','b2b','b2c','b2b2c','professionnels','grands comptes'].some(k => t.includes(k))) return 'Audience';
+  // Secteur
+  if (['finance','banque','sport','santé','tech','luxe','mode','retail','culture','média','énergie','industrie','institutionnel','ong','agriculture','restauration','immobilier','assurance','pharma','bien-être','beauté','tourisme','hôtellerie','éducation','jeux','esport','aéronautique','défense','construction','btp','mobilité','transport','télécommunications','intelligence artificielle','conseil','management','droit','juridique','architecture','design'].some(k => t.includes(k))) return 'Secteur';
   return 'Valeur';
 }
 
@@ -2320,11 +2354,13 @@ async function openInsights() {
   const audience   = document.getElementById('sel-audience')?.value || '';
   const territoire = document.getElementById('sel-territoire')?.value || '';
   const anciennete = document.getElementById('sel-anciennete')?.value || '';
+  const positionnement = document.getElementById('sel-positionnement')?.value || '';
   const briefLabels = [
+    ...state.selectedPersonnalite.map(v => v.label),
+    positionnement,
     ...state.selectedIndustrie.map(v => v.label),
     ...state.selectedValeurs.map(v => v.label),
-    ...state.selectedEmotion.map(v => v.label),
-    ...state.selectedPromesse.map(v => v.label),
+    ...state.selectedPerception.map(v => v.label),
     audience, territoire, anciennete,
   ].filter(Boolean);
   const briefDesc = briefLabels.join(', ');
@@ -2420,7 +2456,8 @@ function renderGrid() {
   const audience   = document.getElementById('sel-audience')?.value || '';
   const territoire = document.getElementById('sel-territoire')?.value || '';
   const anciennete = document.getElementById('sel-anciennete')?.value || '';
-  const hasFilters     = state.selectedIndustrie.length || state.selectedValeurs.length || state.selectedEmotion.length || state.selectedPromesse.length || audience || territoire || anciennete || state.selectedLetter;
+  const positionnement = document.getElementById('sel-positionnement')?.value || '';
+  const hasFilters     = state.selectedPersonnalite.length || state.selectedIndustrie.length || state.selectedValeurs.length || state.selectedPerception.length || positionnement || audience || territoire || anciennete || state.selectedLetter;
   const showDelete     = !hasFilters; // bouton suppr uniquement en vue "tous les projets"
 
   state.results.forEach((logo, i) => {
@@ -3354,7 +3391,7 @@ SYMBOLISME: sois TRÈS précis — pas "Animaux" mais "Taureau"/"Aigle"/"Lion". 
 TENDANCE LOGOLOUNGE: si applicable parmi Monoline(2008)/Negative space(2015)/Flat design(2013)/Inflation 3D(2023)/Nova Star(2024)/Sharps(2025)/etc. Sinon null.
 
 JSON:
-{"nom":"...","agence":"...","annee":2024,"image_candidates":["url1","url2","url3"],"brief":{"secteur":"valeur exacte","valeurs":["val1","val2"],"emotion":"valeur exacte","promesse":"valeur exacte"},"graphique":{"structure":"valeur exacte","forme":["val"],"technique":["val"],"couleur":["val"],"typographie":"valeur exacte","registre":["val"],"symbolisme":["val"]},"tendance_logolounge":null,"description":"..."}`
+{"nom":"...","agence":"...","annee":2024,"image_candidates":["url1","url2","url3"],"brief":{"personnalite":"Sincérité|Excitation|Compétence|Sophistication|Robustesse","positionnement":"valeur exacte","secteur":"valeur exacte","valeurs":["val1","val2"],"perception":"valeur exacte","maturite":"valeur exacte","audience":"valeur exacte"},"graphique":{"structure":"valeur exacte","forme":["val"],"technique":["val"],"couleur":["val"],"typographie":"valeur exacte","registre":["val"],"symbolisme":["val"]},"tendance_logolounge":null,"description":"..."}`
             }]
           }),
         });
@@ -3758,13 +3795,24 @@ Images: ${imgUrls.slice(0,12).join(', ')}
 
 VOCABULAIRE CONTRÔLÉ — utilise UNIQUEMENT ces valeurs exactes:
 
-SECTEUR (1 seul): Finance & Banque | Assurance | Immobilier | Conseil & Management | Retail & Grande distribution | Luxe & Prestige | Mode & Textile | Alimentation & Boisson | Restauration | Technologie & SaaS | Télécommunications | Intelligence artificielle | Jeux vidéo & Esport | Santé & Médical | Pharmacie & Biotech | Bien-être & Beauté | Énergie & Utilities | Industrie & Manufacture | Construction & BTP | Mobilité & Transport | Aéronautique & Défense | Culture & Médias | Sport | Tourisme & Hôtellerie | Éducation & Formation | Institutionnel & Public | ONG & Association | Agriculture & Terroir | Droit & Juridique | Architecture & Design
+PERSONNALITÉ DE MARQUE — modèle Aaker (1 dimension principale):
+Sincérité (sincère, honnête, authentique, bienveillant, chaleureux) |
+Excitation (audacieux, imaginatif, dynamique, innovant, provocateur) |
+Compétence (fiable, intelligent, précis, expert, leader) |
+Sophistication (élégant, raffiné, exclusif, prestigieux, intemporel) |
+Robustesse (solide, puissant, robuste, brut, endurant)
 
-VALEURS (2-4): Confiance | Solidité | Fiabilité | Sécurité | Stabilité | Transparence | Prestige | Excellence | Élégance | Raffinement | Exclusivité | Dynamisme | Innovation | Audace | Performance | Conquête | Rapidité | Puissance | Force | Robustesse | Endurance | Humanité | Bienveillance | Accessibilité | Proximité | Authenticité | Chaleur | Tradition | Héritage | Savoir-faire | Artisanat | Pérennité | Durabilité | Responsabilité | Engagement | Nature | Écologie | Minimalisme | Clarté | Efficacité | Sobriété | Liberté | Aventure | Exploration
+POSITIONNEMENT (1): Ultra-luxe | Premium | Milieu de gamme | Grand public | Disruptif & Challenger | Institutionnel | Engagé & Militant
 
-ÉMOTION (1): Confiance immédiate | Désir & Envie | Respect & Autorité | Joie & Énergie | Appartenance & Communauté | Admiration & Aspiration | Sérénité & Sécurité | Curiosité & Surprise | Nostalgie & Émotion
+SECTEUR (1): Finance & Banque | Assurance | Immobilier | Conseil & Management | Droit & Juridique | Retail & Grande distribution | Luxe & Prestige | Mode & Textile | Alimentation & Boisson | Restauration | Technologie & SaaS | Télécommunications | Intelligence artificielle | Jeux vidéo & Esport | Santé & Médical | Pharmacie & Biotech | Bien-être & Beauté | Énergie & Utilities | Industrie & Manufacture | Construction & BTP | Mobilité & Transport | Aéronautique & Défense | Culture & Médias | Sport | Tourisme & Hôtellerie | Éducation & Formation | Institutionnel & Public | ONG & Association | Agriculture & Terroir | Architecture & Design
 
-PROMESSE (1): Le plus rapide | Le plus puissant | Le plus fiable | Le plus précis | Le meilleur rapport qualité-prix | Le plus innovant | L'unique / l'original | Le plus humain | Le plus responsable | Le plus accessible | Marque de spécialistes | Marque de communauté | Marque de territoire | Marque de génération
+VALEURS (2-3): Confiance | Solidité | Fiabilité | Sécurité | Stabilité | Transparence | Prestige | Excellence | Élégance | Raffinement | Exclusivité | Dynamisme | Innovation | Audace | Performance | Conquête | Rapidité | Puissance | Force | Robustesse | Endurance | Humanité | Bienveillance | Accessibilité | Proximité | Authenticité | Chaleur | Tradition | Héritage | Savoir-faire | Artisanat | Pérennité | Durabilité | Responsabilité | Engagement | Nature | Écologie | Minimalisme | Clarté | Efficacité | Sobriété | Liberté | Aventure | Exploration
+
+OBJECTIF DE PERCEPTION (1): Inspirer confiance | Générer du désir | Imposer l'autorité | Créer l'appartenance | Exprimer l'énergie | Affirmer l'expertise | Signaler la différence | Rassurer & Sécuriser | Séduire & Aspirer | Engager & Mobiliser
+
+MATURITÉ (1): Création ex nihilo | Refonte — marque récente | Refonte — marque historique | Évolution douce
+
+AUDIENCE (1): Grand public | CSP+ | 18-30 ans | B2B — Professionnels | B2B — Grands comptes | B2B2C — Double cible
 
 STRUCTURE (1): Logotype pur | Logotype + symbole | Logo-symbole fusionné | Symbole seul | Monogramme | Emblème
 FORME (1-3): Cercle | Carré | Triangle | Polygone | Spirale | Forme organique | Lettre stylisée | Silhouette | Croix | Ellipse
@@ -3776,7 +3824,7 @@ SYMBOLISME: TRÈS précis — "Taureau" pas "Animaux", "Flamme" pas "Nature". Si
 TENDANCE: parmi Monoline(2008)/Negative space(2015)/Flat design(2013)/Inflation 3D(2023)/Nova Star(2024)/Sharps(2025) ou null
 
 JSON:
-{"nom_projet":"...","client":"...","agence":"...","annee":2024,"image_candidates":["url1","url2","url3","url4","url5","url6","url7","url8"],"lettre_initiale":null,"brief":{"secteur":"valeur exacte","valeurs":["val1","val2"],"emotion":"valeur exacte","promesse":"valeur exacte"},"graphique":{"structure":"valeur exacte","forme":["val"],"technique":["val"],"couleur":["val"],"typographie":"valeur exacte","registre":["val"],"symbolisme":["val"]},"tendance_logolounge":null,"description":"..."}`;
+{"nom_projet":"...","client":"...","agence":"...","annee":2024,"image_candidates":["url1","url2","url3","url4","url5","url6","url7","url8"],"lettre_initiale":null,"brief":{"personnalite":"Sincérité|Excitation|Compétence|Sophistication|Robustesse","positionnement":"valeur exacte","secteur":"valeur exacte","valeurs":["val1","val2"],"perception":"valeur exacte","maturite":"valeur exacte","audience":"valeur exacte"},"graphique":{"structure":"valeur exacte","forme":["val"],"technique":["val"],"couleur":["val"],"typographie":"valeur exacte","registre":["val"],"symbolisme":["val"]},"tendance_logolounge":null,"description":"..."}`;
 
 
     // Appel Claude avec retry sur overload
@@ -3885,13 +3933,14 @@ JSON:
 
     const b = ai.brief || {};
     const briefAttrs = [
+      b.personnalite,
+      b.positionnement,
       b.secteur,
       ...(Array.isArray(b.valeurs) ? b.valeurs : [b.valeurs]),
-      b.emotion,
-      b.promesse,
+      b.perception,
+      b.maturite,
+      b.audience,
       lettreInitiale ? 'Lettre initiale : ' + lettreInitiale : null,
-      // Rétrocompat ancien format
-      b.industrie, ...(Array.isArray(b.valeurs) ? [] : []), b.positionnement,
     ].flat().filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
 
     // Extraire tous les attributs graphiques par catégorie (nouvelle taxonomie 8 dimensions)
