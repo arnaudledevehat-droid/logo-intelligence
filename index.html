@@ -4121,7 +4121,7 @@ async function clearDatabase() {
       headers: SUPA_HEADERS,
     });
     if (!r.ok) throw new Error('Erreur Supabase ' + r.status);
-    DB = [];
+    DB.splice(0, DB.length);
     imp.projects = [];
     updateHeaderCount();
     renderSourceList();
