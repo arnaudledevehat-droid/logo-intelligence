@@ -2237,21 +2237,35 @@ async function openInsights() {
   }
 
   try {
+    // Grouper les attributs par dimension pour un meilleur contexte
+    const structureAttrs = topAttrs.filter(a => ['Logotype pur','Logotype + symbole','Logo-symbole fusionné','Symbole seul','Monogramme','Emblème'].includes(a.attr));
+    const techniqueAttrs = topAttrs.filter(a => a.category === 'Technique');
+    const symbolismeAttrs = topAttrs.filter(a => a.category === 'Symbolisme');
+    const couleurAttrs = topAttrs.filter(a => a.category === 'Couleur');
+    const tendanceAttrs = topAttrs.filter(a => a.attr.startsWith('◎'));
+
+    const statsText = topAttrs.map(a => a.attr + ' (' + a.pct + '%)').join(', ');
+    const tendanceText = tendanceAttrs.length ? '\nTendances LogoLounge détectées : ' + tendanceAttrs.map(a => a.attr + ' (' + a.pct + '%)').join(', ') : '';
+
     const prompt =
-      'Tu es directeur artistique senior. Analyse les corrélations entre un brief et les solutions graphiques observées, en cherchant aussi les patterns symboliques et métaphoriques.\n\n' +
+      'Tu es directeur artistique senior spécialisé en identité visuelle.\n\n' +
       'Brief : ' + briefDesc + '\n' +
-      'Attributs graphiques observés sur les ' + n + ' projets similaires : ' + statsText + '\n\n' +
-      'Génère exactement 3 corrélations. Pour chaque corrélation :\n' +
-      '1. Identifie la valeur du brief qui explique la solution graphique\n' +
-      '2. Si plusieurs attributs forment une métaphore commune (ex: taureau + lion + aigle = puissance animale), regroupe-les en une seule corrélation avec le nom de la métaphore\n' +
-      '3. Si un seul symbole domine à plus de 60%, cite-le spécifiquement en plus de la catégorie\n\n' +
-      'Format strict (une ligne par corrélation) :\n' +
-      '[Valeur du brief] >> [Pattern graphique ou métaphore] (XX%)\n\n' +
+      'Attributs graphiques observés sur ' + n + ' projets similaires :\n' +
+      '- Structure : ' + (structureAttrs.map(a => a.attr + ' (' + a.pct + '%)').join(', ') || '—') + '\n' +
+      '- Techniques : ' + (techniqueAttrs.map(a => a.attr + ' (' + a.pct + '%)').join(', ') || '—') + '\n' +
+      '- Symbolisme : ' + (symbolismeAttrs.map(a => a.attr + ' (' + a.pct + '%)').join(', ') || '—') + '\n' +
+      '- Couleur : ' + (couleurAttrs.map(a => a.attr + ' (' + a.pct + '%)').join(', ') || '—') + '\n' +
+      tendanceText + '\n\n' +
+      'Génère exactement 3 corrélations brief → solution graphique.\n' +
+      'Pour chaque corrélation, relie une intention du brief (valeur, émotion, promesse) à un pattern graphique observé.\n' +
+      'Si plusieurs attributs forment une métaphore (ex: taureau+aigle+lion = puissance animale), regroupe-les.\n' +
+      'Si une tendance LogoLounge est présente, mentionne-la dans la corrélation pertinente.\n\n' +
+      'Format strict — 3 lignes uniquement :\n' +
+      '[Intention du brief] >> [Solution graphique] (XX%)\n\n' +
       'Exemples :\n' +
-      'Solidité >> Métaphore animale forte — taureau (80%)\n' +
-      'Confiance >> Formes géométriques closes (73%)\n' +
-      'Innovation >> Typographie sans-serif bold + diagonal (60%)\n\n' +
-      '3 lignes uniquement, rien d\'autre.';
+      'Puissance >> Métaphore animale forte — taureau + aigle (80%)\n' +
+      'Innovation >> Logo-symbole fusionné + Espace négatif (73%)\n' +
+      'Héritage >> Emblème + Sans-serif custom + Couleur froide (65%)';
 
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -2263,7 +2277,7 @@ async function openInsights() {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 150,
+        max_tokens: 200,
         messages: [{ role: 'user', content: prompt }],
       }),
     });
@@ -3211,10 +3225,38 @@ async function startPortfolioImport() {
           headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
           body: JSON.stringify({
             model: 'claude-haiku-4-5-20251001',
-            max_tokens: 600,
+            max_tokens: 900,
             messages: [{ role: 'user', content:
-              'Analyse ce projet de logo. Réponds UNIQUEMENT en JSON:\n{"nom":"...","agence":"...","annee":2020,"image_candidates":["url1","url2","url3","url4","url5"],"brief":{"industrie":"...","valeurs":["...","..."],"positionnement":"..."},"graphique":{"forme":["..."],"structure":["..."],"symetrie":["..."],"couleur":["..."],"typographie":["..."],"texte_symbole":["..."],"style":["..."],"symbolisme":["..."]},"description":"..."}\n\nURL: ' + item.url + '\nTexte: ' + pageText.slice(0,1000) + '\nImages disponibles:\n' + imgUrls.join('\n') +
-              '\n\nPour "symbolisme" sois très précis : pas "Animaux" mais "Taureau", "Aigle", "Lion". Pas "Nature" mais "Vague", "Flamme", "Feuille", "Montagne". Capture chaque élément symbolique spécifique visible ou déductible du logo.'
+`Analyse ce projet de logo et réponds UNIQUEMENT en JSON valide, sans texte avant ou après.
+
+URL: ${item.url}
+Texte de la page: ${pageText.slice(0,1000)}
+Images disponibles: ${imgUrls.slice(0,8).join(', ')}
+
+JSON attendu (respecte EXACTEMENT cette structure):
+{
+  "nom": "Nom du client/marque",
+  "agence": "Nom de l'agence de design",
+  "annee": 2024,
+  "image_candidates": ["url1","url2","url3"],
+  "brief": {
+    "secteur": "ex: Finance & Banque / Sport / Santé & Médical / Technologie / Luxe...",
+    "valeurs": ["ex: Confiance","Dynamisme","Excellence","Innovation","Humanité"],
+    "emotion": "ex: Confiance immédiate / Désir & Envie / Respect & Autorité / Joie & Énergie",
+    "promesse": "ex: Le plus fiable / Le plus innovant / Marque de spécialistes"
+  },
+  "graphique": {
+    "structure": "UNE SEULE valeur parmi: Logotype pur / Logotype + symbole / Logo-symbole fusionné / Symbole seul / Monogramme / Emblème",
+    "forme": ["ex: Cercle / Carré / Triangle / Polygone / Spirale / Forme organique / Lettre stylisée / Silhouette"],
+    "technique": ["ex: Espace négatif / Rayures / Modulaire / Miroir-symétrie / Superposition / Découpe / Plein-solid / Contour-outline / Dégradé / Monoline / Wireframe / Faceting / Concentric"],
+    "couleur": ["ex: Monochrome / Bichromie / Polychrome / Dégradé / Couleur chaude / Couleur froide / Neutre-terre / Noir dominant / Blanc dominant"],
+    "typographie": "UNE valeur parmi: Serif / Sans-serif / Script-cursive / Display-décorative / Personnalisée-custom / Aucune",
+    "registre": ["ex: Minimaliste / Géométrique strict / Illustratif / Organique / Brutaliste / Classique-heritage / Futuriste / Retro / 3D"],
+    "symbolisme": ["TRÈS PRÉCIS: pas Animaux mais Taureau/Aigle/Lion. Pas Nature mais Vague/Flamme/Feuille/Montagne. Humain/Corps, Objet/Artefact, Territoire/Géographie, Mouvement/Vitesse, Abstrait"]
+  },
+  "tendance_logolounge": "Si le logo correspond à une tendance connue, nomme-la et son année. Ex: Monoline (2008), Negative space (2015), Inflation 3D (2023), Nova Star (2024), Sharps (2025). Sinon: null",
+  "description": "2-3 phrases sur l'intention du logo et comment les choix graphiques servent le brief"
+}`
             }]
           }),
         });
@@ -3235,8 +3277,25 @@ async function startPortfolioImport() {
       if (!aiResult) throw new Error('Analyse echouee');
 
       const g = aiResult.graphique || {};
-      const graphic = [...(g.forme||[]),...(g.structure||[]),...(g.symetrie||[]),...(g.couleur||[]),...(g.typographie||[]),...(g.texte_symbole||[]),...(g.style||[]),...(g.symbolisme||[])].filter(Boolean);
-      const brief = [aiResult.brief?.industrie,...(aiResult.brief?.valeurs||[]),aiResult.brief?.positionnement].filter(Boolean);
+      // Aplatir toutes les dimensions graphiques en liste de tags
+      const graphic = [
+        g.structure,
+        ...(Array.isArray(g.forme) ? g.forme : [g.forme]),
+        ...(Array.isArray(g.technique) ? g.technique : [g.technique]),
+        ...(Array.isArray(g.couleur) ? g.couleur : [g.couleur]),
+        g.typographie,
+        ...(Array.isArray(g.registre) ? g.registre : [g.registre]),
+        ...(Array.isArray(g.symbolisme) ? g.symbolisme : [g.symbolisme]),
+        aiResult.tendance_logolounge && aiResult.tendance_logolounge !== 'null' ? '◎ ' + aiResult.tendance_logolounge : null,
+      ].flat().filter(Boolean);
+
+      const b = aiResult.brief || {};
+      const brief = [
+        b.secteur,
+        ...(Array.isArray(b.valeurs) ? b.valeurs : [b.valeurs]),
+        b.emotion,
+        b.promesse,
+      ].flat().filter(Boolean);
 
       item.result = {
         name: aiResult.nom || item.name,
@@ -3594,48 +3653,38 @@ async function importFromUrl() {
     };
 
     const prompt =
-      'Tu es expert en branding et identite visuelle.' +
-      '\n\nVoici le contenu d\'une page de presentation d\'un projet de logo :' +
-      '\nURL : ' + url +
-      '\n\nTEXTE DE LA PAGE :\n' + pageTextTrimmed +
-      '\n\nURLS D\'IMAGES PRESENTES SUR LA PAGE :\n' + imgUrls.join('\n') +
-      '\n\n=== VOCABULAIRE CONTROLE - utilise UNIQUEMENT ces valeurs exactes ===' +
-      '\n\nBRIEF - Industrie (choisis 1) : ' + VOCAB_BRIEF.industrie.join(' | ') +
-      '\nBRIEF - Valeurs (choisis 2 a 5) : ' + VOCAB_BRIEF.valeurs.join(' | ') +
-      '\nBRIEF - Positionnement (choisis 1) : ' + VOCAB_BRIEF.positionnement.join(' | ') +
-      '\n\nGRAPHIQUE - Forme : ' + VOCAB_GRAPHIQUE.forme.join(', ') +
-      '\nGRAPHIQUE - Structure : ' + VOCAB_GRAPHIQUE.structure.join(', ') +
-      '\nGRAPHIQUE - Motifs : ' + VOCAB_GRAPHIQUE.motifs.join(', ') +
-      '\nGRAPHIQUE - Symetrie : ' + VOCAB_GRAPHIQUE.symetrie.join(', ') +
-      '\nGRAPHIQUE - Couleur : ' + VOCAB_GRAPHIQUE.couleur.join(', ') +
-      '\nGRAPHIQUE - Typographie : ' + VOCAB_GRAPHIQUE.typographie.join(', ') +
-      '\nGRAPHIQUE - Texte-Symbole : ' + VOCAB_GRAPHIQUE.texte_symbole.join(', ') +
-      '\nGRAPHIQUE - Style : ' + VOCAB_GRAPHIQUE.style.join(', ') +
-      '\nGRAPHIQUE - Symbolisme (utilise ces valeurs OU sois encore plus précis si le symbole est identifiable : "Taureau", "Phénix", "Vague", etc.) : ' + VOCAB_GRAPHIQUE.symbolisme.join(', ') +
-      '\n\nQUESTION IMPORTANTE : La premiere lettre du nom du client ou de la marque a-t-elle ete utilisee graphiquement dans le logo (comme element visuel principal ou secondaire) ?' +
-      '\nExemples : un "C" stylise pour une marque commencant par C, un monogramme, une lettre qui forme une silhouette...' +
-      '\nSi oui, indique cette lettre dans "lettre_initiale". Si non, mets null.' +
-      '\n\nReponds UNIQUEMENT en JSON valide, sans texte avant ou apres :' +
-      '\n{' +
-      '\n  "nom_projet": "nom de la marque ou du projet",' +
-      '\n  "client": "nom du client",' +
-      '\n  "agence": "nom de l\'agence ou studio",' +
-      '\n  "annee": 2024,' +
-      '\n  "image_candidates": ["URL1","URL2","URL3","URL4","URL5","URL6","URL7","URL8"],' +
-      '\n  "lettre_initiale": "C",' +
-      '\n  "brief": {' +
-      '\n    "industrie": "valeur exacte du vocabulaire industrie",' +
-      '\n    "valeurs": ["valeur exacte 1", "valeur exacte 2", "valeur exacte 3"],' +
-      '\n    "positionnement": "valeur exacte du vocabulaire positionnement"' +
-      '\n  },' +
-      '\n  "graphique": {' +
-      '\n    "forme": ["val"],"structure": ["val"],"motifs": ["val"],"symetrie": ["val"],' +
-      '\n    "couleur": ["val","val"],"typographie": ["val"],"texte_symbole": ["val"],"style": ["val","val"],"symbolisme": ["val"]' +
-      '\n  },' +
-      '\n  "description": "Une phrase resumant ce que le logo communique visuellement."' +
-      '\n}' +
-      '\n\nPour "image_candidates" : selectionne les 8 a 9 URLs d\'images parmi celles listees qui sont les plus susceptibles d\'etre le logo ou l\'identite visuelle principale du projet. Prefere les PNG/SVG, les images isolees sur fond neutre, evite les photos de personnes. Si moins de 8 images disponibles, mets toutes celles qui peuvent etre pertinentes.';
+`Tu es expert en branding et identité visuelle. Analyse ce projet de logo.
 
+URL: ${url}
+Texte de la page: ${pageTextTrimmed}
+URLs d'images: ${imgUrls.slice(0,12).join(', ')}
+
+Réponds UNIQUEMENT en JSON valide, sans texte avant ou après:
+{
+  "nom_projet": "nom de la marque",
+  "client": "nom du client",
+  "agence": "nom de l'agence",
+  "annee": 2024,
+  "image_candidates": ["url1","url2","url3","url4","url5","url6","url7","url8"],
+  "lettre_initiale": "C ou null si pas utilisée graphiquement",
+  "brief": {
+    "secteur": "ex: Finance & Banque / Sport / Santé & Médical / Technologie / Luxe & Prestige / Culture & Médias...",
+    "valeurs": ["ex: Confiance","Dynamisme","Excellence","Innovation","Humanité","Puissance"],
+    "emotion": "ex: Confiance immédiate / Désir & Envie / Respect & Autorité / Joie & Énergie / Sérénité & Sécurité",
+    "promesse": "ex: Le plus fiable / Le plus innovant / L'unique / Marque de spécialistes / Marque de communauté"
+  },
+  "graphique": {
+    "structure": "UNE parmi: Logotype pur / Logotype + symbole / Logo-symbole fusionné / Symbole seul / Monogramme / Emblème",
+    "forme": ["parmi: Cercle / Carré-Rectangle / Triangle / Polygone / Spirale / Forme organique / Lettre stylisée / Silhouette / Croix / Ellipse"],
+    "technique": ["parmi: Espace négatif / Rayures / Modulaire / Miroir-symétrie / Superposition / Découpe / Plein-solid / Contour-outline / Dégradé / Monoline / Wireframe / Faceting / Concentric / Lettres entrelacées"],
+    "couleur": ["parmi: Monochrome / Bichromie / Polychrome / Dégradé / Couleur chaude / Couleur froide / Neutre-terre / Noir dominant / Blanc dominant"],
+    "typographie": "UNE parmi: Serif / Sans-serif / Script-cursive / Display-décorative / Personnalisée-custom / Aucune",
+    "registre": ["parmi: Minimaliste / Géométrique strict / Illustratif / Organique / Brutaliste / Classique-heritage / Futuriste / Retro / 3D / Artisanal"],
+    "symbolisme": ["TRÈS PRÉCIS: Taureau/Aigle/Lion pas Animaux. Vague/Flamme/Feuille/Montagne pas Nature. Humain-Corps / Objet-Artefact / Territoire-Géographie / Mouvement-Vitesse / Abstrait"]
+  },
+  "tendance_logolounge": "Si correspond à une tendance LogoLounge: ex 'Monoline (2008)' / 'Negative space (2015)' / 'Inflation 3D (2023)' / 'Nova Star (2024)' / 'Sharps (2025)'. Sinon null",
+  "description": "2-3 phrases: intention du logo et comment les choix graphiques servent le brief"
+}`;
 
     // Appel Claude avec retry sur overload
     let resp, retries = 0;
@@ -3740,33 +3789,34 @@ async function importFromUrl() {
     }
 
     // Stocker la lettre
-  
-    const briefAttrs = [
-      ai.brief?.industrie,
-      ...(ai.brief?.valeurs || []),
-      ai.brief?.positionnement,
-      lettreInitiale ? 'Lettre initiale : ' + lettreInitiale : null,
-      ai.brief?.cible, // rétrocompat
-    ].filter(Boolean);
 
-    // Stocker la lettre initiale séparément pour le matching de recherche
-  
-    // Extraire tous les attributs graphiques par catégorie (nouvelle structure)
+    const b = ai.brief || {};
+    const briefAttrs = [
+      b.secteur,
+      ...(Array.isArray(b.valeurs) ? b.valeurs : [b.valeurs]),
+      b.emotion,
+      b.promesse,
+      lettreInitiale ? 'Lettre initiale : ' + lettreInitiale : null,
+      // Rétrocompat ancien format
+      b.industrie, ...(Array.isArray(b.valeurs) ? [] : []), b.positionnement,
+    ].flat().filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
+
+    // Extraire tous les attributs graphiques par catégorie (nouvelle taxonomie 8 dimensions)
     const g = ai.graphique || {};
     const graphicAttrs = [
-      ...(Array.isArray(g.forme)         ? g.forme         : g.forme         ? [g.forme]         : []),
-      ...(Array.isArray(g.structure)      ? g.structure      : g.structure      ? [g.structure]      : []),
-      ...(Array.isArray(g.motifs)         ? g.motifs         : g.motifs         ? [g.motifs]         : []),
-      ...(Array.isArray(g.symetrie)       ? g.symetrie       : g.symetrie       ? [g.symetrie]       : []),
-      ...(Array.isArray(g.couleur)        ? g.couleur        : g.couleur        ? [g.couleur]        : []),
-      ...(Array.isArray(g.typographie)    ? g.typographie    : g.typographie    ? [g.typographie]    : []),
-      ...(Array.isArray(g.texte_symbole)  ? g.texte_symbole  : g.texte_symbole  ? [g.texte_symbole]  : []),
-      ...(Array.isArray(g.style)          ? g.style          : g.style          ? [g.style]          : []),
-      ...(Array.isArray(g.symbolisme)     ? g.symbolisme     : g.symbolisme     ? [g.symbolisme]     : []),
+      g.structure,
+      ...(Array.isArray(g.forme)      ? g.forme      : g.forme      ? [g.forme]      : []),
+      ...(Array.isArray(g.technique)  ? g.technique  : g.technique  ? [g.technique]  : []),
+      ...(Array.isArray(g.couleur)    ? g.couleur    : g.couleur    ? [g.couleur]    : []),
+      g.typographie,
+      ...(Array.isArray(g.registre)   ? g.registre   : g.registre   ? [g.registre]   : []),
+      ...(Array.isArray(g.symbolisme) ? g.symbolisme : g.symbolisme ? [g.symbolisme] : []),
+      ai.tendance_logolounge && ai.tendance_logolounge !== 'null' ? '◎ ' + ai.tendance_logolounge : null,
       // Rétrocompat ancienne structure
-      ...(g.type && !g.texte_symbole      ? [g.type]         : []),
-      ...(g.couleur_dominante             ? [g.couleur_dominante] : []),
-    ].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i); // dédoublonner
+      ...(Array.isArray(g.forme) ? [] : []),
+      ...(Array.isArray(g.style) ? g.style : []),
+      ...(Array.isArray(g.structure) ? [] : []),
+    ].flat().filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
 
     imp._pendingBrief   = briefAttrs;
     imp._pendingGraphic = graphicAttrs;
