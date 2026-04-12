@@ -2812,9 +2812,8 @@ function loadPastedUrls() {
 
 async function scanPortfolio() {
   const url = document.getElementById('portfolio-url').value.trim();
-  const btn = document.getElementById('btn-scan');
-  btn.disabled = true;
-  document.getElementById('btn-scan-label').textContent = 'Scan en cours…';
+  const btn = document.getElementById('btn-universal');
+  if (btn) { btn.disabled = true; document.getElementById('btn-universal-label').textContent = 'Scan en cours…'; }
   setPortfolioStatus('loading', 'Récupération du portfolio…');
 
   try {
@@ -2851,19 +2850,17 @@ async function scanPortfolio() {
 
       renderPortfolioList();
       setPortfolioStatus('ok', filtered.length + ' projet' + (filtered.length > 1 ? 's' : '') + ' Behance détecté' + (filtered.length > 1 ? 's' : ''));
-      document.getElementById('btn-scan').disabled = false;
-      document.getElementById('btn-scan-label').textContent = 'Scanner le portfolio →';
+      if (btn) { btn.disabled = false; document.getElementById('btn-universal-label').textContent = 'Analyser →'; }
       return;
     }
 
     // ── Autres sites ──
     let html = '';
+    const _fetchT = (fn, ms = 5000) => Promise.race([fn(), new Promise((_, r) => setTimeout(() => r(new Error('timeout')), ms))]);
     const proxies = [
-      () => fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url)).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); }),
-      () => fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url)).then(r => r.ok ? r.json().then(d => d.contents || '') : Promise.reject()),
-      () => fetch('https://corsproxy.io/?url=' + encodeURIComponent(url)).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); }),
-      () => fetch('https://corsproxy.io/?' + encodeURIComponent(url)).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); }),
-      () => fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url)).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); }),
+      () => _fetchT(() => fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url)).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })),
+      () => _fetchT(() => fetch('https://corsproxy.io/?' + encodeURIComponent(url)).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })),
+      () => _fetchT(() => fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url)).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })),
     ];
 
     for (const proxy of proxies) {
@@ -2995,7 +2992,7 @@ async function scanPortfolio() {
   }
 
   btn.disabled = false;
-  document.getElementById('btn-scan-label').textContent = 'Scanner le portfolio →';
+  const scanBtn = document.getElementById('btn-universal'); if (scanBtn) { scanBtn.disabled = false; document.getElementById('btn-universal-label').textContent = 'Analyser →'; }
 }
 
 function setPortfolioStatus(type, msg) {
@@ -3055,10 +3052,11 @@ async function startPortfolioImport() {
 
     try {
       let html = '';
+      const _t = (fn, ms=5000) => Promise.race([fn(), new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),ms))]);
       const proxies = [
-        () => fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(item.url)).then(r => r.ok ? r.text() : Promise.reject()),
-        () => fetch('https://corsproxy.io/?' + encodeURIComponent(item.url)).then(r => r.ok ? r.text() : Promise.reject()),
-        () => fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(item.url)).then(r => r.ok ? r.text() : Promise.reject()),
+        () => _t(() => fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(item.url)).then(r => r.ok ? r.text() : Promise.reject())),
+        () => _t(() => fetch('https://corsproxy.io/?' + encodeURIComponent(item.url)).then(r => r.ok ? r.text() : Promise.reject())),
+        () => _t(() => fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(item.url)).then(r => r.ok ? r.text() : Promise.reject())),
       ];
       for (const proxy of proxies) {
         try { const r = await proxy(); if (r && r.length > 200) { html = r; break; } } catch(e) { continue; }
@@ -3558,12 +3556,11 @@ async function importFromUrl() {
     setFetchStatus('loading', 'Telechargement de la page...');
 
     let html = '';
+    const fetchWithTimeout = (fn, ms = 5000) => Promise.race([fn(), new Promise((_, r) => setTimeout(() => r(new Error('timeout')), ms))]);
     const proxies = [
-      () => fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url)).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); }),
-      () => fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url)).then(r => r.ok ? r.json().then(d => d.contents || '') : Promise.reject()),
-      () => fetch('https://corsproxy.io/?url=' + encodeURIComponent(url)).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); }),
-      () => fetch('https://corsproxy.io/?' + encodeURIComponent(url)).then(r => r.ok ? r.text() : Promise.reject()),
-      () => fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url)).then(r => r.ok ? r.text() : Promise.reject()),
+      () => fetchWithTimeout(() => fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url)).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })),
+      () => fetchWithTimeout(() => fetch('https://corsproxy.io/?' + encodeURIComponent(url)).then(r => r.ok ? r.text() : Promise.reject())),
+      () => fetchWithTimeout(() => fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url)).then(r => r.ok ? r.text() : Promise.reject())),
     ];
     for (const proxy of proxies) {
       try { html = await proxy(); if (html && html.length > 200) break; } catch(e) { continue; }
