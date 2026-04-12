@@ -3324,36 +3324,37 @@ async function startPortfolioImport() {
             model: 'claude-haiku-4-5-20251001',
             max_tokens: 900,
             messages: [{ role: 'user', content:
-`Analyse ce projet de logo et réponds UNIQUEMENT en JSON valide, sans texte avant ou après.
+`Analyse ce projet de logo. Réponds UNIQUEMENT en JSON valide.
 
 URL: ${item.url}
-Texte de la page: ${pageText.slice(0,1000)}
-Images disponibles: ${imgUrls.slice(0,8).join(', ')}
+Texte: ${pageText.slice(0,1000)}
+Images: ${imgUrls.slice(0,8).join(', ')}
 
-JSON attendu (respecte EXACTEMENT cette structure):
-{
-  "nom": "Nom du client/marque",
-  "agence": "Nom de l'agence de design",
-  "annee": 2024,
-  "image_candidates": ["url1","url2","url3"],
-  "brief": {
-    "secteur": "ex: Finance & Banque / Sport / Santé & Médical / Technologie / Luxe...",
-    "valeurs": ["ex: Confiance","Dynamisme","Excellence","Innovation","Humanité"],
-    "emotion": "ex: Confiance immédiate / Désir & Envie / Respect & Autorité / Joie & Énergie",
-    "promesse": "ex: Le plus fiable / Le plus innovant / Marque de spécialistes"
-  },
-  "graphique": {
-    "structure": "UNE SEULE valeur parmi: Logotype pur / Logotype + symbole / Logo-symbole fusionné / Symbole seul / Monogramme / Emblème",
-    "forme": ["ex: Cercle / Carré / Triangle / Polygone / Spirale / Forme organique / Lettre stylisée / Silhouette"],
-    "technique": ["ex: Espace négatif / Rayures / Modulaire / Miroir-symétrie / Superposition / Découpe / Plein-solid / Contour-outline / Dégradé / Monoline / Wireframe / Faceting / Concentric"],
-    "couleur": ["ex: Monochrome / Bichromie / Polychrome / Dégradé / Couleur chaude / Couleur froide / Neutre-terre / Noir dominant / Blanc dominant"],
-    "typographie": "UNE valeur parmi: Serif / Sans-serif / Script-cursive / Display-décorative / Personnalisée-custom / Aucune",
-    "registre": ["ex: Minimaliste / Géométrique strict / Illustratif / Organique / Brutaliste / Classique-heritage / Futuriste / Retro / 3D"],
-    "symbolisme": ["TRÈS PRÉCIS: pas Animaux mais Taureau/Aigle/Lion. Pas Nature mais Vague/Flamme/Feuille/Montagne. Humain/Corps, Objet/Artefact, Territoire/Géographie, Mouvement/Vitesse, Abstrait"]
-  },
-  "tendance_logolounge": "Si le logo correspond à une tendance connue, nomme-la et son année. Ex: Monoline (2008), Negative space (2015), Inflation 3D (2023), Nova Star (2024), Sharps (2025). Sinon: null",
-  "description": "2-3 phrases sur l'intention du logo et comment les choix graphiques servent le brief"
-}`
+VOCABULAIRE CONTRÔLÉ — utilise UNIQUEMENT ces valeurs exactes:
+
+SECTEUR (choisis 1 seul, exactement):
+Finance & Banque | Assurance | Immobilier | Conseil & Management | Retail & Grande distribution | Luxe & Prestige | Mode & Textile | Alimentation & Boisson | Restauration | Technologie & SaaS | Télécommunications | Intelligence artificielle | Jeux vidéo & Esport | Santé & Médical | Pharmacie & Biotech | Bien-être & Beauté | Énergie & Utilities | Industrie & Manufacture | Construction & BTP | Mobilité & Transport | Aéronautique & Défense | Culture & Médias | Sport | Tourisme & Hôtellerie | Éducation & Formation | Institutionnel & Public | ONG & Association | Agriculture & Terroir | Droit & Juridique | Architecture & Design
+
+VALEURS (choisis 2 à 4, exactement):
+Confiance | Solidité | Fiabilité | Sécurité | Stabilité | Transparence | Prestige | Excellence | Élégance | Raffinement | Exclusivité | Dynamisme | Innovation | Audace | Performance | Conquête | Rapidité | Puissance | Force | Robustesse | Endurance | Humanité | Bienveillance | Accessibilité | Proximité | Authenticité | Chaleur | Tradition | Héritage | Savoir-faire | Artisanat | Pérennité | Durabilité | Responsabilité | Engagement | Nature | Écologie | Minimalisme | Clarté | Efficacité | Sobriété | Liberté | Aventure | Exploration
+
+ÉMOTION (choisis 1, exactement):
+Confiance immédiate | Désir & Envie | Respect & Autorité | Joie & Énergie | Appartenance & Communauté | Admiration & Aspiration | Sérénité & Sécurité | Curiosité & Surprise | Nostalgie & Émotion
+
+PROMESSE (choisis 1, exactement):
+Le plus rapide | Le plus puissant | Le plus fiable | Le plus précis | Le meilleur rapport qualité-prix | Le plus innovant | L'unique / l'original | Le plus humain | Le plus responsable | Le plus accessible | Marque de spécialistes | Marque de communauté | Marque de territoire | Marque de génération
+
+STRUCTURE (1 seule): Logotype pur | Logotype + symbole | Logo-symbole fusionné | Symbole seul | Monogramme | Emblème
+FORME (1-3): Cercle | Carré | Triangle | Polygone | Spirale | Forme organique | Lettre stylisée | Silhouette | Croix | Ellipse
+TECHNIQUE (1-4): Espace négatif | Rayures | Modulaire | Miroir-symétrie | Superposition | Découpe | Plein-solid | Contour-outline | Dégradé | Monoline | Wireframe | Faceting | Concentric
+COULEUR (1-2): Monochrome | Bichromie | Polychrome | Dégradé | Couleur chaude | Couleur froide | Neutre-terre | Noir dominant | Blanc dominant
+TYPOGRAPHIE (1): Serif | Sans-serif | Script-cursive | Display-décorative | Personnalisée-custom | Aucune
+REGISTRE (1-2): Minimaliste | Géométrique strict | Illustratif | Organique | Brutaliste | Classique-heritage | Futuriste | Retro | 3D | Artisanal
+SYMBOLISME: sois TRÈS précis — pas "Animaux" mais "Taureau"/"Aigle"/"Lion". Pas "Nature" mais "Vague"/"Flamme"/"Feuille". Si aucun symbole: ["Abstrait"]
+TENDANCE LOGOLOUNGE: si applicable parmi Monoline(2008)/Negative space(2015)/Flat design(2013)/Inflation 3D(2023)/Nova Star(2024)/Sharps(2025)/etc. Sinon null.
+
+JSON:
+{"nom":"...","agence":"...","annee":2024,"image_candidates":["url1","url2","url3"],"brief":{"secteur":"valeur exacte","valeurs":["val1","val2"],"emotion":"valeur exacte","promesse":"valeur exacte"},"graphique":{"structure":"valeur exacte","forme":["val"],"technique":["val"],"couleur":["val"],"typographie":"valeur exacte","registre":["val"],"symbolisme":["val"]},"tendance_logolounge":null,"description":"..."}`
             }]
           }),
         });
@@ -3749,38 +3750,34 @@ async function importFromUrl() {
     };
 
     const prompt =
-`Tu es expert en branding et identité visuelle. Analyse ce projet de logo.
+`Analyse ce projet de logo. Réponds UNIQUEMENT en JSON valide.
 
 URL: ${url}
-Texte de la page: ${pageTextTrimmed}
-URLs d'images: ${imgUrls.slice(0,12).join(', ')}
+Texte: ${pageTextTrimmed}
+Images: ${imgUrls.slice(0,12).join(', ')}
 
-Réponds UNIQUEMENT en JSON valide, sans texte avant ou après:
-{
-  "nom_projet": "nom de la marque",
-  "client": "nom du client",
-  "agence": "nom de l'agence",
-  "annee": 2024,
-  "image_candidates": ["url1","url2","url3","url4","url5","url6","url7","url8"],
-  "lettre_initiale": "C ou null si pas utilisée graphiquement",
-  "brief": {
-    "secteur": "ex: Finance & Banque / Sport / Santé & Médical / Technologie / Luxe & Prestige / Culture & Médias...",
-    "valeurs": ["ex: Confiance","Dynamisme","Excellence","Innovation","Humanité","Puissance"],
-    "emotion": "ex: Confiance immédiate / Désir & Envie / Respect & Autorité / Joie & Énergie / Sérénité & Sécurité",
-    "promesse": "ex: Le plus fiable / Le plus innovant / L'unique / Marque de spécialistes / Marque de communauté"
-  },
-  "graphique": {
-    "structure": "UNE parmi: Logotype pur / Logotype + symbole / Logo-symbole fusionné / Symbole seul / Monogramme / Emblème",
-    "forme": ["parmi: Cercle / Carré-Rectangle / Triangle / Polygone / Spirale / Forme organique / Lettre stylisée / Silhouette / Croix / Ellipse"],
-    "technique": ["parmi: Espace négatif / Rayures / Modulaire / Miroir-symétrie / Superposition / Découpe / Plein-solid / Contour-outline / Dégradé / Monoline / Wireframe / Faceting / Concentric / Lettres entrelacées"],
-    "couleur": ["parmi: Monochrome / Bichromie / Polychrome / Dégradé / Couleur chaude / Couleur froide / Neutre-terre / Noir dominant / Blanc dominant"],
-    "typographie": "UNE parmi: Serif / Sans-serif / Script-cursive / Display-décorative / Personnalisée-custom / Aucune",
-    "registre": ["parmi: Minimaliste / Géométrique strict / Illustratif / Organique / Brutaliste / Classique-heritage / Futuriste / Retro / 3D / Artisanal"],
-    "symbolisme": ["TRÈS PRÉCIS: Taureau/Aigle/Lion pas Animaux. Vague/Flamme/Feuille/Montagne pas Nature. Humain-Corps / Objet-Artefact / Territoire-Géographie / Mouvement-Vitesse / Abstrait"]
-  },
-  "tendance_logolounge": "Si correspond à une tendance LogoLounge: ex 'Monoline (2008)' / 'Negative space (2015)' / 'Inflation 3D (2023)' / 'Nova Star (2024)' / 'Sharps (2025)'. Sinon null",
-  "description": "2-3 phrases: intention du logo et comment les choix graphiques servent le brief"
-}`;
+VOCABULAIRE CONTRÔLÉ — utilise UNIQUEMENT ces valeurs exactes:
+
+SECTEUR (1 seul): Finance & Banque | Assurance | Immobilier | Conseil & Management | Retail & Grande distribution | Luxe & Prestige | Mode & Textile | Alimentation & Boisson | Restauration | Technologie & SaaS | Télécommunications | Intelligence artificielle | Jeux vidéo & Esport | Santé & Médical | Pharmacie & Biotech | Bien-être & Beauté | Énergie & Utilities | Industrie & Manufacture | Construction & BTP | Mobilité & Transport | Aéronautique & Défense | Culture & Médias | Sport | Tourisme & Hôtellerie | Éducation & Formation | Institutionnel & Public | ONG & Association | Agriculture & Terroir | Droit & Juridique | Architecture & Design
+
+VALEURS (2-4): Confiance | Solidité | Fiabilité | Sécurité | Stabilité | Transparence | Prestige | Excellence | Élégance | Raffinement | Exclusivité | Dynamisme | Innovation | Audace | Performance | Conquête | Rapidité | Puissance | Force | Robustesse | Endurance | Humanité | Bienveillance | Accessibilité | Proximité | Authenticité | Chaleur | Tradition | Héritage | Savoir-faire | Artisanat | Pérennité | Durabilité | Responsabilité | Engagement | Nature | Écologie | Minimalisme | Clarté | Efficacité | Sobriété | Liberté | Aventure | Exploration
+
+ÉMOTION (1): Confiance immédiate | Désir & Envie | Respect & Autorité | Joie & Énergie | Appartenance & Communauté | Admiration & Aspiration | Sérénité & Sécurité | Curiosité & Surprise | Nostalgie & Émotion
+
+PROMESSE (1): Le plus rapide | Le plus puissant | Le plus fiable | Le plus précis | Le meilleur rapport qualité-prix | Le plus innovant | L'unique / l'original | Le plus humain | Le plus responsable | Le plus accessible | Marque de spécialistes | Marque de communauté | Marque de territoire | Marque de génération
+
+STRUCTURE (1): Logotype pur | Logotype + symbole | Logo-symbole fusionné | Symbole seul | Monogramme | Emblème
+FORME (1-3): Cercle | Carré | Triangle | Polygone | Spirale | Forme organique | Lettre stylisée | Silhouette | Croix | Ellipse
+TECHNIQUE (1-4): Espace négatif | Rayures | Modulaire | Miroir-symétrie | Superposition | Découpe | Plein-solid | Contour-outline | Dégradé | Monoline | Wireframe | Faceting | Concentric
+COULEUR (1-2): Monochrome | Bichromie | Polychrome | Dégradé | Couleur chaude | Couleur froide | Neutre-terre | Noir dominant | Blanc dominant
+TYPOGRAPHIE (1): Serif | Sans-serif | Script-cursive | Display-décorative | Personnalisée-custom | Aucune
+REGISTRE (1-2): Minimaliste | Géométrique strict | Illustratif | Organique | Brutaliste | Classique-heritage | Futuriste | Retro | 3D | Artisanal
+SYMBOLISME: TRÈS précis — "Taureau" pas "Animaux", "Flamme" pas "Nature". Si aucun: ["Abstrait"]
+TENDANCE: parmi Monoline(2008)/Negative space(2015)/Flat design(2013)/Inflation 3D(2023)/Nova Star(2024)/Sharps(2025) ou null
+
+JSON:
+{"nom_projet":"...","client":"...","agence":"...","annee":2024,"image_candidates":["url1","url2","url3","url4","url5","url6","url7","url8"],"lettre_initiale":null,"brief":{"secteur":"valeur exacte","valeurs":["val1","val2"],"emotion":"valeur exacte","promesse":"valeur exacte"},"graphique":{"structure":"valeur exacte","forme":["val"],"technique":["val"],"couleur":["val"],"typographie":"valeur exacte","registre":["val"],"symbolisme":["val"]},"tendance_logolounge":null,"description":"..."}`;
+
 
     // Appel Claude avec retry sur overload
     let resp, retries = 0;
