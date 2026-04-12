@@ -2159,24 +2159,24 @@ const GRAPHIC_CATEGORIES = {
 
 // ── Rendu des tags groupés par dimension ──
 const DIMENSION_LABELS = {
-  'Structure':   { label: 'Structure',   color: '#7c6cf0', bg: 'rgba(124,108,240,0.12)' },
-  'Forme':       { label: 'Forme',       color: '#2563eb', bg: 'rgba(37,99,235,0.1)'  },
-  'Technique':   { label: 'Technique',   color: '#0891b2', bg: 'rgba(8,145,178,0.1)'  },
-  'Couleur':     { label: 'Couleur',     color: '#d97706', bg: 'rgba(217,119,6,0.1)'  },
-  'Typographie': { label: 'Typographie', color: '#059669', bg: 'rgba(5,150,105,0.1)'  },
-  'Symbolisme':  { label: 'Symbolisme',  color: '#dc2626', bg: 'rgba(220,38,38,0.1)'  },
-  'Registre':    { label: 'Registre',    color: '#7c3aed', bg: 'rgba(124,58,237,0.1)' },
-  'Tendance':    { label: 'Tendance',    color: '#b45309', bg: 'rgba(180,83,9,0.1)'   },
-  'Autre':       { label: 'Autre',       color: 'var(--ink-3)', bg: 'var(--paper-2)'  },
+  'Structure':   { label: 'Structure',   color: '#c2410c', bg: 'rgba(194,65,12,0.12)'  },
+  'Forme':       { label: 'Forme',       color: '#d97706', bg: 'rgba(217,119,6,0.12)'  },
+  'Technique':   { label: 'Technique',   color: '#b45309', bg: 'rgba(180,83,9,0.12)'   },
+  'Couleur':     { label: 'Couleur',     color: '#dc2626', bg: 'rgba(220,38,38,0.12)'  },
+  'Typographie': { label: 'Typographie', color: '#ea580c', bg: 'rgba(234,88,12,0.12)'  },
+  'Symbolisme':  { label: 'Symbolisme',  color: '#a16207', bg: 'rgba(161,98,7,0.12)'   },
+  'Registre':    { label: 'Registre',    color: '#d97706', bg: 'rgba(217,119,6,0.08)'  },
+  'Tendance':    { label: 'Tendance',    color: '#9a3412', bg: 'rgba(154,52,18,0.12)'  },
+  'Autre':       { label: 'Autre',       color: 'var(--ink-3)', bg: 'var(--paper-2)'   },
 };
 
-// Catégories de brief
+// Catégories de brief — couleurs froides (bleu/violet)
 const BRIEF_DIM_LABELS = {
-  'Secteur':   { label: 'Secteur',   color: '#2563eb', bg: 'rgba(37,99,235,0.1)' },
-  'Valeur':    { label: 'Valeur',    color: '#059669', bg: 'rgba(5,150,105,0.1)' },
-  'Émotion':   { label: 'Émotion',   color: '#d97706', bg: 'rgba(217,119,6,0.1)' },
-  'Promesse':  { label: 'Promesse',  color: '#7c3aed', bg: 'rgba(124,58,237,0.1)' },
-  'Lettre':    { label: 'Lettre',    color: 'var(--ink-3)', bg: 'var(--paper-2)' },
+  'Secteur':   { label: 'Secteur',   color: '#2563eb', bg: 'rgba(37,99,235,0.12)'   },
+  'Valeur':    { label: 'Valeur',    color: '#7c3aed', bg: 'rgba(124,58,237,0.12)'  },
+  'Émotion':   { label: 'Émotion',   color: '#0891b2', bg: 'rgba(8,145,178,0.12)'   },
+  'Promesse':  { label: 'Promesse',  color: '#4f46e5', bg: 'rgba(79,70,229,0.12)'   },
+  'Lettre':    { label: 'Lettre',    color: 'var(--ink-3)', bg: 'var(--paper-2)'    },
 };
 
 function guessBriefDimension(tag) {
@@ -2231,6 +2231,32 @@ function renderBriefTagsGrouped(tags, mini = false) {
 
 function renderGraphicTagsGrouped(tags, mini = false) {
   return renderTagsGrouped(tags, guessGraphicDimension, DIMENSION_LABELS, 'ins-hover-tag', mini);
+}
+
+function renderEditTagsGrouped(tags, type) {
+  if (!tags || tags.length === 0) return '<span style="color:var(--ink-3);font-size:11px">Aucun tag</span>';
+  const dimFn = type === 'brief' ? guessBriefDimension : guessGraphicDimension;
+  const dimMap = type === 'brief' ? BRIEF_DIM_LABELS : DIMENSION_LABELS;
+
+  const groups = {};
+  tags.forEach(tag => {
+    const dim = dimFn(tag);
+    if (!groups[dim]) groups[dim] = [];
+    groups[dim].push(tag);
+  });
+
+  return Object.entries(groups).map(([dim, dimTags]) => {
+    const style = dimMap[dim] || dimMap['Autre'] || { label: dim, color: 'var(--ink-3)', bg: 'var(--paper-2)' };
+    return `<div style="margin-bottom:6px">
+      <div style="font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:${style.color};margin-bottom:3px;opacity:0.8">${style.label}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:3px">
+        ${dimTags.map(t => `<span style="display:inline-flex;align-items:center;gap:4px;background:${style.bg};color:${style.color};font-size:11px;padding:3px 8px;border-radius:3px;font-weight:500">
+          ${t.startsWith('◎ ') ? t.slice(2) : t}
+          <span style="cursor:pointer;opacity:0.7;font-size:13px;line-height:1" onclick="removeEditTag('${type}','${t.replace(/'/g,"\\'")}')">×</span>
+        </span>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function guessCategory(attr) {
@@ -2535,17 +2561,15 @@ function openEditPanel(id) {
     '<div class="panel-edit-section">' +
       '<div class="panel-edit-label">Brief (MESSAGE)</div>' +
       '<div class="panel-edit-tags" id="edit-brief-tags">' +
-        renderBriefTagsGrouped(editLogo.brief||[]) +
-        '<div style="margin-top:6px">' + (editLogo.brief||[]).map(a => editTag(a,'b','brief')).join('') + '</div>' +
-        '<button class="panel-edit-add" onclick="addEditTag(\'brief\')">+ Ajouter</button>' +
+        renderEditTagsGrouped(editLogo.brief||[], 'brief') +
+        '<button class="panel-edit-add" onclick="addEditTag(\'brief\')" style="margin-top:6px">+ Ajouter</button>' +
       '</div>' +
     '</div>' +
     '<div class="panel-edit-section">' +
       '<div class="panel-edit-label">Graphique (OUTPUT)</div>' +
       '<div class="panel-edit-tags" id="edit-graphic-tags">' +
-        renderGraphicTagsGrouped(editLogo.graphic||[]) +
-        '<div style="margin-top:6px">' + (editLogo.graphic||[]).map(a => editTag(a,'g','graphic')).join('') + '</div>' +
-        '<button class="panel-edit-add" onclick="addEditTag(\'graphic\')">+ Ajouter</button>' +
+        renderEditTagsGrouped(editLogo.graphic||[], 'graphic') +
+        '<button class="panel-edit-add" onclick="addEditTag(\'graphic\')" style="margin-top:6px">+ Ajouter</button>' +
       '</div>' +
     '</div>';
 
@@ -2588,11 +2612,10 @@ function addEditTag(type) {
 
 function refreshEditTags(type) {
   const id = type === 'brief' ? 'edit-brief-tags' : 'edit-graphic-tags';
-  const cls = type === 'brief' ? 'b' : 'g';
   const arr = type === 'brief' ? editLogo.brief : editLogo.graphic;
   document.getElementById(id).innerHTML =
-    arr.map(a => editTag(a, cls, type)).join('') +
-    '<button class="panel-edit-add" onclick="addEditTag(\'' + type + '\')">+ Ajouter</button>';
+    renderEditTagsGrouped(arr, type) +
+    '<button class="panel-edit-add" onclick="addEditTag(\'' + type + '\')" style="margin-top:6px">+ Ajouter</button>';
 }
 
 function triggerEditImg() {
