@@ -2148,11 +2148,12 @@ async function runSearch() {
     if (!embedResp.ok) throw new Error(embedData.error || 'Embed error');
     const queryEmbedding = embedData.embeddings[0];
 
-    // 2. Recherche vectorielle
+    // 2. Recherche vectorielle — plus de résultats si filtre lettre actif
+    const matchCount = state.selectedLetter ? 200 : 50;
     const searchResp = await fetch('/api/search', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ embedding: queryEmbedding, match_threshold: 0.2, match_count: 50 }),
+      body: JSON.stringify({ embedding: queryEmbedding, match_threshold: 0.2, match_count: matchCount }),
     });
     const searchData = await searchResp.json();
     if (!searchResp.ok) throw new Error(searchData.error || 'Search error');
@@ -2180,9 +2181,17 @@ async function runSearch() {
       score: Math.round(r.similarity * 100),
     }));
 
-    // 5. Filtrage lettre
+    // 5. Lettre — boost plutôt que filtre strict
     if (state.selectedLetter) {
-      results = results.filter(l => getFirstLetter(l) === state.selectedLetter);
+      results = results.map(l => ({
+        ...l,
+        score: getFirstLetter(l) === state.selectedLetter ? Math.min(100, l.score + 20) : l.score,
+        letterMatch: getFirstLetter(l) === state.selectedLetter,
+      })).sort((a, b) => {
+        if (a.letterMatch && !b.letterMatch) return -1;
+        if (!a.letterMatch && b.letterMatch) return 1;
+        return b.score - a.score;
+      });
     }
 
     document.getElementById('skeleton-grid').classList.remove('visible');
