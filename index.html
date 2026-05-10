@@ -3479,31 +3479,22 @@ URL: ${item.url}
 Texte: ${pageText.slice(0,1000)}
 Images: ${imgUrls.slice(0,8).join(', ')}
 
-VOCABULAIRE CONTRÔLÉ — utilise UNIQUEMENT ces valeurs exactes:
+VOCABULAIRE STRICT — valeurs exactes uniquement :
 
-SECTEUR (choisis 1 seul, exactement):
-Finance & Banque | Assurance | Immobilier | Conseil & Management | Retail & Grande distribution | Luxe & Prestige | Mode & Textile | Alimentation & Boisson | Restauration | Technologie & SaaS | Télécommunications | Intelligence artificielle | Jeux vidéo & Esport | Santé & Médical | Pharmacie & Biotech | Bien-être & Beauté | Énergie & Utilities | Industrie & Manufacture | Construction & BTP | Mobilité & Transport | Aéronautique & Défense | Culture & Médias | Sport | Tourisme & Hôtellerie | Éducation & Formation | Institutionnel & Public | ONG & Association | Agriculture & Terroir | Droit & Juridique | Architecture & Design
+SECTEUR (1): Finance & Banque | Assurance | Immobilier | Conseil & Management | Droit & Juridique | Retail & Grande distribution | Luxe & Prestige | Mode & Textile | Alimentation & Boisson | Restauration | Technologie & SaaS | Télécommunications | Jeux vidéo & Esport | Santé & Médical | Pharmacie & Biotech | Bien-être & Beauté | Énergie & Utilities | Industrie & Manufacture | Construction & BTP | Mobilité & Transport | Aéronautique & Défense | Culture & Médias | Sport | Tourisme & Hôtellerie | Éducation & Formation | Institutionnel & Public | ONG & Association | Agriculture & Terroir | Architecture & Design
 
-VALEURS (choisis 2 à 4, exactement):
-Confiance | Solidité | Fiabilité | Sécurité | Stabilité | Transparence | Prestige | Excellence | Élégance | Raffinement | Exclusivité | Dynamisme | Innovation | Audace | Performance | Conquête | Rapidité | Puissance | Force | Robustesse | Endurance | Humanité | Bienveillance | Accessibilité | Proximité | Authenticité | Chaleur | Tradition | Héritage | Savoir-faire | Artisanat | Pérennité | Durabilité | Responsabilité | Engagement | Nature | Écologie | Minimalisme | Clarté | Efficacité | Sobriété | Liberté | Aventure | Exploration
+VALEURS (2-3): Confiance | Fiabilité | Sécurité | Stabilité | Transparence | Prestige | Excellence | Élégance | Exclusivité | Dynamisme | Innovation | Audace | Performance | Rapidité | Puissance | Force | Robustesse | Humanité | Bienveillance | Accessibilité | Proximité | Authenticité | Tradition | Héritage | Savoir-faire | Durabilité | Engagement | Nature | Minimalisme | Clarté | Liberté | Aventure
 
-ÉMOTION (choisis 1, exactement):
-Confiance immédiate | Désir & Envie | Respect & Autorité | Joie & Énergie | Appartenance & Communauté | Admiration & Aspiration | Sérénité & Sécurité | Curiosité & Surprise | Nostalgie & Émotion
-
-PROMESSE (choisis 1, exactement):
-Le plus rapide | Le plus puissant | Le plus fiable | Le plus précis | Le meilleur rapport qualité-prix | Le plus innovant | L'unique / l'original | Le plus humain | Le plus responsable | Le plus accessible | Marque de spécialistes | Marque de communauté | Marque de territoire | Marque de génération
-
-STRUCTURE (1 seule): Logotype pur | Logotype + symbole | Logo-symbole fusionné | Symbole seul | Monogramme | Emblème
-FORME (1-3): Cercle | Carré | Triangle | Polygone | Spirale | Forme organique | Lettre stylisée | Silhouette | Croix | Ellipse
-TECHNIQUE (1-4): Espace négatif | Rayures | Modulaire | Miroir-symétrie | Superposition | Découpe | Plein-solid | Contour-outline | Dégradé | Monoline | Wireframe | Faceting | Concentric
-COULEUR (1-2): Monochrome | Bichromie | Polychrome | Dégradé | Couleur chaude | Couleur froide | Neutre-terre | Noir dominant | Blanc dominant
-TYPOGRAPHIE (1): Serif | Sans-serif | Script-cursive | Display-décorative | Personnalisée-custom | Aucune
-REGISTRE (1-2): Minimaliste | Géométrique strict | Illustratif | Organique | Brutaliste | Classique-heritage | Futuriste | Retro | 3D | Artisanal
-SYMBOLISME: sois TRÈS précis — pas "Animaux" mais "Taureau"/"Aigle"/"Lion". Pas "Nature" mais "Vague"/"Flamme"/"Feuille". Si aucun symbole: ["Abstrait"]
-TENDANCE LOGOLOUNGE: si applicable parmi Monoline(2008)/Negative space(2015)/Flat design(2013)/Inflation 3D(2023)/Nova Star(2024)/Sharps(2025)/etc. Sinon null.
+CONSTRUCTION (1): Logotype pur | Logotype + symbole | Symbole seul | Monogramme | Emblème
+FORME (1-2): Cercle | Carré | Triangle | Polygone | Ellipse | Croix | Étoile | Spirale | Flèche | Organique | Géométrique abstrait
+ÉNERGIE (3 valeurs — une par paire): Statique OU Dynamique | Ouvert OU Fermé | Symétrique OU Asymétrique
+TECHNIQUE (1-3): Espace négatif | Miroir | Rotation | Répétition | Modulaire | Concentrique | Superposition | Linéaire | Contour | Points | Plein | Volume | Dégradé
+RÉFÉRENT: Figuratif | Animal | Oiseau | Humain | Nature | Astre | Élément | Symbole | Territoire | Architecture | Objet | Abstrait
+COULEUR (1-2): Monochrome | Bichromie | Polychrome | Dégradé | Chaud | Froid | Neutre | Noir dominant | Blanc dominant
+TYPOGRAPHIE (1): Sans-serif | Serif | Script | Display | Personnalisée | Aucune
 
 JSON:
-{"nom":"...","agence":"...","annee":2024,"image_candidates":["url1","url2","url3"],"brief":{"personnalite":"Sincérité|Excitation|Compétence|Sophistication|Robustesse","positionnement":"valeur exacte","secteur":"valeur exacte","valeurs":["val1","val2"],"perception":"valeur exacte","maturite":"valeur exacte","audience":"valeur exacte"},"graphique":{"structure":"valeur exacte","forme":["val"],"technique":["val"],"couleur":["val"],"typographie":"valeur exacte","registre":["val"],"symbolisme":["val"]},"tendance_logolounge":null,"description":"..."}`
+{"nom":"...","agence":"...","annee":2024,"image_candidates":["url1","url2","url3"],"lettre_initiale":"Lettre du mot principal (ignore Le/La/Les/De/The)","secteur":"valeur exacte","valeurs":["val1","val2"],"construction":"valeur exacte","forme":["val"],"energie":["Statique ou Dynamique","Ouvert ou Fermé","Symétrique ou Asymétrique"],"technique":["val"],"referent":["val"],"couleur":["val"],"typographie":"valeur exacte","description":"1-2 phrases sur l'intention graphique"}`
             }]
           }),
         });
@@ -3523,25 +3514,20 @@ JSON:
 
       if (!aiResult) throw new Error('Analyse echouee');
 
-      const g = aiResult.graphique || {};
-      // Aplatir toutes les dimensions graphiques en liste de tags
       const graphic = [
-        g.structure,
-        ...(Array.isArray(g.forme) ? g.forme : [g.forme]),
-        ...(Array.isArray(g.technique) ? g.technique : [g.technique]),
-        ...(Array.isArray(g.couleur) ? g.couleur : [g.couleur]),
-        g.typographie,
-        ...(Array.isArray(g.registre) ? g.registre : [g.registre]),
-        ...(Array.isArray(g.symbolisme) ? g.symbolisme : [g.symbolisme]),
-        aiResult.tendance_logolounge && aiResult.tendance_logolounge !== 'null' ? '◎ ' + aiResult.tendance_logolounge : null,
+        aiResult.construction ? 'Construction: ' + aiResult.construction : null,
+        ...(Array.isArray(aiResult.forme)     ? aiResult.forme.map(v => 'Forme: ' + v)      : []),
+        ...(Array.isArray(aiResult.energie)   ? aiResult.energie.map(v => 'Énergie: ' + v)  : []),
+        ...(Array.isArray(aiResult.technique) ? aiResult.technique.map(v => 'Technique: ' + v) : []),
+        ...(Array.isArray(aiResult.referent)  ? aiResult.referent.map(v => 'Référent: ' + v) : []),
+        ...(Array.isArray(aiResult.couleur)   ? aiResult.couleur.map(v => 'Couleur: ' + v)  : []),
+        aiResult.typographie && aiResult.typographie !== 'Aucune' ? 'Typo: ' + aiResult.typographie : null,
       ].flat().filter(Boolean);
 
-      const b = aiResult.brief || {};
       const brief = [
-        b.secteur,
-        ...(Array.isArray(b.valeurs) ? b.valeurs : [b.valeurs]),
-        b.emotion,
-        b.promesse,
+        aiResult.secteur,
+        ...(Array.isArray(aiResult.valeurs) ? aiResult.valeurs : []),
+        aiResult.lettre_initiale ? 'Lettre initiale : ' + aiResult.lettre_initiale : null,
       ].flat().filter(Boolean);
 
       item.result = {
@@ -3859,39 +3845,22 @@ URL: ${url}
 Texte: ${pageTextTrimmed}
 Images: ${imgUrls.slice(0,12).join(', ')}
 
-VOCABULAIRE CONTRÔLÉ — utilise UNIQUEMENT ces valeurs exactes:
+VOCABULAIRE STRICT — valeurs exactes uniquement :
 
-PERSONNALITÉ DE MARQUE — modèle Aaker (1 dimension principale):
-Sincérité (sincère, honnête, authentique, bienveillant, chaleureux) |
-Excitation (audacieux, imaginatif, dynamique, innovant, provocateur) |
-Compétence (fiable, intelligent, précis, expert, leader) |
-Sophistication (élégant, raffiné, exclusif, prestigieux, intemporel) |
-Robustesse (solide, puissant, robuste, brut, endurant)
+SECTEUR (1): Finance & Banque | Assurance | Immobilier | Conseil & Management | Droit & Juridique | Retail & Grande distribution | Luxe & Prestige | Mode & Textile | Alimentation & Boisson | Restauration | Technologie & SaaS | Télécommunications | Jeux vidéo & Esport | Santé & Médical | Pharmacie & Biotech | Bien-être & Beauté | Énergie & Utilities | Industrie & Manufacture | Construction & BTP | Mobilité & Transport | Aéronautique & Défense | Culture & Médias | Sport | Tourisme & Hôtellerie | Éducation & Formation | Institutionnel & Public | ONG & Association | Agriculture & Terroir | Architecture & Design
 
-POSITIONNEMENT (1): Ultra-luxe | Premium | Milieu de gamme | Grand public | Disruptif & Challenger | Institutionnel | Engagé & Militant
+VALEURS (2-3): Confiance | Fiabilité | Sécurité | Stabilité | Transparence | Prestige | Excellence | Élégance | Exclusivité | Dynamisme | Innovation | Audace | Performance | Rapidité | Puissance | Force | Robustesse | Humanité | Bienveillance | Accessibilité | Proximité | Authenticité | Tradition | Héritage | Savoir-faire | Durabilité | Engagement | Nature | Minimalisme | Clarté | Liberté | Aventure
 
-SECTEUR (1): Finance & Banque | Assurance | Immobilier | Conseil & Management | Droit & Juridique | Retail & Grande distribution | Luxe & Prestige | Mode & Textile | Alimentation & Boisson | Restauration | Technologie & SaaS | Télécommunications | Intelligence artificielle | Jeux vidéo & Esport | Santé & Médical | Pharmacie & Biotech | Bien-être & Beauté | Énergie & Utilities | Industrie & Manufacture | Construction & BTP | Mobilité & Transport | Aéronautique & Défense | Culture & Médias | Sport | Tourisme & Hôtellerie | Éducation & Formation | Institutionnel & Public | ONG & Association | Agriculture & Terroir | Architecture & Design
-
-VALEURS (2-3): Confiance | Solidité | Fiabilité | Sécurité | Stabilité | Transparence | Prestige | Excellence | Élégance | Raffinement | Exclusivité | Dynamisme | Innovation | Audace | Performance | Conquête | Rapidité | Puissance | Force | Robustesse | Endurance | Humanité | Bienveillance | Accessibilité | Proximité | Authenticité | Chaleur | Tradition | Héritage | Savoir-faire | Artisanat | Pérennité | Durabilité | Responsabilité | Engagement | Nature | Écologie | Minimalisme | Clarté | Efficacité | Sobriété | Liberté | Aventure | Exploration
-
-OBJECTIF DE PERCEPTION (1): Inspirer confiance | Générer du désir | Imposer l'autorité | Créer l'appartenance | Exprimer l'énergie | Affirmer l'expertise | Signaler la différence | Rassurer & Sécuriser | Séduire & Aspirer | Engager & Mobiliser
-
-MATURITÉ (1): Création ex nihilo | Refonte — marque récente | Refonte — marque historique | Évolution douce
-
-AUDIENCE (1): Grand public | CSP+ | 18-30 ans | B2B — Professionnels | B2B — Grands comptes | B2B2C — Double cible
-
-STRUCTURE (1): Logotype pur | Logotype + symbole | Logo-symbole fusionné | Symbole seul | Monogramme | Emblème
-FORME (1-3): Cercle | Carré | Triangle | Polygone | Spirale | Forme organique | Lettre stylisée | Silhouette | Croix | Ellipse
-TECHNIQUE (1-4): Espace négatif | Rayures | Modulaire | Miroir-symétrie | Superposition | Découpe | Plein-solid | Contour-outline | Dégradé | Monoline | Wireframe | Faceting | Concentric
-COULEUR (1-2): Monochrome | Bichromie | Polychrome | Dégradé | Couleur chaude | Couleur froide | Neutre-terre | Noir dominant | Blanc dominant
-TYPOGRAPHIE (1): Serif | Sans-serif | Script-cursive | Display-décorative | Personnalisée-custom | Aucune
-REGISTRE (1-2): Minimaliste | Géométrique strict | Illustratif | Organique | Brutaliste | Classique-heritage | Futuriste | Retro | 3D | Artisanal
-SYMBOLISME: TRÈS précis — "Taureau" pas "Animaux", "Flamme" pas "Nature". Si aucun: ["Abstrait"]
-TENDANCE: parmi Monoline(2008)/Negative space(2015)/Flat design(2013)/Inflation 3D(2023)/Nova Star(2024)/Sharps(2025) ou null
+CONSTRUCTION (1): Logotype pur | Logotype + symbole | Symbole seul | Monogramme | Emblème
+FORME (1-2): Cercle | Carré | Triangle | Polygone | Ellipse | Croix | Étoile | Spirale | Flèche | Organique | Géométrique abstrait
+ÉNERGIE (3 valeurs — une par paire): Statique OU Dynamique | Ouvert OU Fermé | Symétrique OU Asymétrique
+TECHNIQUE (1-3): Espace négatif | Miroir | Rotation | Répétition | Modulaire | Concentrique | Superposition | Linéaire | Contour | Points | Plein | Volume | Dégradé
+RÉFÉRENT: Figuratif | Animal | Oiseau | Humain | Nature | Astre | Élément | Symbole | Territoire | Architecture | Objet | Abstrait
+COULEUR (1-2): Monochrome | Bichromie | Polychrome | Dégradé | Chaud | Froid | Neutre | Noir dominant | Blanc dominant
+TYPOGRAPHIE (1): Sans-serif | Serif | Script | Display | Personnalisée | Aucune
 
 JSON:
-{"nom_projet":"...","client":"...","agence":"...","annee":2024,"image_candidates":["url1","url2","url3","url4","url5","url6","url7","url8"],"lettre_initiale": "Première lettre du MOT PRINCIPAL du nom (ignore les articles : Le/La/Les/De/The/A). Ex: 'Le Cheval' → C, 'De Beers' → B. Si la description mentionne explicitement une lettre utilisée comme symbole, prends celle-là. Si aucune lettre ne semble pertinente graphiquement, mets null","brief":{"personnalite":"Sincérité|Excitation|Compétence|Sophistication|Robustesse","positionnement":"valeur exacte","secteur":"valeur exacte","valeurs":["val1","val2"],"perception":"valeur exacte","maturite":"valeur exacte","audience":"valeur exacte"},"graphique":{"structure":"valeur exacte","forme":["val"],"technique":["val"],"couleur":["val"],"typographie":"valeur exacte","registre":["val"],"symbolisme":["val"]},"tendance_logolounge":null,"description":"..."}`;
-
+{"nom_projet":"...","client":"...","agence":"...","annee":2024,"image_candidates":["url1","url2","url3","url4","url5","url6","url7","url8"],"lettre_initiale":"Lettre du mot principal (ignore Le/La/Les/De/The)","secteur":"valeur exacte","valeurs":["val1","val2"],"construction":"valeur exacte","forme":["val"],"energie":["Statique ou Dynamique","Ouvert ou Fermé","Symétrique ou Asymétrique"],"technique":["val"],"referent":["val"],"couleur":["val"],"typographie":"valeur exacte","description":"1-2 phrases sur l'intention graphique"}`;
 
     // Appel Claude avec retry sur overload
     let resp, retries = 0;
@@ -4031,31 +4000,19 @@ JSON:
 
     const b = ai.brief || {};
     const briefAttrs = [
-      b.personnalite,
-      b.positionnement,
-      b.secteur,
-      ...(Array.isArray(b.valeurs) ? b.valeurs : [b.valeurs]),
-      b.perception,
-      b.maturite,
-      b.audience,
+      ai.secteur || b.secteur,
+      ...(Array.isArray(ai.valeurs) ? ai.valeurs : Array.isArray(b.valeurs) ? b.valeurs : []),
       lettreInitiale ? 'Lettre initiale : ' + lettreInitiale : null,
     ].flat().filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
 
-    // Extraire tous les attributs graphiques par catégorie (nouvelle taxonomie 8 dimensions)
-    const g = ai.graphique || {};
     const graphicAttrs = [
-      g.structure,
-      ...(Array.isArray(g.forme)      ? g.forme      : g.forme      ? [g.forme]      : []),
-      ...(Array.isArray(g.technique)  ? g.technique  : g.technique  ? [g.technique]  : []),
-      ...(Array.isArray(g.couleur)    ? g.couleur    : g.couleur    ? [g.couleur]    : []),
-      g.typographie,
-      ...(Array.isArray(g.registre)   ? g.registre   : g.registre   ? [g.registre]   : []),
-      ...(Array.isArray(g.symbolisme) ? g.symbolisme : g.symbolisme ? [g.symbolisme] : []),
-      ai.tendance_logolounge && ai.tendance_logolounge !== 'null' ? '◎ ' + ai.tendance_logolounge : null,
-      // Rétrocompat ancienne structure
-      ...(Array.isArray(g.forme) ? [] : []),
-      ...(Array.isArray(g.style) ? g.style : []),
-      ...(Array.isArray(g.structure) ? [] : []),
+      ai.construction ? 'Construction: ' + ai.construction : null,
+      ...(Array.isArray(ai.forme)      ? ai.forme.map(v => 'Forme: ' + v)      : []),
+      ...(Array.isArray(ai.energie)    ? ai.energie.map(v => 'Énergie: ' + v)  : []),
+      ...(Array.isArray(ai.technique)  ? ai.technique.map(v => 'Technique: ' + v) : []),
+      ...(Array.isArray(ai.referent)   ? ai.referent.map(v => 'Référent: ' + v) : []),
+      ...(Array.isArray(ai.couleur)    ? ai.couleur.map(v => 'Couleur: ' + v)  : []),
+      ai.typographie && ai.typographie !== 'Aucune' ? 'Typo: ' + ai.typographie : null,
     ].flat().filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
 
     imp._pendingBrief   = briefAttrs;
