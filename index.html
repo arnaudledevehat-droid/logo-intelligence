@@ -525,16 +525,15 @@
     position: absolute;
     inset: 0;
     overflow: hidden;
-    background: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
   .logo-thumb img {
-    width: 90%;
-    height: 90%;
-    object-fit: contain;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     object-position: center;
     display: block;
     transition: transform 0.3s ease;
@@ -2498,8 +2497,13 @@ function renderGrid() {
     const allGraphic = (logo.graphic || []);
     const barColor   = logo.score >= 80 ? '#c8501a' : logo.score >= 60 ? '#1a6b5c' : '#a09b94';
 
+    const isLogoArchive = logo.sourceUrl && logo.sourceUrl.includes('logo-archive.org');
+    const isSvgData = logo.imageUrl && logo.imageUrl.startsWith('data:image/svg');
+    const thumbBg = isLogoArchive || isSvgData ? '#ffffff' : (logo.bg || '#1a1816');
+    const imgStyle = isLogoArchive || isSvgData ? ' style="width:80%;height:80%;object-fit:contain"' : '';
+
     const thumbContent = logo.imageUrl
-      ? '<img src="' + logo.imageUrl + '" onerror="this.parentNode.style.background=\'var(--paper-2)\';this.remove()">'
+      ? '<img src="' + logo.imageUrl + '"' + imgStyle + ' onerror="this.parentNode.style.background=\'var(--paper-2)\';this.remove()">'
       : '<div class="logo-symbol" style="color:' + (logo.color||'#5a5650') + '">' + (logo.symbol||'◈') + '</div>';
 
     const briefTags  = allBrief.map(a  => '<span class="card-hover-tag b">' + a + '</span>').join('');
@@ -2510,7 +2514,7 @@ function renderGrid() {
       : '';
 
     card.innerHTML =
-      '<div class="logo-thumb" style="background:' + (logo.bg||'#f0ede8') + '">' +
+      '<div class="logo-thumb" style="background:' + thumbBg + '">' +
         thumbContent +
         (hasFilters ? '<div class="sim-pill">' + logo.score + '%</div>' : '') +
         '<div class="match-bar" style="width:' + logo.score + '%;background:' + barColor + '"></div>' +
