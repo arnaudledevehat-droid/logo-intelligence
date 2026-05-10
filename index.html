@@ -184,7 +184,50 @@
     line-height: 1.2;
   }
 
-  .sidebar-body { padding: 0.6rem 1.1rem; flex: 1; display: flex; flex-direction: column; gap: 0.55rem; overflow-y: auto; }
+  .sidebar-body { padding: 0.75rem 1.1rem; flex: 1; display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; }
+  .brief-field { display: flex; flex-direction: column; gap: 5px; }
+  .brief-field-label { font-size: 9.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+  .brief-field-input-wrap { position: relative; }
+  .brief-field-input {
+    width: 100%; box-sizing: border-box;
+    background: var(--paper-2); border: 1px solid var(--rule);
+    color: var(--ink); border-radius: 5px;
+    padding: 7px 10px; font-size: 12.5px;
+    font-family: 'Instrument Sans', sans-serif;
+    outline: none; transition: border-color 0.15s;
+  }
+  .brief-field-input:focus { border-color: var(--accent); }
+  .brief-field-input::placeholder { color: var(--ink-3); }
+
+  .brief-suggestions {
+    position: absolute; top: calc(100% + 3px); left: 0; right: 0;
+    background: var(--paper-2); border: 1px solid var(--rule);
+    border-radius: 5px; z-index: 100; display: none;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    max-height: 180px; overflow-y: auto;
+  }
+  .brief-suggestions.open { display: block; }
+  .brief-sug-item {
+    padding: 7px 10px; cursor: pointer; font-size: 12px;
+    display: flex; align-items: center; justify-content: space-between;
+    color: var(--ink-2); transition: background 0.1s;
+  }
+  .brief-sug-item:hover, .brief-sug-item.focused { background: var(--paper-3); color: var(--ink); }
+  .brief-sug-count { font-size: 10px; color: var(--ink-3); }
+  .brief-sug-match { color: var(--accent); font-weight: 600; }
+
+  .brief-chips { display: flex; flex-wrap: wrap; gap: 4px; min-height: 0; }
+  .brief-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(37,99,235,0.12); color: #60a5fa;
+    font-size: 11px; padding: 3px 8px; border-radius: 3px;
+    font-weight: 500;
+  }
+  .brief-chip-x {
+    cursor: pointer; opacity: 0.6; font-size: 14px; line-height: 1;
+    transition: opacity 0.1s;
+  }
+  .brief-chip-x:hover { opacity: 1; }
 
   .brief-section-title {
     font-size: 9px; font-weight: 700; letter-spacing: 0.14em;
@@ -1206,223 +1249,42 @@
 
     <div class="sidebar-body">
 
-      <!-- ── NIVEAU 1 : STRATÉGIE ── -->
-      <div class="brief-section-title">Stratégie</div>
-
-      <!-- Personnalité de marque (Aaker) -->
-      <div class="filter-section">
-        <div class="filter-label">Personnalité de marque</div>
-        <div class="selected-tags" id="personnalite-tags"></div>
-        <div class="select-wrap">
-          <select id="sel-personnalite" class="filter-select" onchange="onMultiSelect('personnalite', this)">
-            <option value="">+ Ajouter</option>
-            <option value="__fam__Sincérité">→ Sincérité (famille)</option>
-            <option>Sincère</option><option>Honnête</option><option>Authentique</option><option>Bienveillant</option><option>Chaleureux</option>
-            <option value="__fam__Excitation">→ Excitation (famille)</option>
-            <option>Audacieux</option><option>Imaginatif</option><option>Dynamique</option><option>Innovant</option><option>Provocateur</option>
-            <option value="__fam__Compétence">→ Compétence (famille)</option>
-            <option>Fiable</option><option>Intelligent</option><option>Précis</option><option>Expert</option><option>Leader</option>
-            <option value="__fam__Sophistication">→ Sophistication (famille)</option>
-            <option>Élégant</option><option>Raffiné</option><option>Exclusif</option><option>Prestigieux</option><option>Intemporel</option>
-            <option value="__fam__Robustesse">→ Robustesse (famille)</option>
-            <option>Solide</option><option>Puissant</option><option>Robuste</option><option>Brut</option><option>Endurant</option>
-          </select>
+      <!-- Secteur -->
+      <div class="brief-field">
+        <div class="brief-field-label">Secteur</div>
+        <div class="brief-field-input-wrap">
+          <input type="text" id="input-secteur" class="brief-field-input" placeholder="finance, sport, santé..." autocomplete="off"
+            oninput="onBriefInput('secteur', this)" onkeydown="onBriefKeydown(event, 'secteur')">
+          <div class="brief-suggestions" id="sug-secteur"></div>
         </div>
+        <div class="brief-chips" id="chips-secteur"></div>
+      </div>
+
+      <!-- Valeurs / adjectifs -->
+      <div class="brief-field">
+        <div class="brief-field-label">Valeurs & adjectifs</div>
+        <div class="brief-field-input-wrap">
+          <input type="text" id="input-valeurs" class="brief-field-input" placeholder="robuste, humain, élégant..." autocomplete="off"
+            oninput="onBriefInput('valeurs', this)" onkeydown="onBriefKeydown(event, 'valeurs')">
+          <div class="brief-suggestions" id="sug-valeurs"></div>
+        </div>
+        <div class="brief-chips" id="chips-valeurs"></div>
       </div>
 
       <!-- Positionnement -->
-      <div class="filter-section">
-        <div class="filter-label">Positionnement</div>
-        <div class="select-wrap">
-          <select id="sel-positionnement" class="filter-select" onchange="onSelectChange()">
-            <option value="">Tous</option>
-            <option>Ultra-luxe</option>
-            <option>Premium</option>
-            <option>Milieu de gamme</option>
-            <option>Grand public</option>
-            <option>Disruptif & Challenger</option>
-            <option>Institutionnel</option>
-            <option>Engagé & Militant</option>
-          </select>
+      <div class="brief-field">
+        <div class="brief-field-label">Positionnement</div>
+        <div class="brief-field-input-wrap">
+          <input type="text" id="input-positionnement" class="brief-field-input" placeholder="luxe, accessible, premium..." autocomplete="off"
+            oninput="onBriefInput('positionnement', this)" onkeydown="onBriefKeydown(event, 'positionnement')">
+          <div class="brief-suggestions" id="sug-positionnement"></div>
         </div>
+        <div class="brief-chips" id="chips-positionnement"></div>
       </div>
 
-      <!-- ── NIVEAU 2 : MESSAGE ── -->
-      <div class="brief-section-divider"></div>
-      <div class="brief-section-title">Message</div>
-
-      <!-- Secteur -->
-      <div class="filter-section">
-        <div class="filter-label">Secteur</div>
-        <div class="selected-tags" id="industrie-tags"></div>
-        <div class="select-wrap">
-          <select id="sel-industrie" class="filter-select" onchange="onMultiSelect('industrie', this)">
-            <option value="">+ Ajouter</option>
-            <optgroup label="Économie & Finance">
-              <option value="__fam__Économie & Finance">→ Famille complète</option>
-              <option>Finance & Banque</option><option>Assurance</option>
-              <option>Immobilier</option><option>Conseil & Management</option><option>Droit & Juridique</option>
-            </optgroup>
-            <optgroup label="Commerce & Distribution">
-              <option value="__fam__Commerce & Distribution">→ Famille complète</option>
-              <option>Retail & Grande distribution</option><option>Luxe & Prestige</option>
-              <option>Mode & Textile</option><option>Alimentation & Boisson</option><option>Restauration</option>
-            </optgroup>
-            <optgroup label="Tech & Innovation">
-              <option value="__fam__Tech & Innovation">→ Famille complète</option>
-              <option>Technologie & SaaS</option><option>Télécommunications</option>
-              <option>Intelligence artificielle</option><option>Jeux vidéo & Esport</option>
-            </optgroup>
-            <optgroup label="Santé & Sciences">
-              <option value="__fam__Santé & Sciences">→ Famille complète</option>
-              <option>Santé & Médical</option><option>Pharmacie & Biotech</option><option>Bien-être & Beauté</option>
-            </optgroup>
-            <optgroup label="Industrie & Énergie">
-              <option value="__fam__Industrie & Énergie">→ Famille complète</option>
-              <option>Énergie & Utilities</option><option>Industrie & Manufacture</option>
-              <option>Construction & BTP</option><option>Mobilité & Transport</option><option>Aéronautique & Défense</option>
-            </optgroup>
-            <optgroup label="Culture & Sport">
-              <option value="__fam__Culture & Sport">→ Famille complète</option>
-              <option>Culture & Médias</option><option>Sport</option>
-              <option>Tourisme & Hôtellerie</option><option>Éducation & Formation</option>
-            </optgroup>
-            <optgroup label="Institution & Social">
-              <option value="__fam__Institution & Social">→ Famille complète</option>
-              <option>Institutionnel & Public</option><option>ONG & Association</option>
-              <option>Agriculture & Terroir</option><option>Architecture & Design</option>
-            </optgroup>
-          </select>
-        </div>
-      </div>
-
-      <!-- Valeurs -->
-      <div class="filter-section">
-        <div class="filter-label">Valeurs dominantes</div>
-        <div class="selected-tags" id="valeurs-tags"></div>
-        <div class="select-wrap">
-          <select id="sel-valeurs" class="filter-select" onchange="onMultiSelect('valeurs', this)">
-            <option value="">+ Ajouter</option>
-            <optgroup label="Confiance & Solidité">
-              <option value="__fam__Confiance & Solidité">→ Famille complète</option>
-              <option>Confiance</option><option>Solidité</option><option>Fiabilité</option>
-              <option>Sécurité</option><option>Stabilité</option><option>Transparence</option>
-            </optgroup>
-            <optgroup label="Excellence & Prestige">
-              <option value="__fam__Excellence & Prestige">→ Famille complète</option>
-              <option>Prestige</option><option>Excellence</option><option>Élégance</option>
-              <option>Raffinement</option><option>Exclusivité</option>
-            </optgroup>
-            <optgroup label="Énergie & Mouvement">
-              <option value="__fam__Énergie & Mouvement">→ Famille complète</option>
-              <option>Dynamisme</option><option>Innovation</option><option>Audace</option>
-              <option>Performance</option><option>Conquête</option><option>Rapidité</option>
-            </optgroup>
-            <optgroup label="Puissance & Force">
-              <option value="__fam__Puissance & Force">→ Famille complète</option>
-              <option>Puissance</option><option>Force</option><option>Robustesse</option><option>Endurance</option>
-            </optgroup>
-            <optgroup label="Humanité & Proximité">
-              <option value="__fam__Humanité & Proximité">→ Famille complète</option>
-              <option>Humanité</option><option>Bienveillance</option><option>Accessibilité</option>
-              <option>Proximité</option><option>Authenticité</option><option>Chaleur</option>
-            </optgroup>
-            <optgroup label="Héritage & Tradition">
-              <option value="__fam__Héritage & Tradition">→ Famille complète</option>
-              <option>Tradition</option><option>Héritage</option><option>Savoir-faire</option>
-              <option>Artisanat</option><option>Pérennité</option>
-            </optgroup>
-            <optgroup label="Engagement & Nature">
-              <option value="__fam__Engagement & Nature">→ Famille complète</option>
-              <option>Durabilité</option><option>Responsabilité</option><option>Engagement</option>
-              <option>Nature</option><option>Écologie</option>
-            </optgroup>
-            <optgroup label="Simplicité & Clarté">
-              <option value="__fam__Simplicité & Clarté">→ Famille complète</option>
-              <option>Minimalisme</option><option>Clarté</option><option>Efficacité</option>
-              <option>Sobriété</option><option>Précision</option>
-            </optgroup>
-            <optgroup label="Liberté & Aventure">
-              <option value="__fam__Liberté & Aventure">→ Famille complète</option>
-              <option>Liberté</option><option>Aventure</option><option>Exploration</option>
-              <option>Indépendance</option><option>Dépassement de soi</option>
-            </optgroup>
-          </select>
-        </div>
-      </div>
-
-      <!-- Objectif de perception -->
-      <div class="filter-section">
-        <div class="filter-label">Objectif de perception</div>
-        <div class="selected-tags" id="perception-tags"></div>
-        <div class="select-wrap">
-          <select id="sel-perception" class="filter-select" onchange="onMultiSelect('perception', this)">
-            <option value="">+ Ajouter</option>
-            <option>Inspirer confiance</option>
-            <option>Générer du désir</option>
-            <option>Imposer l'autorité</option>
-            <option>Créer l'appartenance</option>
-            <option>Exprimer l'énergie</option>
-            <option>Affirmer l'expertise</option>
-            <option>Signaler la différence</option>
-            <option>Rassurer & Sécuriser</option>
-            <option>Séduire & Aspirer</option>
-            <option>Engager & Mobiliser</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- ── NIVEAU 3 : CONTEXTE ── -->
-      <div class="brief-section-divider"></div>
-      <div class="brief-section-title brief-section-title--context">Contexte</div>
-
-      <!-- Audience -->
-      <div class="filter-section">
-        <div class="filter-label">Audience</div>
-        <div class="select-wrap">
-          <select id="sel-audience" class="filter-select" onchange="onSelectChange()">
-            <option value="">Toutes</option>
-            <option>Grand public</option>
-            <option>CSP+</option>
-            <option>18-30 ans</option>
-            <option>B2B — Professionnels</option>
-            <option>B2B — Grands comptes</option>
-            <option>B2B2C — Double cible</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Maturité -->
-      <div class="filter-section">
-        <div class="filter-label">Maturité du projet</div>
-        <div class="select-wrap">
-          <select id="sel-anciennete" class="filter-select" onchange="onSelectChange()">
-            <option value="">Toutes</option>
-            <option>Création ex nihilo</option>
-            <option>Refonte — marque récente</option>
-            <option>Refonte — marque historique</option>
-            <option>Évolution douce</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Ambition géographique -->
-      <div class="filter-section">
-        <div class="filter-label">Ambition géographique</div>
-        <div class="select-wrap">
-          <select id="sel-territoire" class="filter-select" onchange="onSelectChange()">
-            <option value="">Toutes</option>
-            <option>Local & Régional</option>
-            <option>National</option>
-            <option>Européen</option>
-            <option>Global & International</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Première lettre -->
-      <div class="filter-section">
-        <div class="filter-label">Première lettre du nom</div>
+      <!-- Lettre -->
+      <div class="brief-field">
+        <div class="brief-field-label">Lettre principale</div>
         <div class="letter-grid" id="letter-grid">
           <button class="letter-btn" onclick="toggleLetter(this)">A</button>
           <button class="letter-btn" onclick="toggleLetter(this)">B</button>
@@ -1456,7 +1318,7 @@
       <!-- Résumé + boutons -->
       <div class="brief-summary" id="brief-summary"></div>
 
-      <div style="display:flex;gap:8px">
+      <div style="display:flex;gap:8px;margin-top:4px">
         <button class="btn-search" id="btn-search" onclick="runSearch()" style="flex:1" disabled>
           Rechercher
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2.5 6.5h8M7.5 3.5l3 3-3 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1781,18 +1643,100 @@ async function deleteFromSupabase(id) {
   return supaFetch('/rest/v1/logos?id=eq.' + id, { method: 'DELETE' });
 }
 
-// ── État de l'application ──
+// ── État simplifié ──
 const state = {
-  selectedIndustrie:    [],
-  selectedValeurs:      [],
-  selectedPersonnalite: [],
-  selectedPerception:   [],
+  brief: {
+    secteur:        [], // [{label, values}]
+    valeurs:        [],
+    positionnement: [],
+  },
   selectedLetter: null,
   results: [],
   activeCard: null,
 };
 
-// ── Mise à jour initiale ──
+// ── Vocabulaire de suggestions (étendu sémantiquement) ──
+const BRIEF_VOCAB = {
+  secteur: [
+    { label: 'Finance & Banque', aliases: ['finance','banque','bank','financier','investissement','bourse'] },
+    { label: 'Assurance', aliases: ['assurance','insurance','mutuelle','prévoyance'] },
+    { label: 'Immobilier', aliases: ['immobilier','real estate','promotion','construction résidentielle'] },
+    { label: 'Conseil & Management', aliases: ['conseil','consulting','management','stratégie','audit'] },
+    { label: 'Droit & Juridique', aliases: ['droit','juridique','avocat','legal','law','notaire'] },
+    { label: 'Retail & Grande distribution', aliases: ['retail','grande distribution','supermarché','commerce','boutique','e-commerce'] },
+    { label: 'Luxe & Prestige', aliases: ['luxe','prestige','luxury','haute couture','maroquinerie','joaillerie'] },
+    { label: 'Mode & Textile', aliases: ['mode','textile','fashion','vêtement','habillement'] },
+    { label: 'Alimentation & Boisson', aliases: ['alimentation','boisson','food','beverage','agroalimentaire','épicerie'] },
+    { label: 'Restauration', aliases: ['restauration','restaurant','food service','gastronomie','traiteur'] },
+    { label: 'Technologie & SaaS', aliases: ['tech','technologie','saas','software','logiciel','digital','numérique','startup'] },
+    { label: 'Télécommunications', aliases: ['télécommunications','telecom','téléphonie','réseau','opérateur'] },
+    { label: 'Intelligence artificielle', aliases: ['ia','ai','intelligence artificielle','machine learning','data'] },
+    { label: 'Jeux vidéo & Esport', aliases: ['jeux','gaming','esport','jeu vidéo','game'] },
+    { label: 'Santé & Médical', aliases: ['santé','médical','medical','hôpital','clinique','healthcare','soins'] },
+    { label: 'Pharmacie & Biotech', aliases: ['pharmacie','biotech','laboratoire','pharmaceutique','médicament'] },
+    { label: 'Bien-être & Beauté', aliases: ['bien-être','beauté','beauty','spa','cosmétique','wellness'] },
+    { label: 'Énergie & Utilities', aliases: ['énergie','energy','électricité','gaz','utilities','renouvelable','solaire'] },
+    { label: 'Industrie & Manufacture', aliases: ['industrie','manufacture','usine','production','manufacturing'] },
+    { label: 'Construction & BTP', aliases: ['construction','btp','bâtiment','travaux','architecture','génie civil'] },
+    { label: 'Mobilité & Transport', aliases: ['mobilité','transport','automobile','voiture','logistique','aviation'] },
+    { label: 'Aéronautique & Défense', aliases: ['aéronautique','défense','aerospace','armée','militaire'] },
+    { label: 'Culture & Médias', aliases: ['culture','médias','media','presse','édition','musée','spectacle'] },
+    { label: 'Sport', aliases: ['sport','sportif','athlétisme','football','rugby','club sportif','fitness'] },
+    { label: 'Tourisme & Hôtellerie', aliases: ['tourisme','hôtellerie','hotel','voyage','travel','hospitality'] },
+    { label: 'Éducation & Formation', aliases: ['éducation','formation','école','université','enseignement','e-learning'] },
+    { label: 'Institutionnel & Public', aliases: ['institutionnel','public','collectivité','mairie','gouvernement','administration'] },
+    { label: 'ONG & Association', aliases: ['ong','association','nonprofit','humanitaire','solidarité','caritatif'] },
+    { label: 'Agriculture & Terroir', aliases: ['agriculture','terroir','agricole','ferme','agroécologie','viticulture'] },
+    { label: 'Architecture & Design', aliases: ['architecture','design','agence','studio','créatif','aménagement'] },
+  ],
+  valeurs: [
+    { label: 'Confiance', aliases: ['confiance','trust','fiable','reliable','sérieux','sérieuse'] },
+    { label: 'Solidité', aliases: ['solidité','solid','robuste','robustesse','fort','forte','résistant'] },
+    { label: 'Fiabilité', aliases: ['fiabilité','fiable','dependable','sûr','sûre'] },
+    { label: 'Sécurité', aliases: ['sécurité','security','safe','protection','rassurant'] },
+    { label: 'Transparence', aliases: ['transparence','transparent','honnête','ouvert','clarté'] },
+    { label: 'Prestige', aliases: ['prestige','prestigious','haut de gamme','premium','distinction'] },
+    { label: 'Excellence', aliases: ['excellence','excellent','qualité','supérieur','best'] },
+    { label: 'Élégance', aliases: ['élégance','élégant','chic','raffiné','classe'] },
+    { label: 'Exclusivité', aliases: ['exclusivité','exclusif','unique','rare','sélect'] },
+    { label: 'Dynamisme', aliases: ['dynamisme','dynamique','actif','énergique','vivant','vivace'] },
+    { label: 'Innovation', aliases: ['innovation','innovant','créativité','avant-garde','disruptif','pionnier'] },
+    { label: 'Audace', aliases: ['audace','audacieux','bold','courageux','provocateur'] },
+    { label: 'Performance', aliases: ['performance','performant','efficace','résultat','compétitif'] },
+    { label: 'Rapidité', aliases: ['rapidité','rapide','fast','speed','agile','vélocité'] },
+    { label: 'Puissance', aliases: ['puissance','puissant','powerful','fort','force','muscle'] },
+    { label: 'Endurance', aliases: ['endurance','endurant','durabilité','résistance','persévérance'] },
+    { label: 'Humanité', aliases: ['humanité','humain','human','empathie','bienveillant','caring'] },
+    { label: 'Bienveillance', aliases: ['bienveillance','bienveillant','doux','gentil','care'] },
+    { label: 'Accessibilité', aliases: ['accessibilité','accessible','abordable','inclusive','ouvert à tous'] },
+    { label: 'Proximité', aliases: ['proximité','proche','local','communauté','ancré'] },
+    { label: 'Authenticité', aliases: ['authenticité','authentique','genuine','vrai','naturel'] },
+    { label: 'Tradition', aliases: ['tradition','traditionnel','heritage','classique','historique'] },
+    { label: 'Héritage', aliases: ['héritage','legacy','ancienneté','savoir-faire','artisanat'] },
+    { label: 'Savoir-faire', aliases: ['savoir-faire','expertise','métier','compétence','maîtrise'] },
+    { label: 'Durabilité', aliases: ['durabilité','durable','sustainable','écologique','vert','green'] },
+    { label: 'Responsabilité', aliases: ['responsabilité','responsable','éthique','engagement','rse'] },
+    { label: 'Nature', aliases: ['nature','naturel','bio','organique','écologie','environnement'] },
+    { label: 'Minimalisme', aliases: ['minimalisme','minimaliste','simple','épuré','clean'] },
+    { label: 'Clarté', aliases: ['clarté','clair','lisible','direct','simple'] },
+    { label: 'Liberté', aliases: ['liberté','libre','indépendance','autonomie','freedom'] },
+    { label: 'Aventure', aliases: ['aventure','adventure','exploration','découverte','voyage'] },
+  ],
+  positionnement: [
+    { label: 'Ultra-luxe', aliases: ['ultra-luxe','ultra luxe','très haut de gamme','top of the range','ultra premium'] },
+    { label: 'Premium', aliases: ['premium','haut de gamme','luxueux','luxe','high end','qualité premium'] },
+    { label: 'Milieu de gamme', aliases: ['milieu','mid-range','mid range','standard','moyen'] },
+    { label: 'Grand public', aliases: ['grand public','mass market','accessible','tout public','populaire'] },
+    { label: 'Disruptif & Challenger', aliases: ['disruptif','challenger','disruptive','startup','anti-establishment','rupture'] },
+    { label: 'Institutionnel', aliases: ['institutionnel','institution','public','gouvernemental','officiel'] },
+    { label: 'Engagé & Militant', aliases: ['engagé','militant','activiste','cause','engagement','responsable','éthique'] },
+    { label: 'Humain & Chaleureux', aliases: ['humain','chaleureux','warm','friendly','proche','bienveillant'] },
+    { label: 'Technique & Expert', aliases: ['technique','expert','spécialiste','professionnel','b2b'] },
+    { label: 'Artisanal & Local', aliases: ['artisanal','local','fait main','craft','terroir','authentique'] },
+  ],
+};
+
+// Mise à jour initiale
 function updateHeaderCount() {
   const el = document.getElementById('header-count');
   if (el) el.textContent = DB.length + ' logo' + (DB.length > 1 ? 's' : '') + ' importé' + (DB.length > 1 ? 's' : '');
@@ -1825,102 +1769,140 @@ loadLogosFromSupabase();
   }
 })();
 
-// ── Map des familles ──
-const FAMILLE_MAP = {
-  industrie: {
-    'Économie & Finance':      ['Finance & Banque','Assurance','Immobilier','Conseil & Management','Droit & Juridique'],
-    'Commerce & Distribution': ['Retail & Grande distribution','Luxe & Prestige','Mode & Textile','Alimentation & Boisson','Restauration'],
-    'Tech & Innovation':       ['Technologie & SaaS','Télécommunications','Intelligence artificielle','Jeux vidéo & Esport'],
-    'Santé & Sciences':        ['Santé & Médical','Pharmacie & Biotech','Bien-être & Beauté'],
-    'Industrie & Énergie':     ['Énergie & Utilities','Industrie & Manufacture','Construction & BTP','Mobilité & Transport','Aéronautique & Défense'],
-    'Culture & Sport':         ['Culture & Médias','Sport','Tourisme & Hôtellerie','Éducation & Formation'],
-    'Institution & Social':    ['Institutionnel & Public','ONG & Association','Agriculture & Terroir','Architecture & Design'],
-  },
-  valeurs: {
-    'Confiance & Solidité':  ['Confiance','Solidité','Fiabilité','Sécurité','Stabilité','Transparence'],
-    'Excellence & Prestige': ['Prestige','Excellence','Élégance','Raffinement','Exclusivité'],
-    'Énergie & Mouvement':   ['Dynamisme','Innovation','Audace','Performance','Conquête','Rapidité'],
-    'Puissance & Force':     ['Puissance','Force','Robustesse','Endurance'],
-    'Humanité & Proximité':  ['Humanité','Bienveillance','Accessibilité','Proximité','Authenticité','Chaleur'],
-    'Héritage & Tradition':  ['Tradition','Héritage','Savoir-faire','Artisanat','Pérennité'],
-    'Engagement & Nature':   ['Durabilité','Responsabilité','Engagement','Nature','Écologie'],
-    'Simplicité & Clarté':   ['Minimalisme','Clarté','Efficacité','Sobriété','Précision'],
-    'Liberté & Aventure':    ['Liberté','Aventure','Exploration','Indépendance','Dépassement de soi'],
-  },
-  personnalite: {
-    'Sincérité':      ['Sincère','Honnête','Authentique','Bienveillant','Chaleureux'],
-    'Excitation':     ['Audacieux','Imaginatif','Dynamique','Innovant','Provocateur'],
-    'Compétence':     ['Fiable','Intelligent','Précis','Expert','Leader'],
-    'Sophistication': ['Élégant','Raffiné','Exclusif','Prestigieux','Intemporel'],
-    'Robustesse':     ['Solide','Puissant','Robuste','Brut','Endurant'],
-  },
-  perception: {},
-};
+// ── Autocomplétion ──
+let sugFocusIdx = { secteur: -1, valeurs: -1, positionnement: -1 };
 
-// ── Contrôles de recherche ──
-function onSelectChange() { updateSummary(); }
+function normalize(s) {
+  return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[-_\s]+/g, ' ').trim();
+}
 
-function onMultiSelect(group, select) {
-  const val = select.value;
-  if (!val) return;
-  select.value = '';
+function getSuggestions(field, query) {
+  const q = normalize(query);
+  if (!q || q.length < 1) return [];
 
-  let toAdd = [];
-  if (val.startsWith('__fam__')) {
-    const famName = val.replace('__fam__', '');
-    const members = FAMILLE_MAP[group]?.[famName] || [];
-    toAdd = [{ label: famName + ' ✦', values: members }];
-  } else {
-    toAdd = [{ label: val, values: [val] }];
-  }
+  const vocab = BRIEF_VOCAB[field] || [];
+  const existing = new Set(state.brief[field].map(c => c.label));
 
-  const stateKey = {
-    industrie:    'selectedIndustrie',
-    valeurs:      'selectedValeurs',
-    personnalite: 'selectedPersonnalite',
-    perception:   'selectedPerception',
-  }[group];
-
-  const renderKey = {
-    industrie:    renderIndustrieTags,
-    valeurs:      renderValeurTags,
-    personnalite: renderPersonnaliteTags,
-    perception:   renderPerceptionTags,
-  }[group];
-
-  if (stateKey) {
-    toAdd.forEach(item => {
-      if (!state[stateKey].find(s => s.label === item.label))
-        state[stateKey].push(item);
+  // Compter occurrences dans la DB pour chaque terme
+  const dbCounts = {};
+  DB.forEach(logo => {
+    (logo.brief || []).forEach(tag => {
+      dbCounts[tag] = (dbCounts[tag] || 0) + 1;
     });
-    renderKey && renderKey();
+  });
+
+  const results = [];
+  vocab.forEach(item => {
+    if (existing.has(item.label)) return;
+    const labelNorm = normalize(item.label);
+    const aliasMatch = item.aliases.some(a => normalize(a).includes(q));
+    const labelMatch = labelNorm.includes(q);
+    if (labelMatch || aliasMatch) {
+      // Compter combien de logos dans la DB ont ce tag
+      const count = dbCounts[item.label] || 0;
+      results.push({ ...item, count, score: labelMatch ? 2 : 1 });
+    }
+  });
+
+  // Trier : d'abord les matches exacts label, puis par count DB
+  results.sort((a, b) => b.score - a.score || b.count - a.count);
+  return results.slice(0, 6);
+}
+
+function onBriefInput(field, input) {
+  const q = input.value;
+  const sugEl = document.getElementById('sug-' + field);
+  sugFocusIdx[field] = -1;
+
+  if (!q.trim()) { sugEl.classList.remove('open'); return; }
+
+  const suggestions = getSuggestions(field, q);
+  if (!suggestions.length) { sugEl.classList.remove('open'); return; }
+
+  sugEl.innerHTML = suggestions.map((s, i) => {
+    const q2 = normalize(q);
+    const labelNorm = normalize(s.label);
+    const idx = labelNorm.indexOf(q2);
+    let displayLabel = s.label;
+    if (idx >= 0) {
+      displayLabel = s.label.slice(0, idx) +
+        '<span class="brief-sug-match">' + s.label.slice(idx, idx + q.length) + '</span>' +
+        s.label.slice(idx + q.length);
+    }
+    return `<div class="brief-sug-item" data-idx="${i}" data-label="${s.label}" onclick="selectSuggestion('${field}', '${s.label.replace(/'/g,"\\'")}')">
+      <span>${displayLabel}</span>
+      ${s.count > 0 ? `<span class="brief-sug-count">${s.count} logo${s.count > 1 ? 's' : ''}</span>` : ''}
+    </div>`;
+  }).join('');
+
+  sugEl.classList.add('open');
+}
+
+function onBriefKeydown(event, field) {
+  const sugEl = document.getElementById('sug-' + field);
+  const items = sugEl.querySelectorAll('.brief-sug-item');
+
+  if (event.key === 'ArrowDown') {
+    event.preventDefault();
+    sugFocusIdx[field] = Math.min(sugFocusIdx[field] + 1, items.length - 1);
+    items.forEach((el, i) => el.classList.toggle('focused', i === sugFocusIdx[field]));
+  } else if (event.key === 'ArrowUp') {
+    event.preventDefault();
+    sugFocusIdx[field] = Math.max(sugFocusIdx[field] - 1, -1);
+    items.forEach((el, i) => el.classList.toggle('focused', i === sugFocusIdx[field]));
+  } else if (event.key === 'Enter') {
+    event.preventDefault();
+    if (sugFocusIdx[field] >= 0 && items[sugFocusIdx[field]]) {
+      const label = items[sugFocusIdx[field]].dataset.label;
+      selectSuggestion(field, label);
+    } else if (event.target.value.trim()) {
+      // Ajouter le texte libre directement
+      addBriefChip(field, event.target.value.trim());
+      event.target.value = '';
+      sugEl.classList.remove('open');
+      updateSummary();
+    }
+  } else if (event.key === 'Escape') {
+    sugEl.classList.remove('open');
   }
+}
+
+function selectSuggestion(field, label) {
+  const vocab = BRIEF_VOCAB[field] || [];
+  const item = vocab.find(v => v.label === label);
+  addBriefChip(field, label, item ? item.aliases : [label.toLowerCase()]);
+  document.getElementById('input-' + field).value = '';
+  document.getElementById('sug-' + field).classList.remove('open');
   updateSummary();
 }
 
-function removeTag(group, label) {
-  const stateKey = { industrie: 'selectedIndustrie', valeurs: 'selectedValeurs', personnalite: 'selectedPersonnalite', perception: 'selectedPerception' }[group];
-  const renderKey = { industrie: renderIndustrieTags, valeurs: renderValeurTags, personnalite: renderPersonnaliteTags, perception: renderPerceptionTags }[group];
-  if (stateKey) { state[stateKey] = state[stateKey].filter(v => v.label !== label); renderKey && renderKey(); }
+function addBriefChip(field, label, values) {
+  if (state.brief[field].find(c => c.label === label)) return;
+  state.brief[field].push({ label, values: values || [label.toLowerCase()] });
+  renderChips(field);
   updateSummary();
 }
 
-function removeIndustrie(label)    { removeTag('industrie', label); }
-function removeValeur(label)       { removeTag('valeurs', label); }
-function removePersonnalite(label) { removeTag('personnalite', label); }
-function removePerception(label)   { removeTag('perception', label); }
+function removeChip(field, label) {
+  state.brief[field] = state.brief[field].filter(c => c.label !== label);
+  renderChips(field);
+  updateSummary();
+}
 
-function renderTagGroup(elId, items, removeFn) {
-  const el = document.getElementById(elId);
+function renderChips(field) {
+  const el = document.getElementById('chips-' + field);
   if (!el) return;
-  el.innerHTML = items.map(v =>
-    '<span class="sel-tag">' + v.label + '<span class="sel-tag-x" onclick="' + removeFn + '(\'' + v.label.replace(/'/g,"\\'") + '\')">×</span></span>'
+  el.innerHTML = state.brief[field].map(c =>
+    `<span class="brief-chip">${c.label}<span class="brief-chip-x" onclick="removeChip('${field}','${c.label.replace(/'/g,"\\'")}')">×</span></span>`
   ).join('');
 }
-function renderIndustrieTags()    { renderTagGroup('industrie-tags',    state.selectedIndustrie,    'removeIndustrie'); }
-function renderValeurTags()       { renderTagGroup('valeurs-tags',       state.selectedValeurs,       'removeValeur'); }
-function renderPersonnaliteTags() { renderTagGroup('personnalite-tags', state.selectedPersonnalite, 'removePersonnalite'); }
-function renderPerceptionTags()   { renderTagGroup('perception-tags',   state.selectedPerception,   'removePerception'); }
+
+// Fermer suggestions au clic dehors
+document.addEventListener('click', e => {
+  if (!e.target.closest('.brief-field-input-wrap')) {
+    document.querySelectorAll('.brief-suggestions').forEach(el => el.classList.remove('open'));
+  }
+});
 
 function toggleLetter(btn) {
   const letter = btn.textContent;
@@ -1934,37 +1916,35 @@ function toggleLetter(btn) {
 }
 
 function updateSummary() {
-  const audience   = document.getElementById('sel-audience')?.value || '';
-  const territoire = document.getElementById('sel-territoire')?.value || '';
-  const anciennete = document.getElementById('sel-anciennete')?.value || '';
-  const positionnement = document.getElementById('sel-positionnement')?.value || '';
   const parts = [
-    ...state.selectedPersonnalite.map(v => v.label),
-    positionnement,
-    ...state.selectedIndustrie.map(v => v.label),
-    ...state.selectedValeurs.map(v => v.label),
-    ...state.selectedPerception.map(v => v.label),
-    audience, territoire, anciennete,
-    state.selectedLetter ? 'Lettre ' + state.selectedLetter : ''
+    ...state.brief.secteur.map(c => c.label),
+    ...state.brief.valeurs.map(c => c.label),
+    ...state.brief.positionnement.map(c => c.label),
+    state.selectedLetter ? 'Lettre ' + state.selectedLetter : '',
   ].filter(Boolean);
+
   const el = document.getElementById('brief-summary');
   if (parts.length === 0) { el.classList.remove('visible'); }
   else { el.classList.add('visible'); el.textContent = parts.join(' · '); }
+
   const btn = document.getElementById('btn-search');
   if (btn) btn.disabled = parts.length === 0;
 }
 
+function onSelectChange() { updateSummary(); }
+
 function resetSearch() {
-  ['sel-industrie','sel-valeurs','sel-personnalite','sel-perception',
-   'sel-positionnement','sel-audience','sel-territoire','sel-anciennete'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
-  state.selectedIndustrie    = [];
-  state.selectedValeurs      = [];
-  state.selectedPersonnalite = [];
-  state.selectedPerception   = [];
+  state.brief.secteur        = [];
+  state.brief.valeurs        = [];
+  state.brief.positionnement = [];
   state.selectedLetter       = null;
-  renderIndustrieTags(); renderValeurTags(); renderPersonnaliteTags(); renderPerceptionTags();
+  ['secteur','valeurs','positionnement'].forEach(f => {
+    renderChips(f);
+    const inp = document.getElementById('input-' + f);
+    if (inp) inp.value = '';
+    const sug = document.getElementById('sug-' + f);
+    if (sug) sug.classList.remove('open');
+  });
   document.querySelectorAll('.letter-btn').forEach(b => b.classList.remove('on'));
   document.getElementById('brief-summary').classList.remove('visible');
   showAllProjects();
@@ -2031,8 +2011,7 @@ async function runSearch() {
   const audience   = document.getElementById('sel-audience')?.value || '';
   const territoire = document.getElementById('sel-territoire')?.value || '';
   const anciennete = document.getElementById('sel-anciennete')?.value || '';
-  const positionnement = document.getElementById('sel-positionnement')?.value || '';
-  const hasFilters = state.selectedPersonnalite.length || state.selectedIndustrie.length || state.selectedValeurs.length || state.selectedPerception.length || positionnement || audience || territoire || anciennete || state.selectedLetter;
+  const hasFilters = state.brief.secteur.length || state.brief.valeurs.length || state.brief.positionnement.length || state.selectedLetter;
 
   document.getElementById('state-empty').style.display = 'none';
   document.getElementById('logo-grid').classList.remove('visible');
@@ -2050,12 +2029,9 @@ async function runSearch() {
 
   // Construire le texte de recherche sémantique — MESSAGE en priorité, CONTEXTE en nuance
   const queryParts = [
-    ...state.selectedPersonnalite.flatMap(v => v.values),
-    positionnement,
-    ...state.selectedIndustrie.flatMap(v => v.values),
-    ...state.selectedValeurs.flatMap(v => v.values),
-    ...state.selectedPerception.flatMap(v => v.values),
-    audience, territoire, anciennete,
+    ...state.brief.secteur.flatMap(c => c.values || [c.label]),
+    ...state.brief.valeurs.flatMap(c => c.values || [c.label]),
+    ...state.brief.positionnement.flatMap(c => c.values || [c.label]),
   ].filter(Boolean);
   const queryText = queryParts.join(', ');
 
@@ -2123,22 +2099,16 @@ function renderResultsBar() {
   const audience   = document.getElementById('sel-audience')?.value || '';
   const territoire = document.getElementById('sel-territoire')?.value || '';
   const anciennete = document.getElementById('sel-anciennete')?.value || '';
-  const positionnement = document.getElementById('sel-positionnement')?.value || '';
-  const isFiltered = state.selectedPersonnalite.length || state.selectedIndustrie.length || state.selectedValeurs.length || state.selectedPerception.length || positionnement || audience || territoire || anciennete || state.selectedLetter;
+  const isFiltered = state.brief.secteur.length || state.brief.valeurs.length || state.brief.positionnement.length || state.selectedLetter;
 
   const banner = document.getElementById('analysis-banner');
   document.getElementById('analysis-count').textContent = state.results.length;
   document.getElementById('analysis-sub').textContent = isFiltered ? 'logos similaires' : 'logos dans la base';
 
   const tags = [
-    ...state.selectedPersonnalite.map(v => '<span class="rtag valeur">' + v.label + '</span>'),
-    positionnement ? '<span class="rtag brief">' + positionnement + '</span>' : '',
-    ...state.selectedIndustrie.map(v => '<span class="rtag brief">' + v.label + '</span>'),
-    ...state.selectedValeurs.map(v => '<span class="rtag valeur">' + v.label + '</span>'),
-    ...state.selectedPerception.map(v => '<span class="rtag valeur">' + v.label + '</span>'),
-    audience   ? '<span class="rtag graphique">' + audience   + '</span>' : '',
-    territoire ? '<span class="rtag graphique">' + territoire + '</span>' : '',
-    anciennete ? '<span class="rtag graphique">' + anciennete + '</span>' : '',
+    ...state.brief.secteur.map(c => '<span class="rtag brief">' + c.label + '</span>'),
+    ...state.brief.valeurs.map(c => '<span class="rtag valeur">' + c.label + '</span>'),
+    ...state.brief.positionnement.map(c => '<span class="rtag valeur">' + c.label + '</span>'),
     state.selectedLetter ? '<span class="rtag graphique">Lettre ' + state.selectedLetter + '</span>' : '',
   ].filter(Boolean).join('');
   document.getElementById('analysis-tags').innerHTML = tags;
@@ -2354,14 +2324,10 @@ async function openInsights() {
   const audience   = document.getElementById('sel-audience')?.value || '';
   const territoire = document.getElementById('sel-territoire')?.value || '';
   const anciennete = document.getElementById('sel-anciennete')?.value || '';
-  const positionnement = document.getElementById('sel-positionnement')?.value || '';
   const briefLabels = [
-    ...state.selectedPersonnalite.map(v => v.label),
-    positionnement,
-    ...state.selectedIndustrie.map(v => v.label),
-    ...state.selectedValeurs.map(v => v.label),
-    ...state.selectedPerception.map(v => v.label),
-    audience, territoire, anciennete,
+    ...state.brief.secteur.map(c => c.label),
+    ...state.brief.valeurs.map(c => c.label),
+    ...state.brief.positionnement.map(c => c.label),
   ].filter(Boolean);
   const briefDesc = briefLabels.join(', ');
   const statsText = topAttrs.map(a => a.attr + ' (' + a.pct + '%)').join(', ');
@@ -2456,8 +2422,7 @@ function renderGrid() {
   const audience   = document.getElementById('sel-audience')?.value || '';
   const territoire = document.getElementById('sel-territoire')?.value || '';
   const anciennete = document.getElementById('sel-anciennete')?.value || '';
-  const positionnement = document.getElementById('sel-positionnement')?.value || '';
-  const hasFilters     = state.selectedPersonnalite.length || state.selectedIndustrie.length || state.selectedValeurs.length || state.selectedPerception.length || positionnement || audience || territoire || anciennete || state.selectedLetter;
+  const hasFilters     = state.brief.secteur.length || state.brief.valeurs.length || state.brief.positionnement.length || state.selectedLetter;
   const showDelete     = !hasFilters; // bouton suppr uniquement en vue "tous les projets"
 
   state.results.forEach((logo, i) => {
