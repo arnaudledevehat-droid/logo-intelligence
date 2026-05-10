@@ -98,10 +98,9 @@ module.exports = async function handler(req, res) {
     ].filter(Boolean),
     graphic: [
       ...(l.tags || []),
-      l.country ? 'Pays: ' + l.country : null,
     ].filter(Boolean),
     description: [l.designers?.join(', '), l.industry, l.year].filter(Boolean).join(' — '),
-    image_url: svgToDataUrl(l.svg),
+    image_url: l.svg ? `data:image/svg+xml;base64,${Buffer.from(l.svg).toString('base64')}` : null,
     source_url: 'https://www.logo-archive.org/?item=' + l.slug,
     created_at: l.year ? `${l.year}-01-01` : new Date().toISOString(),
   }));
