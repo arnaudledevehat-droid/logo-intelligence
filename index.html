@@ -2946,6 +2946,36 @@ function loadPastedUrls() {
   setPortfolioStatus('ok', filtered.length + ' URL' + (filtered.length > 1 ? 's' : '') + ' chargée' + (filtered.length > 1 ? 's' : ''));
 }
 
+// ── Fetch côté serveur via /api/scrape (contourne les blocages CORS) ──
+async function fetchPage(url) {
+  // 1. Essayer d'abord via notre Vercel Function (pas de CORS, vrai navigateur)
+  try {
+    const r = await fetch('/api/scrape', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+    });
+    if (r.ok) {
+      const data = await r.json();
+      if (data.html && data.html.length > 200) return data.html;
+    }
+  } catch(e) { /* fallback */ }
+
+  // 2. Fallback proxies publics
+  const proxies = [
+    () => fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url)).then(r => r.ok ? r.text() : Promise.reject()),
+    () => fetch('https://corsproxy.io/?' + encodeURIComponent(url)).then(r => r.ok ? r.text() : Promise.reject()),
+    () => fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url)).then(r => r.ok ? r.text() : Promise.reject()),
+  ];
+  for (const proxy of proxies) {
+    try {
+      const html = await proxy();
+      if (html && html.length > 200) return html;
+    } catch(e) { continue; }
+  }
+  throw new Error('Impossible de récupérer la page — le site bloque les accès externes.');
+}
+
 async function scanPortfolio() {
   const url = document.getElementById('portfolio-url').value.trim();
   const btn = document.getElementById('btn-universal');
@@ -3694,15 +3724,7 @@ async function importFromUrl() {
 
     let html = '';
     const fetchWithTimeout = (fn, ms = 5000) => Promise.race([fn(), new Promise((_, r) => setTimeout(() => r(new Error('timeout')), ms))]);
-    const proxies = [
-      () => fetchWithTimeout(() => fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url)).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })),
-      () => fetchWithTimeout(() => fetch('https://corsproxy.io/?' + encodeURIComponent(url)).then(r => r.ok ? r.text() : Promise.reject())),
-      () => fetchWithTimeout(() => fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url)).then(r => r.ok ? r.text() : Promise.reject())),
-    ];
-    for (const proxy of proxies) {
-      try { html = await proxy(); if (html && html.length > 200) break; } catch(e) { continue; }
-    }
-    if (!html || html.length < 100) throw new Error('Impossible de recuperer la page — le site bloque peut-etre les acces externes.');
+    html = await fetchPage(url);
 
     // Utiliser le système de profils pour extraire les images
     const _domain = new URL(url).hostname.replace('www.', '');
@@ -3786,7 +3808,7 @@ SYMBOLISME: TRÈS précis — "Taureau" pas "Animaux", "Flamme" pas "Nature". Si
 TENDANCE: parmi Monoline(2008)/Negative space(2015)/Flat design(2013)/Inflation 3D(2023)/Nova Star(2024)/Sharps(2025) ou null
 
 JSON:
-{"nom_projet":"...","client":"...","agence":"...","annee":2024,"image_candidates":["url1","url2","url3","url4","url5","url6","url7","url8"],"lettre_initiale":null,"brief":{"personnalite":"Sincérité|Excitation|Compétence|Sophistication|Robustesse","positionnement":"valeur exacte","secteur":"valeur exacte","valeurs":["val1","val2"],"perception":"valeur exacte","maturite":"valeur exacte","audience":"valeur exacte"},"graphique":{"structure":"valeur exacte","forme":["val"],"technique":["val"],"couleur":["val"],"typographie":"valeur exacte","registre":["val"],"symbolisme":["val"]},"tendance_logolounge":null,"description":"..."}`;
+{"nom_projet":"...","client":"...","agence":"...","annee":2024,"image_candidates":["url1","url2","url3","url4","url5","url6","url7","url8"],"lettre_initiale": "Première lettre du MOT PRINCIPAL du nom (ignore les articles : Le/La/Les/De/The/A). Ex: 'Le Cheval' → C, 'De Beers' → B. Si la description mentionne explicitement une lettre utilisée comme symbole, prends celle-là. Si aucune lettre ne semble pertinente graphiquement, mets null","brief":{"personnalite":"Sincérité|Excitation|Compétence|Sophistication|Robustesse","positionnement":"valeur exacte","secteur":"valeur exacte","valeurs":["val1","val2"],"perception":"valeur exacte","maturite":"valeur exacte","audience":"valeur exacte"},"graphique":{"structure":"valeur exacte","forme":["val"],"technique":["val"],"couleur":["val"],"typographie":"valeur exacte","registre":["val"],"symbolisme":["val"]},"tendance_logolounge":null,"description":"..."}`;
 
 
     // Appel Claude avec retry sur overload
@@ -3854,9 +3876,41 @@ JSON:
     }
 
     // ── Lettre initiale ──
+    // Extraire la lettre initiale intelligemment
+    const STOP_WORDS = ['le','la','les','de','du','des','un','une','the','a','an','of','for','and','et','en','au','aux'];
+
+    function extractMainLetter(name, description) {
+      // 1. Chercher dans la description une mention explicite de lettre/monogramme
+      if (description) {
+        const mentionMatch = description.match(/\b(?:lettre|monogramme|initiale|symbole)\s+[«"']?([A-Z])[»"']?/i)
+                         || description.match(/\b([A-Z])\s+(?:de|du|pour)\s+/i);
+        if (mentionMatch) return mentionMatch[1].toUpperCase();
+      }
+
+      // 2. Prendre la première lettre du mot principal (ignorer articles/prépositions)
+      if (!name) return null;
+      const words = name.trim().split(/[\s\-_]+/).filter(Boolean);
+      for (const word of words) {
+        const lower = word.toLowerCase().replace(/[^a-z]/g, '');
+        if (!STOP_WORDS.includes(lower) && lower.length > 1) {
+          return word[0].toUpperCase();
+        }
+      }
+      // Fallback : première lettre du nom brut
+      return name.trim()[0]?.toUpperCase() || null;
+    }
+
     let lettreInitiale = null;
+
+    // Claude a explicitement fourni une lettre
     if (ai.lettre_initiale && /^[A-Z]$/i.test(ai.lettre_initiale)) {
       lettreInitiale = ai.lettre_initiale.toUpperCase();
+    }
+
+    // Sinon : extraction intelligente depuis nom + description
+    if (!lettreInitiale) {
+      const nomProjet = ai.nom_projet || ai.client || ai.nom || '';
+      lettreInitiale = extractMainLetter(nomProjet, ai.description);
     }
 
     // Fallback vision si pas trouvé
