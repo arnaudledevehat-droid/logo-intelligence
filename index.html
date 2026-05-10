@@ -2110,14 +2110,30 @@ async function runSearch() {
   ].filter(Boolean);
   const queryText = queryParts.join(', ');
 
-  // Si seule la lettre est sélectionnée — filtrer sans embedding
+  // Si seule la lettre est sélectionnée — requête Supabase directe
   if (!queryText && state.selectedLetter) {
     document.getElementById('skeleton-grid').classList.remove('visible');
-    state.results = DB
-      .filter(l => getFirstLetter(l) === state.selectedLetter)
-      .map(l => ({ ...l, score: 100 }));
-    renderResultsBar();
-    renderGrid();
+    try {
+      const letter = state.selectedLetter;
+      // Chercher dans le champ brief via Supabase contains
+      const rows = await supaFetch(
+        `/rest/v1/logos?select=*&brief=cs.{"Lettre initiale : ${letter}"}&limit=100&order=created_at.desc`
+      );
+      const fromBrief = (rows || []).map(rowToLogo);
+
+      // Aussi chercher par nom (côté client sur DB chargée)
+      const fromName = DB.filter(l =>
+        !fromBrief.find(r => r.id === l.id) && getFirstLetter(l) === letter
+      );
+
+      state.results = [...fromBrief, ...fromName].map(l => ({ ...l, score: 100 }));
+      renderResultsBar();
+      renderGrid();
+    } catch(e) {
+      state.results = DB.filter(l => getFirstLetter(l) === state.selectedLetter).map(l => ({ ...l, score: 100 }));
+      renderResultsBar();
+      renderGrid();
+    }
     return;
   }
 
@@ -2141,34 +2157,35 @@ async function runSearch() {
     const searchData = await searchResp.json();
     if (!searchResp.ok) throw new Error(searchData.error || 'Search error');
 
-    // 3. Mapper les résultats sur le DB local (pour avoir imageUrl etc.)
-    let results = (searchData.results || []).map(r => {
-      const local = DB.find(l => l.id === r.id) || {};
-      return {
-        ...local,
-        id: r.id,
-        name: r.name || local.name,
-        brief: Array.isArray(r.brief) ? r.brief : (local.brief || []),
-        graphic: Array.isArray(r.graphic) ? r.graphic : (local.graphic || []),
-        desc: r.description || local.desc || '',
-        score: Math.round(r.similarity * 100),
-      };
-    });
-
-    // 4. Filtrage strict lettre (pas sémantique — doit être exact)
-    if (state.selectedLetter) {
-      results = results.filter(l => getFirstLetter(l) === state.selectedLetter);
-    }
-
-    document.getElementById('skeleton-grid').classList.remove('visible');
-
-    if (results.length === 0) {
+    const searchResults = searchData.results || [];
+    if (searchResults.length === 0) {
+      document.getElementById('skeleton-grid').classList.remove('visible');
       document.getElementById('state-empty').style.display = 'flex';
       document.getElementById('state-empty-title').textContent = 'Aucun résultat';
       document.getElementById('state-empty-sub').textContent = 'Essaie d\'élargir les critères.';
       return;
     }
 
+    // 3. Récupérer les données complètes depuis Supabase (image_url incluse)
+    const ids = searchResults.map(r => r.id);
+    const rows = await supaFetch(
+      `/rest/v1/logos?select=*&id=in.(${ids.join(',')})`
+    );
+    const rowMap = {};
+    (rows || []).forEach(row => { rowMap[row.id] = rowToLogo(row); });
+
+    // 4. Mapper scores + données complètes
+    let results = searchResults.map(r => ({
+      ...(rowMap[r.id] || { id: r.id, name: r.name, brief: r.brief || [], graphic: r.graphic || [] }),
+      score: Math.round(r.similarity * 100),
+    }));
+
+    // 5. Filtrage lettre
+    if (state.selectedLetter) {
+      results = results.filter(l => getFirstLetter(l) === state.selectedLetter);
+    }
+
+    document.getElementById('skeleton-grid').classList.remove('visible');
     state.results = results;
     renderResultsBar();
     renderGrid();
