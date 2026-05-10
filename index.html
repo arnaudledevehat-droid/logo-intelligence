@@ -2094,13 +2094,24 @@ async function runSearch() {
     return;
   }
 
-  // Construire le texte de recherche sémantique — MESSAGE en priorité, CONTEXTE en nuance
+  // Construire le texte de recherche sémantique
   const queryParts = [
     ...state.brief.secteur.flatMap(c => c.values || [c.label]),
     ...state.brief.valeurs.flatMap(c => c.values || [c.label]),
     ...state.brief.positionnement.flatMap(c => c.values || [c.label]),
   ].filter(Boolean);
   const queryText = queryParts.join(', ');
+
+  // Si seule la lettre est sélectionnée — filtrer sans embedding
+  if (!queryText && state.selectedLetter) {
+    document.getElementById('skeleton-grid').classList.remove('visible');
+    state.results = DB
+      .filter(l => (l.brief || []).some(t => t.startsWith('Lettre initiale : ' + state.selectedLetter)))
+      .map(l => ({ ...l, score: 100 }));
+    renderResultsBar();
+    renderGrid();
+    return;
+  }
 
   try {
     // 1. Générer l'embedding du brief via Voyage
