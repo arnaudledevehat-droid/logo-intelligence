@@ -3748,44 +3748,6 @@ async function importFromUrl() {
 
     const pageTextTrimmed = pageText.slice(0, 1500);
 
-    // Vocabulaire contrôlé — DOIT correspondre exactement aux valeurs des menus de recherche
-    const VOCAB_BRIEF = {
-      industrie: [
-        'Finance & Banque','Assurance','Immobilier','Conseil & Management',
-        'Retail & Grande distribution','Luxe & Prestige','Mode & Textile','Alimentation & Boisson','Restauration',
-        'Technologie & SaaS','Télécommunications','Intelligence artificielle','Jeux vidéo & Esport',
-        'Santé & Médical','Pharmacie & Biotech','Bien-être & Beauté',
-        'Énergie & Utilities','Industrie & Manufacture','Construction & BTP','Mobilité & Transport','Aéronautique & Défense',
-        'Culture & Médias','Sport','Tourisme & Hôtellerie','Éducation & Formation',
-        'Institutionnel & Public','ONG & Association','Agriculture & Terroir'
-      ],
-      valeurs: [
-        'Confiance','Solidité','Fiabilité','Sécurité','Stabilité','Transparence',
-        'Prestige','Excellence','Élégance','Raffinement','Exclusivité',
-        'Dynamisme','Innovation','Audace','Performance','Conquête',
-        'Humanité','Bienveillance','Accessibilité','Proximité','Authenticité',
-        'Tradition','Héritage','Savoir-faire','Artisanat',
-        'Durabilité','Responsabilité','Engagement','Nature',
-        'Minimalisme','Clarté','Efficacité','Sobriété'
-      ],
-      positionnement: [
-        'Haut de gamme','Ultra-luxe','Premium accessible','Grand public',
-        'Institutionnel','Artisanal & Local','Engagé & Militant','Jeune & Disruptif'
-      ],
-    };
-
-    const VOCAB_GRAPHIQUE = {
-      forme: ['Cercle','Carre / rectangle','Triangle','Polygones','Ligne / barre','Croix / X','Etoile','Ellipse / ovale','Formes courbes','Silhouettes naturelles','Gouttes','Formes fluides / abstraites'],
-      structure: ['Compact','Horizontal','Vertical / empile','Centre','Asymetrique','En bloc','Decentre','Modulaire','Ascendant','Descendant','Diagonal','Rayonnant','Circulaire / rotatif','Spirale','Zigzag','Lineaire','Ondule / courbe','Point focal central','2D plate','3D simulee','Effet de volume'],
-      motifs: ['Motifs duplicatifs','Motifs radiaux','Motifs concentriques','Motifs en grille','Motifs en miroir','Superposition / overlay'],
-      symetrie: ['Verticale','Horizontale','Diagonale','Radiale','Centrale / bilaterale','Asymetrie equilibree'],
-      couleur: ['Monochrome','Bichromie','Polychrome','Degrade','Chaude','Froide','Neutre','Pastel','Vibrante','Sombre','Metallique'],
-      typographie: ['Serif','Sans-serif','Script','Display','Majuscules','Espacement large','Poids thin','Poids bold','Personnalisee'],
-      texte_symbole: ['Symbole seul','Texte seul','Texte + icone a gauche','Texte + icone au-dessus','Texte integre','Espace negatif','Monogramme'],
-      style: ['Minimaliste','Illustratif','Mascotte','Pictogramme','Abstrait','Flat design','Brutaliste','Vintage','Futuriste','Luxueux'],
-      symbolisme: ['Taureau','Lion','Aigle','Ours','Loup','Cheval','Dauphin','Serpent','Phénix','Cerf','Rhinocéros','Éléphant','Vague','Flamme','Feuille','Arbre','Montagne','Soleil','Étoile','Main','Flèche','Engrenage','Bouclier','Couronne','Éclair','Ancre','Globe','Racines','Pont','Chemin'],
-    };
-
     const prompt =
 `Analyse ce projet de logo. Réponds UNIQUEMENT en JSON valide.
 
