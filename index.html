@@ -525,14 +525,16 @@
     position: absolute;
     inset: 0;
     overflow: hidden;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .logo-thumb img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    width: 90%;
+    height: 90%;
+    object-fit: contain;
     object-position: center;
     display: block;
     transition: transform 0.3s ease;
@@ -1609,35 +1611,82 @@ async function uploadImageToStorage(fileOrUrl) {
 }
 
 
+const PAGE_SIZE = 60;
+let currentPage = 0;
+let totalCount = 0;
+let isLoadingMore = false;
+
 async function loadLogosFromSupabase() {
   try {
-    const rows = await supaFetch('/rest/v1/logos?select=*&order=created_at.desc');
+    // Charger la première page
+    currentPage = 0;
     DB.length = 0;
-    (rows || []).forEach(row => {
-      DB.push({
-        id:        row.id,
-        name:      row.name,
-        client:    row.name,
-        agency:    (row.brief || [])[0] || '—',
-        year:      new Date(row.created_at).getFullYear(),
-        symbol:    '◈', bg: '#1a1816', color: '#a09b94',
-        imageUrl:  row.image_url,
-        brief:     Array.isArray(row.brief)   ? row.brief   : [],
-        graphic:   Array.isArray(row.graphic) ? row.graphic : [],
-        desc:      row.description || '',
-        sourceUrl: row.source_url || null,
-        stats:     [],
-      });
-    });
+    await loadPage(0);
+
     updateHeaderCount();
     buildDynamicAttrs();
     showAllProjects();
     renderSourceList();
+    setupInfiniteScroll();
   } catch(e) {
     console.warn('Supabase load error:', e.message);
     showAllProjects();
   }
 }
+
+function rowToLogo(row) {
+  return {
+    id:        row.id,
+    name:      row.name,
+    client:    row.name,
+    agency:    (row.brief || [])[0] || '—',
+    year:      new Date(row.created_at).getFullYear(),
+    symbol:    '◈', bg: '#1a1816', color: '#a09b94',
+    imageUrl:  row.image_url,
+    brief:     Array.isArray(row.brief)   ? row.brief   : [],
+    graphic:   Array.isArray(row.graphic) ? row.graphic : [],
+    desc:      row.description || '',
+    sourceUrl: row.source_url || null,
+    stats:     [],
+  };
+}
+
+async function loadPage(page) {
+  const offset = page * PAGE_SIZE;
+  const rows = await supaFetch(
+    `/rest/v1/logos?select=*&order=created_at.desc&limit=${PAGE_SIZE}&offset=${offset}`
+  );
+  (rows || []).forEach(row => DB.push(rowToLogo(row)));
+  currentPage = page;
+}
+
+async function loadMoreLogos() {
+  if (isLoadingMore) return;
+  if ((currentPage + 1) * PAGE_SIZE >= DB.length && DB.length >= totalCount) return;
+  isLoadingMore = true;
+
+  const nextPage = currentPage + 1;
+  await loadPage(nextPage);
+  buildDynamicAttrs();
+  showAllProjects();
+  isLoadingMore = false;
+}
+
+function setupInfiniteScroll() {
+  const grid = document.getElementById('logo-grid');
+  if (!grid) return;
+  const sentinel = document.createElement('div');
+  sentinel.id = 'scroll-sentinel';
+  sentinel.style.height = '20px';
+  grid.parentElement.appendChild(sentinel);
+
+  const observer = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) loadMoreLogos();
+  }, { rootMargin: '200px' });
+  observer.observe(sentinel);
+}
+
+
 
 async function saveToSupabase(p) {
   return supaFetch('/rest/v1/logos', {
@@ -1754,7 +1803,7 @@ const BRIEF_VOCAB = {
 // Mise à jour initiale
 function updateHeaderCount() {
   const el = document.getElementById('header-count');
-  if (el) el.textContent = DB.length + ' logo' + (DB.length > 1 ? 's' : '') + ' importé' + (DB.length > 1 ? 's' : '');
+  if (el) el.textContent = DB.length + ' logo' + (DB.length > 1 ? 's' : '') + ' chargé' + (DB.length > 1 ? 's' : '');
 }
 
 function showAllProjects() {
@@ -4250,7 +4299,7 @@ async function removeDuplicates() {
 
 function updateHeaderCount() {
   const el = document.getElementById('header-count');
-  if (el) el.textContent = DB.length + ' logo' + (DB.length > 1 ? 's' : '') + ' importé' + (DB.length > 1 ? 's' : '');
+  if (el) el.textContent = DB.length + ' logo' + (DB.length > 1 ? 's' : '') + ' chargé' + (DB.length > 1 ? 's' : '');
 }
 
 function renderSourceList() {
