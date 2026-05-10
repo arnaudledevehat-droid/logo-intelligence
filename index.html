@@ -2019,8 +2019,16 @@ function resetSearch() {
 
 // ── Score de correspondance ──
 function getFirstLetter(logo) {
+  // 1. Chercher dans les tags brief (format "Lettre initiale : X")
+  const briefLetter = (logo.brief || [])
+    .find(t => t && t.startsWith('Lettre initiale : '));
+  if (briefLetter) {
+    const l = briefLetter.replace('Lettre initiale : ', '').trim();
+    if (l.length === 1) return l.toUpperCase();
+  }
+
+  // 2. Extraire depuis le nom (ignorer articles)
   const name = logo.name || '';
-  // Ignorer les mots génériques en début de nom
   const skip = ['le','la','les','l','the','a','an','groupe','group','studio','agence','société','societe','maison','cabinet'];
   const words = name.split(/[\s\-–_]+/).filter(w => w.length > 0);
   for (const word of words) {
@@ -2106,7 +2114,7 @@ async function runSearch() {
   if (!queryText && state.selectedLetter) {
     document.getElementById('skeleton-grid').classList.remove('visible');
     state.results = DB
-      .filter(l => (l.brief || []).some(t => t.startsWith('Lettre initiale : ' + state.selectedLetter)))
+      .filter(l => getFirstLetter(l) === state.selectedLetter)
       .map(l => ({ ...l, score: 100 }));
     renderResultsBar();
     renderGrid();
